@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-21 11:55:51
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-06-21 18:20:57
+# @Last Modified time: 2017-06-23 00:21:03
 
 from __future__ import absolute_import
 from __future__ import division
@@ -14,6 +14,7 @@ import os
 
 import numpy as np
 import tensorflow as tf
+import tensorflow.contrib.slim as slim
 
 def main(args):
     if not args.is_cpu:
