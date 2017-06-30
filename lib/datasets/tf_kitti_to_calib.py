@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-06-30 15:38:48
+# @Last Modified time: 2017-06-30 16:59:40
 
 from __future__ import absolute_import
 from __future__ import division
@@ -36,7 +36,7 @@ _NUM_GEN = 5 # Number of random generation per image
 
 _SET_CALIB = ['P2','R0_rect','Tr_velo_to_cam']
 
-def get_calib_mat(vid,cal_val):
+def convert_calib_mat(vid,cal_val):
     assert vid in cal_set, 'Wrong parsing occurred: {}'.format(vid)
     if vid == cal_set[0]: # P2
         return cal_val.reshape((3,4))
@@ -50,6 +50,18 @@ def get_calib_mat(vid,cal_val):
         cal_mat[:3,:4] = cal_val.reshape((3,4))
         cal_mat[3,3] = 1
         return cal_mat
+
+# Read & Save calibration matrix
+def get_calib_mat(f_calib):
+    dict_calib = {}
+    with open(f_calib,'r'):
+        for line in input_file:
+            if len(line) > 1:
+                vid,vals = line.split(':',1)
+                val_cal = [float(v) for v in vals.split()]
+                if vid in _SET_CALIB:
+                    dict_calib[vid] = convert_calib_mat(vid,np.array(val_cal))
+    return dict_calib
 
 def coord_transform(points, t_mat):
     # Change to homogeneous form
@@ -182,16 +194,9 @@ def main(args):
         num_data = len(imNames)*_NUM_GEN # Number of data to be gerated
 
         for iter, imName in enumearate(imNames):
+            # Get original calibration info
             f_calib = os.path.join(path_cal,image_set,_TYPE_CALIB,imName+_FORMAT_CALIB)
-            # Read & Save calibration matrix
-            with open(f_calib,'r'):
-                temp_dict = {}
-                for line in input_file:
-                    if len(line) > 1:
-                        vid,vals = line.split(':',1)
-                        val_cal = [float(v) for v in vals.split()]
-                        if vid in _SET_CALIB:
-                            temp_dict[vid] = get_calib_mat(vid,np.array(val_cal))
+            temp_dict = get_calib_mat(f_calib)
 
             # Read velodyne points
             f_velo = os.path.join(path_velo,image_set,_TYPE_VELO,imName+_FORMAT_VELO)
@@ -222,6 +227,10 @@ def main(args):
                                                                    points,
                                                                    im_height,
                                                                    im_width)
+            # Save y_true (7 parameters 4 from q_r, 3 from q_t)
+            # Save corresponding velodyne points, images
+            # Save H_init, H_gt
+            # Must save all info as Tensorflow format
 
 
 def parse_args():
