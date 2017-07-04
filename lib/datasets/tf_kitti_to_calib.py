@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-06-30 16:59:40
+# @Last Modified time: 2017-07-04 02:01:34
 
 from __future__ import absolute_import
 from __future__ import division
@@ -37,10 +37,10 @@ _NUM_GEN = 5 # Number of random generation per image
 _SET_CALIB = ['P2','R0_rect','Tr_velo_to_cam']
 
 def convert_calib_mat(vid,cal_val):
-    assert vid in cal_set, 'Wrong parsing occurred: {}'.format(vid)
-    if vid == cal_set[0]: # P2
+    assert vid in _SET_CALIB, 'Wrong parsing occurred: {}'.format(vid)
+    if vid == _SET_CALIB[0]: # P2
         return cal_val.reshape((3,4))
-    elif vid == cal_set[1]: # R0_rect
+    elif vid == _SET_CALIB[1]: # R0_rect
         cal_mat = np.zeros((4,4))
         cal_mat[:3,:3] = cal_val.reshape((3,3))
         cal_mat[3,3] = 1
@@ -54,7 +54,7 @@ def convert_calib_mat(vid,cal_val):
 # Read & Save calibration matrix
 def get_calib_mat(f_calib):
     dict_calib = {}
-    with open(f_calib,'r'):
+    with open(f_calib,'r') as input_file:
         for line in input_file:
             if len(line) > 1:
                 vid,vals = line.split(':',1)
@@ -93,9 +93,9 @@ def project_velo_to_img(dict_calib,points,im_height,im_width):
 
 # Product of quaternions
 def qprod(q_a,q_b):
-    assert np.shape(q_a) == 4,\
+    assert np.shape(q_a) == (4,),\
             "Size of q_a should be 4"
-    assert np.shape(q_b) == 4,\
+    assert np.shape(q_b) == (4,),\
             "Size of q_b should be 4"
     
     out = np.zeros(np.shape(q_a))
@@ -106,12 +106,12 @@ def qprod(q_a,q_b):
 # Dual quaternion to 4x4 homogenous transform matrix
 # q = q_r + 0.5eps q_t q_r
 def dualquat_to_transmat(q_r,q_t):
-    assert np.shape(q_r) == 4,\
+    assert np.shape(q_r) == (4,),\
             "Size of q_r should be 4"
-    assert np.shape(q_t) == 4,\
+    assert np.shape(q_t) == (4,),\
             "Size of q_t should be 4"
-    assert np.linalg.norm(q_r) == 1,\
-            "q_r must be normalized. (||q_r|| = 1)"
+    # assert np.linalg.norm(q_r) == 1,\
+    #         "q_r must be normalized. (||q_r|| = 1)"
     assert q_t[0] == 0,\
             "real part of q_t must be 1"
 
@@ -170,7 +170,59 @@ def gen_decalib(max_theta, max_dist):
 
     return param_decalib
 
+# Fuctions from TF-Slim dataset_utils
+def int64_feature(values):
+    """Returns a TF-Feature of int64s.
+    Args:
+        values: A scalar or list of values.
+    Returns:
+        a TF-Feature.
+    """
+    if isinstance(values,np.ndarray):
+        values = list(values)
+    elif not isinstance(values, (tuple, list)):
+        values = [values]
+    return tf.train.Feature(int64_list=tf.train.Int64List(value=values))
+
+def float_feature(values):
+    """Returns a TF-Feature of floats.
+    Args:
+        values: A scalar or list of values.
+    Returns:
+        a TF-Feature.
+    """
+    if isinstance(values,np.ndarray):
+        values = list(values)
+    elif not isinstance(values, (tuple, list)):
+        values = [values]
+    return tf.train.Feature(float_list=tf.train.FloatList(value=values))
+
+
+def bytes_feature(values):
+    """Returns a TF-Feature of bytes.
+    Args:
+        values: A string.
+    Returns:
+        a TF-Feature.
+    """
+    return tf.train.Feature(bytes_list=tf.train.BytesList(value=[values]))
+
+def calib_to_tfexample(image_data, image_format, height, width, y_true):
+    return tf.train.Example(features=tf.train.Features(feature={
+            'image/encoded': bytes_feature(image_data),
+            'image/format': bytes_feature(image_format),
+            'image/height': int64_feature(height),
+            'image/width': int64_feature(width),
+            'image/y_calib': float_feature(y_true)
+            }))
+
+def write_tfrecord(f_data,tfrecord_writer):
+    return 0
+
 def main(args):
+    if not args.is_cpu:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gid
+
     max_theta = args.max_theta
     max_dist = args.max_dist
 
@@ -187,50 +239,72 @@ def main(args):
     path_img = os.path.join(path_kitti,_TASK,_DIR_IMAGE)
 
     for image_set in ['training','testing']:
+        f_tfrec = os.path.join(path_out,
+                               'kitti_calib_{}.tfrecord'.format(image_set.split('ing')[0]))
+
         imList = glob.glob(os.path.join(path_cal,image_set,_TYPE_CALIB,'*'+_FORMAT_CALIB))
         imList.sort()
         imNames = [os.path.split(d)[1].strip('.txt') for d in imList]
 
         num_data = len(imNames)*_NUM_GEN # Number of data to be gerated
 
-        for iter, imName in enumearate(imNames):
-            # Get original calibration info
-            f_calib = os.path.join(path_cal,image_set,_TYPE_CALIB,imName+_FORMAT_CALIB)
-            temp_dict = get_calib_mat(f_calib)
+        with tf.python_io.TFRecordWriter(f_tfrec) as tfrecord_writer:
+            with tf.Graph().as_default():
+                with tf.Session('') as sess:
+                    for iter, imName in enumerate(imNames):
+                        # Get original calibration info
+                        f_calib = os.path.join(path_cal,image_set,_TYPE_CALIB,imName+_FORMAT_CALIB)
+                        temp_dict = get_calib_mat(f_calib)
 
-            # Read velodyne points
-            f_velo = os.path.join(path_velo,image_set,_TYPE_VELO,imName+_FORMAT_VELO)
-            points_org = np.fromfile(f_velo,dtype=np.float32).reshape(-1,4)
-            points = points_org[:,:3] # exclude points reflectance
+                        # Read velodyne points
+                        f_velo = os.path.join(path_velo,image_set,_TYPE_VELO,imName+_FORMAT_VELO)
+                        points_org = np.fromfile(f_velo,dtype=np.float32).reshape(-1,4)
+                        points = points_org[:,:3] # exclude points reflectance
 
-            # Read image file
-            f_img = os.path.join(path_img,image_set,_TYPE_IMAGE,imName+_FORMAT_IMAGE)
-            im = cv2.imread(f_img)
-            im = im[:,:,(2,1,0)] # BGR to RGB
-            im_height,im_width = np.shape(im)[0:2]
-
-            # Project velodyne points to image plane
-            points2D, pointsDist = project_velo_to_img(temp_dict,
-                                                       points,
-                                                       im_height,
-                                                       im_width)
-
-            # ------- Generate random ratation for decalibration data --------
-            # Generate random rotation
-            for i_ran in xrange(_NUM_GEN):
-                param_decalib = gen_decalib(max_theta, max_dist)
-                ran_dict = temp_dict.copy()
-                ran_dict[_SET_CALIB[2]] = dualquat_to_transmat(param_decalib['q_r'],
-                                                               param_decalib['q_t'])
-            
-                points2D_ran, pointsDist_ran = project_velo_to_img(ran_dict,
+                        # Read image file
+                        f_img = os.path.join(path_img,image_set,_TYPE_IMAGE,imName+_FORMAT_IMAGE)
+                        im = cv2.imread(f_img)
+                        im = im[:,:,(2,1,0)] # BGR to RGB
+                        im_height,im_width = np.shape(im)[0:2]
+        
+                        # Project velodyne points to image plane
+                        points2D, pointsDist = project_velo_to_img(temp_dict,
                                                                    points,
                                                                    im_height,
                                                                    im_width)
-            # Save y_true (7 parameters 4 from q_r, 3 from q_t)
-            # Save corresponding velodyne points, images
-            # Save H_init, H_gt
-            # Must save all info as Tensorflow format
+
+                        # ------- Generate random ratation for decalibration data --------
+                        # Generate random rotation
+                        for i_ran in xrange(_NUM_GEN):
+                            param_decalib = gen_decalib(max_theta, max_dist)
+                            ran_dict = temp_dict.copy()
+                            ran_dict[_SET_CALIB[2]] = dualquat_to_transmat(param_decalib['q_r'],
+                                                                           param_decalib['q_t'])
+                    
+                            points2D_ran, pointsDist_ran = project_velo_to_img(ran_dict,
+                                                                               points,
+                                                                               im_height,
+                                                                               im_width)
+
+                            image_placeholder = tf.placeholder(dtype=tf.uint8)
+                            encoded_image = tf.image.encode_png(image_placeholder)
+
+                            sys.stdout.write('... Writing file to TfRecord {}/{}\n'.format(
+                                                    _NUM_GEN*iter+i_ran+1,num_data))
+                            sys.stdout.flush()
+
+                            png_string = sess.run(encoded_image,
+                                                  feed_dict={image_placeholder:im})
+                            example = calib_to_tfexample(png_string,
+                                                         b'png',
+                                                         im_height,
+                                                         im_width,
+                                                         param_decalib['y'])
+                            tfrecord_writer.write(example.SerializeToString())
+
+                            # Save corresponding velodyne points
+                            # Save H_init, H_gt, param_calib (for rotation angle)
+                            # Must save all info as Tensorflow format
 
 
 def parse_args():
@@ -239,16 +313,22 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description=
                         'Dataset conversion to TF format')
+    parser.add_argument('-gid', dest='gid',
+                        help='CUDA_VISIBLE_DEVICES (Check your machine ID and ex) 0,1',
+                        default = '0', type = str)
+    parser.add_argument('-is_cpu', dest='is_cpu',
+                        help='Use CPU only. True/False',
+                        default = False, type = str2bool)
     parser.add_argument('-dir_in', dest='path_kitti',
                         help='Path to kitti dataset',
                         default = '/data/kitti', type = str)
     parser.add_argument('-dir_out', dest='path_out',
                         help='Path to save tfrecord kitti dataset',
                         default = '/data/tf/kitti_calib', type = str)
-    parser.add_argument('-max_theta', dest=max_theta,
+    parser.add_argument('-max_theta', dest='max_theta',
                         help='Range of rotation angle in degree [-theta,+theta)',
                         default = 10, type=float)
-    parser.add_argument('-max_dist', dest=max_dist,
+    parser.add_argument('-max_dist', dest='max_dist',
                         help='Maximum translation distance in meter',
                         default = 1.5, type=float)
     args = parser.parse_args()
@@ -257,6 +337,6 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    print "Called with args:"
-    print args
+    print ("Called with args:")
+    print (args)
     sys.exit(main(args))
