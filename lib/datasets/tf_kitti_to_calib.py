@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-05 01:41:41
+# @Last Modified time: 2017-07-05 02:48:23
 
 from __future__ import absolute_import
 from __future__ import division
@@ -92,6 +92,7 @@ def project_velo_to_img(dict_calib,points,im_height,im_width):
     return points2D_fin, pointsDist_fin
 
 # distance value (m) to uint8 pixel value
+# !!!!!!!!!!!!!!! Need to be updated
 def dist_to_pixel(val_dist, mode='raw'):
     if mode == 'raw':
         return np.round(val_dist).astype('uint8')
@@ -304,7 +305,7 @@ def main(args):
                                                                                im_height,
                                                                                im_width)
                             im_depth = points_to_img(points2D_ran,
-                                                     pointsDist_ran
+                                                     pointsDist_ran,
                                                      im_height,
                                                      im_width)
 
@@ -320,7 +321,8 @@ def main(args):
                             png_string = sess.run(encoded_image,
                                                   feed_dict={im_placeholder:im})
                             png_string_depth = sess.run(encoded_image_depth,
-                                                  feed_dict={im_depth_placeholder:im_depth})
+                                                  feed_dict={im_depth_placeholder:im_depth.\
+                                                                reshape(im_height,im_width,1)})
                             example = calib_to_tfexample(png_string,
                                                          png_string_depth,
                                                          b'png',
