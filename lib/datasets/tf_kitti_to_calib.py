@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-05 02:48:23
+# @Last Modified time: 2017-07-05 13:03:47
 
 from __future__ import absolute_import
 from __future__ import division
@@ -91,15 +91,24 @@ def project_velo_to_img(dict_calib,points,im_height,im_width):
 
     return points2D_fin, pointsDist_fin
 
-# distance value (m) to uint8 pixel value
-# !!!!!!!!!!!!!!! Need to be updated
-def dist_to_pixel(val_dist, mode='raw'):
-    if mode == 'raw':
-        return np.round(val_dist).astype('uint8')
+def dist_to_pixel(val_dist, mode='inverse', d_max=100, d_min =1):
+    """ Returns pixel value from distance measurment
+    Args:
+        val_dist: distance value (m)
+        mode: 'inverse' vs 'standard'
+        d_max: maximum distance to consider
+        d_min: minimum distance to consider
+    Returns:
+        pixel value in 'uint8' format
+    """
+    val_dist = d_max if val_dist>d_max else val_dist if val_dist>d_min else d_min
+    if mode == 'standard':
+        return np.round(val_dist*255.0/d_max).astype('uint8')
     elif mode == 'inverse':
-        return np.round(val_dist).astype('uint8')
+        return np.round(255.0/val_dist).astype('uint8')
     else:
-        return np.round(val_dist).astype('uint8')
+        # Default is inverse
+        return np.round(255.0/val_dist).astype('uint8')
 
 def points_to_img(points2D,pointsDist,im_height,im_width):
     im_depth = np.zeros((im_height,im_width),dtype=np.uint8)
@@ -224,15 +233,17 @@ def bytes_feature(values):
     """
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[values]))
 
-def calib_to_tfexample(im_data, im_data_depth, im_format, height, width, y_true, rot):
+def calib_to_tfexample(im_data, im_data_depth, im_format, height, width,
+                       y_true, rot, a_vec):
     return tf.train.Example(features=tf.train.Features(feature={
             'image/encoded': bytes_feature(im_data),
-            'velo/encoded': bytes_feature(im_data_depth),
             'image/format': bytes_feature(im_format),
             'image/height': int64_feature(height),
             'image/width': int64_feature(width),
+            'velo/encoded': bytes_feature(im_data_depth),
             'param/y_calib': float_feature(y_true),
-            'param/rot_angle': float_feature(rot)
+            'param/rot_angle': float_feature(rot),
+            'param/a_vec': float_feature(a_vec)
             }))
 
 def write_tfrecord(f_data,tfrecord_writer):
@@ -329,7 +340,9 @@ def main(args):
                                                          im_height,
                                                          im_width,
                                                          param_decalib['y'],
-                                                         param_decalib['rot'])
+                                                         param_decalib['rot'],
+                                                         param_decalib['a_vec']
+                                                         )
                             tfrecord_writer.write(example.SerializeToString())
 
                             # Save H_init, H_gt, 
