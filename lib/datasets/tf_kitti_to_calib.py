@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-05 13:03:47
+# @Last Modified time: 2017-07-05 13:16:25
 
 from __future__ import absolute_import
 from __future__ import division
@@ -270,7 +270,8 @@ def main(args):
 
     for image_set in ['training','testing']:
         f_tfrec = os.path.join(path_out,
-                               'kitti_calib_{}.tfrecord'.format(image_set.split('ing')[0]))
+                               'kitti_calib_{:2d}_{:.1f}_{}.tfrecord'.format(
+                                        max_theta,max_dist,image_set.split('ing')[0]))
 
         imList = glob.glob(os.path.join(path_cal,image_set,_TYPE_CALIB,'*'+_FORMAT_CALIB))
         imList.sort()
@@ -369,7 +370,7 @@ def parse_args():
                         default = '/data/tf/kitti_calib', type = str)
     parser.add_argument('-max_theta', dest='max_theta',
                         help='Range of rotation angle in degree [-theta,+theta)',
-                        default = 10, type=float)
+                        default = 20, type=int)
     parser.add_argument('-max_dist', dest='max_dist',
                         help='Maximum translation distance in meter',
                         default = 1.5, type=float)
