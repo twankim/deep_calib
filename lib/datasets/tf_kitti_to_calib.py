@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-04 02:01:34
+# @Last Modified time: 2017-07-05 01:41:41
 
 from __future__ import absolute_import
 from __future__ import division
@@ -90,6 +90,22 @@ def project_velo_to_img(dict_calib,points,im_height,im_width):
     pointsDist_fin = pointsDist[idx_in]
 
     return points2D_fin, pointsDist_fin
+
+# distance value (m) to uint8 pixel value
+def dist_to_pixel(val_dist, mode='raw'):
+    if mode == 'raw':
+        return np.round(val_dist).astype('uint8')
+    elif mode == 'inverse':
+        return np.round(val_dist).astype('uint8')
+    else:
+        return np.round(val_dist).astype('uint8')
+
+def points_to_img(points2D,pointsDist,im_height,im_width):
+    im_depth = np.zeros((im_height,im_width),dtype=np.uint8)
+    for i in xrange(np.shape(points2D)[0]):
+        x,y = np.round(points2D[i,:]).astype('int')
+        im_depth[y,x] = dist_to_pixel(pointsDist[i])
+    return im_depth
 
 # Product of quaternions
 def qprod(q_a,q_b):
@@ -207,13 +223,15 @@ def bytes_feature(values):
     """
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[values]))
 
-def calib_to_tfexample(image_data, image_format, height, width, y_true):
+def calib_to_tfexample(im_data, im_data_depth, im_format, height, width, y_true, rot):
     return tf.train.Example(features=tf.train.Features(feature={
-            'image/encoded': bytes_feature(image_data),
-            'image/format': bytes_feature(image_format),
+            'image/encoded': bytes_feature(im_data),
+            'velo/encoded': bytes_feature(im_data_depth),
+            'image/format': bytes_feature(im_format),
             'image/height': int64_feature(height),
             'image/width': int64_feature(width),
-            'image/y_calib': float_feature(y_true)
+            'param/y_calib': float_feature(y_true),
+            'param/rot_angle': float_feature(rot)
             }))
 
 def write_tfrecord(f_data,tfrecord_writer):
@@ -285,25 +303,34 @@ def main(args):
                                                                                points,
                                                                                im_height,
                                                                                im_width)
+                            im_depth = points_to_img(points2D_ran,
+                                                     pointsDist_ran
+                                                     im_height,
+                                                     im_width)
 
-                            image_placeholder = tf.placeholder(dtype=tf.uint8)
-                            encoded_image = tf.image.encode_png(image_placeholder)
+                            im_placeholder = tf.placeholder(dtype=tf.uint8)
+                            im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
+                            encoded_image = tf.image.encode_png(im_placeholder)
+                            encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
-                            sys.stdout.write('... Writing file to TfRecord {}/{}\n'.format(
-                                                    _NUM_GEN*iter+i_ran+1,num_data))
+                            sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
+                                                    image_set,_NUM_GEN*iter+i_ran+1,num_data))
                             sys.stdout.flush()
 
                             png_string = sess.run(encoded_image,
-                                                  feed_dict={image_placeholder:im})
+                                                  feed_dict={im_placeholder:im})
+                            png_string_depth = sess.run(encoded_image_depth,
+                                                  feed_dict={im_depth_placeholder:im_depth})
                             example = calib_to_tfexample(png_string,
+                                                         png_string_depth,
                                                          b'png',
                                                          im_height,
                                                          im_width,
-                                                         param_decalib['y'])
+                                                         param_decalib['y'],
+                                                         param_decalib['rot'])
                             tfrecord_writer.write(example.SerializeToString())
 
-                            # Save corresponding velodyne points
-                            # Save H_init, H_gt, param_calib (for rotation angle)
+                            # Save H_init, H_gt, 
                             # Must save all info as Tensorflow format
 
 
