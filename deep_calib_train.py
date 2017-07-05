@@ -2,7 +2,10 @@
 # @Author: twankim
 # @Date:   2017-06-21 11:55:51
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-06-23 00:21:03
+# @Last Modified time: 2017-07-05 15:10:27
+
+import _init_paths
+from datasets.config import cfg
 
 from __future__ import absolute_import
 from __future__ import division
@@ -19,8 +22,12 @@ import tensorflow.contrib.slim as slim
 def main(args):
     if not args.is_cpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gid
-
-    with tf.Session() as sess:
+    path_tf = args.path_tf
+    f_train = args.f_train
+    path_train = os.path.join(path_tf,f_train+'.tfrecord')
+    path_cp = os.path.join(path_tf,f_train)
+    if not os.path.exists(path_cp):
+        os.makedirs(path_cp)
         
 
 
@@ -36,6 +43,13 @@ def parse_args():
     parser.add_argument('-is_cpu', dest='is_cpu',
                         help='Use CPU only. True/False',
                         default = False, type = str2bool)
+    parser.add_argument('-data', dest='path_tf',
+                        help='Path to kitti TfRecord',
+                        default = '/data/tf/kitti_calib',
+                        type = str)
+    parser.add_argument('-f_train', dest='f_train',
+                        help='Name of TfRecord/Checkpoint (excluding .tfrecord)',
+                        default = 'kitti_calib_20_1.5_train', type = str)
     args = parser.parse_args()
     return args
 
