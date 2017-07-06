@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-21 11:55:51
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-06 10:28:31
+# @Last Modified time: 2017-07-06 10:57:01
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,9 +30,7 @@ def main(args):
     if not os.path.exists(path_cp):
         os.makedirs(path_cp)
 
-
-        
-
+    tf.logging.set_verbosity(tf.logging.INFO)
 
 def parse_args():
     def str2bool(v):
