@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-21 11:55:51
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-05 15:10:27
+# @Last Modified time: 2017-07-06 10:22:48
 
 import _init_paths
 from datasets.config import cfg
@@ -24,10 +24,13 @@ def main(args):
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gid
     path_tf = args.path_tf
     f_train = args.f_train
+    
     path_train = os.path.join(path_tf,f_train+'.tfrecord')
-    path_cp = os.path.join(path_tf,f_train)
+    path_cp = os.path.join(path_tf,f_train,'checkpoints')
     if not os.path.exists(path_cp):
         os.makedirs(path_cp)
+
+
         
 
 
