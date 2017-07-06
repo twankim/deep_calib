@@ -2,10 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-21 11:55:51
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-06 10:22:48
-
-import _init_paths
-from datasets.config import cfg
+# @Last Modified time: 2017-07-06 10:28:31
 
 from __future__ import absolute_import
 from __future__ import division
@@ -14,10 +11,13 @@ from __future__ import print_function
 import argparse
 import sys
 import os
-
 import numpy as np
+
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
+
+import _init_paths
+from datasets.config import cfg
 
 def main(args):
     if not args.is_cpu:

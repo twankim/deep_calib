@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-05 14:04:36
+# @Last Modified time: 2017-07-06 10:28:43
 
 from __future__ import absolute_import
 from __future__ import division
@@ -13,13 +13,17 @@ import sys
 import os
 import glob
 import cv2
-
 import numpy as np
+
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from config import cfg
-from dataset_kitti import get_calib_mat, project_velo_to_img, points_to_img, dualquat_to_transmat
+import _init_paths
+from datasets.config import cfg
+from datasets.dataset_kitti import (get_calib_mat,
+                                    project_velo_to_img,
+                                    points_to_img,
+                                    dualquat_to_transmat)
 
 # theta (degree) (randomly generate unit vector for axis, and rotate theta)
 # dist (m) for (x,y,z)
