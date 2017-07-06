@@ -5,7 +5,10 @@ Calibration of sensors using deep learning
 ```
 python tf_kitti_to_calib.py -gid {gpu IDs} -dir_in {Path to KITTI DATASET} -dir_out {Path to save tfrecord files}
 ```
-
+ex)
+```
+python tf_kitti_to_calib.py -gid 0 -dir_in data/kitti -dir_out /data/tf/kitti_calib
+```
 #### Path to KITTI DATASET must have Object Detection data in following format (calib, image_2, velodyne)
 ```
 {KITTI_PATH}/object/data_object_calib
