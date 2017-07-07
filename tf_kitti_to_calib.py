@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-06 10:28:43
+# @Last Modified time: 2017-07-06 14:04:46
 
 from __future__ import absolute_import
 from __future__ import division
@@ -134,8 +134,11 @@ def main(args):
 
     for image_set in ['training','testing']:
         f_tfrec = os.path.join(path_out,
-                               'kitti_calib_{:2d}_{:.1f}_{}.tfrecord'.format(
-                                        max_theta,max_dist,image_set.split('ing')[0]))
+                               cfg._TF_FORMAT.format(
+                                        'kitti',
+                                        max_theta,
+                                        max_dist,
+                                        image_set.split('ing')[0]))
 
         imList = glob.glob(os.path.join(path_cal,image_set,cfg._TYPE_CALIB,'*'+cfg._FORMAT_CALIB))
         imList.sort()

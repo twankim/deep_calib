@@ -2,10 +2,19 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-05 13:53:53
+# @Last Modified time: 2017-07-07 14:36:22
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+import os
 import numpy as np
-from config import cfg
+
+import tensorflow as tf
+import tensorflow.contrib.slim as slim
+
+from datasets.config import cfg
 
 def convert_calib_mat(vid,cal_val):
     assert vid in cfg._SET_CALIB, 'Wrong parsing occurred: {}'.format(vid)
@@ -131,3 +140,17 @@ def dualquat_to_transmat(q_r,q_t):
     # q_t = 2*qprod(q_d,q_rc)
     Rt[:3,3] = q_t[1:]
     return Rt
+
+# def get_split(split_set,dir_data,file_pattern=None,reader=None):
+
+#     if reader is None:
+#         reader = tf.TFRecordReader
+
+
+
+#     return slim.dataset.Dataset(
+#             data_sources=,
+#             reader=reader,
+#             decoder=decoder,
+#             num_samples=,
+#             items_to_descriptions=)
