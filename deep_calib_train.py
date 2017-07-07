@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-21 11:55:51
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-06 14:49:06
+# @Last Modified time: 2017-07-07 16:57:21
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,16 +25,21 @@ def main(args):
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gid
     f_train = args.f_train
     d_name = args.name
+    
+    # Path to directory saving tfrecord files
     path_tf = os.path.join(args.path_tf,'{}_calib'.format(d_name))
     
-    path_train = os.path.join(path_tf,f_train+'.tfrecord')
+    # Path of tf record file
+    path_data = os.path.join(path_tf,f_train)
+    
+    # Path to save checpoint files
     path_cp = os.path.join(path_tf,f_train,'checkpoints')
     if not os.path.exists(path_cp):
         os.makedirs(path_cp)
 
     tf.logging.set_verbosity(tf.logging.INFO)
     with tf.Graph().as_default():
-        dataset = factory.get_dataset(d_name,'train', path_train)
+        dataset = factory.get_dataset(d_name,path_data,'train')
 
 def parse_args():
     def str2bool(v):

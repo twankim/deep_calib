@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-07 14:36:22
+# @Last Modified time: 2017-07-07 17:41:50
 
 from __future__ import absolute_import
 from __future__ import division
@@ -16,8 +16,16 @@ import tensorflow.contrib.slim as slim
 
 from datasets.config import cfg
 
+_NAME_DATA = 'kitti'
+
+_NUM_TRAIN = 7481
+_NUM_TEST = 7518
+
+_NUM_SAMPLES = {'train': _NUM_TRAIN*cfg._NUM_GEN,
+                'test': _NUM_TEST*cfg._NUM_GEN}
+
 def convert_calib_mat(vid,cal_val):
-    assert vid in cfg._SET_CALIB, 'Wrong parsing occurred: {}'.format(vid)
+    assert vid in cfg._SET_CALIB, '!! Wrong parsing occurred: {}'.format(vid)
     if vid == cfg._SET_CALIB[0]: # P2
         return cal_val.reshape((3,4))
     elif vid == cfg._SET_CALIB[1]: # R0_rect
@@ -100,9 +108,9 @@ def points_to_img(points2D,pointsDist,im_height,im_width):
 # Product of quaternions
 def qprod(q_a,q_b):
     assert np.shape(q_a) == (4,),\
-            "Size of q_a should be 4"
+            "!! Size of q_a should be 4"
     assert np.shape(q_b) == (4,),\
-            "Size of q_b should be 4"
+            "!! Size of q_b should be 4"
     
     out = np.zeros(np.shape(q_a))
     out[0] = q_a[0]*q_b[0] - np.dot(q_a[1:],q_b[1:])
@@ -113,13 +121,13 @@ def qprod(q_a,q_b):
 # q = q_r + 0.5eps q_t q_r
 def dualquat_to_transmat(q_r,q_t):
     assert np.shape(q_r) == (4,),\
-            "Size of q_r should be 4"
+            "!! Size of q_r should be 4"
     assert np.shape(q_t) == (4,),\
-            "Size of q_t should be 4"
+            "!! Size of q_t should be 4"
     # assert np.linalg.norm(q_r) == 1,\
     #         "q_r must be normalized. (||q_r|| = 1)"
     assert q_t[0] == 0,\
-            "real part of q_t must be 1"
+            "!! Real part of q_t must be 1"
 
     Rt = np.zeros((4,4))
     Rt[3,3] = 1
@@ -141,16 +149,22 @@ def dualquat_to_transmat(q_r,q_t):
     Rt[:3,3] = q_t[1:]
     return Rt
 
-# def get_split(split_set,dir_data,file_pattern=None,reader=None):
+def get_data(path_data,image_set,reader=None):
+    assert image_set in _NUM_SAMPLES,\
+            "!! {} data is not supported".format(image_set)
+    if reader is None:
+        reader = tf.TFRecordReader
 
-#     if reader is None:
-#         reader = tf.TFRecordReader
+    keys_to_features = {}
 
+    items_to_handlers = {}
 
+    decoder = slim.tfexample_decoder.TFExampleDecoder(
+                    keys_to_features, items_to_handlers)
 
-#     return slim.dataset.Dataset(
-#             data_sources=,
-#             reader=reader,
-#             decoder=decoder,
-#             num_samples=,
-#             items_to_descriptions=)
+    return slim.dataset.Dataset(
+            data_sources=path_data,
+            reader=reader,
+            decoder=decoder,
+            num_samples=_NUM_SAMPLES[image_set],
+            items_to_descriptions=None)

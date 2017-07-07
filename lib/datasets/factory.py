@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-06 11:00:57
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-06 14:05:36
+# @Last Modified time: 2017-07-07 16:57:11
 
 from __future__ import absolute_import
 from __future__ import division
@@ -13,6 +13,7 @@ dict_data = {
     'kitti': kitti
 }
 
-def get_dataset(name, split_set, dir_data, file_pattern=None, reader=None):
-    assert name in dict_data, "! Dataset {} is not supported".format(name)
-    return dict_data[name].get_split(split_set,dir_data,file_pattern,reader)
+def get_dataset(name, path_data, image_set, reader=None):
+    assert name in dict_data,\
+                "! Dataset {} is not supported".format(name)
+    return dict_data[name].get_data(path_data,image_set)
