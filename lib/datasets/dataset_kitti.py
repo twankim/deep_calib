@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-07 17:41:50
+# @Last Modified time: 2017-07-07 21:20:01
 
 from __future__ import absolute_import
 from __future__ import division
@@ -155,7 +155,16 @@ def get_data(path_data,image_set,reader=None):
     if reader is None:
         reader = tf.TFRecordReader
 
-    keys_to_features = {}
+    keys_to_features = {
+        'image/encoded': tf.VarLenFeature((), tf.string, default_value=''),
+        'image/format': tf.FixedLenFeature((), tf.string, default_value='raw'),
+        'image/height': int64_feature(height),
+        'image/width': int64_feature(width),
+        'lidar/encoded': bytes_feature(im_data_depth),
+        'param/y_calib': float_feature(y_true),
+        'param/rot_angle': float_feature(rot),
+        'param/a_vec': float_feature(a_vec)
+    }
 
     items_to_handlers = {}
 
