@@ -1,6 +1,10 @@
 # deep_calib
 Calibration of sensors using deep learning
 
+Structure of the code is motivated from [TensorFlow-Slim image classification library](https://github.com/tensorflow/models/tree/master/slim) and [Caffe](http://caffe.berkeleyvision.org/)
+
+Some library functions use [TensorFlow-Slim image classification library](https://github.com/tensorflow/models/tree/master/slim) with and without modification.
+
 ## Generate KITTI Dataset for calibration in TfRecord Format
 ```
 python tf_kitti_to_calib.py -gid {gpu IDs} -dir_in {Path to KITTI DATASET} -dir_out {Path to save tfrecord files}
