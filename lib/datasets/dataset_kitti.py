@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-07 21:20:01
+# @Last Modified time: 2017-07-10 14:38:24
 
 from __future__ import absolute_import
 from __future__ import division
@@ -158,18 +158,29 @@ def get_data(path_data,image_set,reader=None):
     keys_to_features = {
         'image/encoded': tf.VarLenFeature((), tf.string, default_value=''),
         'image/format': tf.FixedLenFeature((), tf.string, default_value='raw'),
-        'image/height': int64_feature(height),
-        'image/width': int64_feature(width),
-        'lidar/encoded': bytes_feature(im_data_depth),
-        'param/y_calib': float_feature(y_true),
-        'param/rot_angle': float_feature(rot),
-        'param/a_vec': float_feature(a_vec)
+        'lidar/encoded': tf.VarLenFeature((), tf.string, default_value=''),
+        'param/y_calib': tf.FixedLenFeature(
+            [7], tf.float64, default_value=tf.zeros([7], dtype=tf.float64)),
+        'param/rot_angle': tf.FixedLenFeature(
+            [1], tf.float64, default_value=tf.zeros([1], dtype=tf.float64)),
+        'param/a_vec': tf.FixedLenFeature(
+            [3], tf.float64, default_value=tf.zeros([3], dtype=tf.float64))
     }
 
-    items_to_handlers = {}
+    items_to_handlers = {
+        'image': slim.tfexample_decoder.Image(image_key='image/encoded',
+                                              format_key='image/format',
+                                              channels=3),
+        'lidar': slim.tfexample_decoder.Image(image_key='lidar/encoded',
+                                              format_key='image/format',
+                                              channels=1),
+        'y': slim.tfexample_decoder.Tensor('param/y_calib'),
+        'theta': slim.tfexample_decoder.Tensor('param/rot_angle'),
+        'a_vec': slim.tfexample_decoder.Tensor('param/a_vec')
+    }
 
-    decoder = slim.tfexample_decoder.TFExampleDecoder(
-                    keys_to_features, items_to_handlers)
+    decoder = slim.tfexample_decoder.TFEXampleDecoder(
+                            keys_to_features,items_to_handlers)
 
     return slim.dataset.Dataset(
             data_sources=path_data,
