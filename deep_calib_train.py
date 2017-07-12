@@ -16,7 +16,6 @@
 """Generic training script that trains a model using a given dataset."""
 # Modified for deep learning based calibration code
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -28,7 +27,7 @@ import tensorflow.contrib.
 
 from datasets import factory_data
 from deployment import model_deploy
-from nets import nets_factory
+from nets import factory_nets
 from preprocessing import preprocessing_factory
 
 slim = tf.contrib.slim
@@ -411,7 +410,7 @@ def main(_):
     ######################
     # Select the network # (!!!!!!NEED TO BE MODIFIED)
     ######################
-    network_fn = nets_factory.get_network_fn(
+    network_fn = factory_nets.get_network_fn(
             FLAGS.model_name,
             num_classes=(dataset.num_classes - FLAGS.labels_offset),
             weight_decay=FLAGS.weight_decay,
