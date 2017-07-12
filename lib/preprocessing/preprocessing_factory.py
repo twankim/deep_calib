@@ -1,4 +1,5 @@
 # Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+# Modifications copyright (C) 2017 UT Austin/Taewan Kim
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 """Contains a factory for building various models."""
+# Modified to fit the structure
 
 from __future__ import absolute_import
 from __future__ import division

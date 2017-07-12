@@ -1,4 +1,5 @@
 # Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+# Modifications copyright (C) 2017 UT Austin/Taewan Kim
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +14,19 @@
 # limitations under the License.
 # ==============================================================================
 """Generic training script that trains a model using a given dataset."""
+# Modified for deep learning based calibration code
+
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
+import os
 
-from datasets import dataset_factory
+import tensorflow as tf
+import tensorflow.contrib.
+
+from datasets import factory_data
 from deployment import model_deploy
 from nets import nets_factory
 from preprocessing import preprocessing_factory
@@ -31,7 +37,7 @@ tf.app.flags.DEFINE_string(
     'master', '', 'The address of the TensorFlow master to use.')
 
 tf.app.flags.DEFINE_string(
-    'train_dir', '/tmp/tfmodel/',
+    'train_dir', 'data/tf/kitti_calib',
     'Directory where checkpoints and event logs are written to.')
 
 tf.app.flags.DEFINE_integer('num_clones', 1,
@@ -163,7 +169,7 @@ tf.app.flags.DEFINE_float(
 #######################
 
 tf.app.flags.DEFINE_string(
-    'dataset_name', 'imagenet', 'The name of the dataset to load.')
+    'dataset_name', 'kitti', 'The name of the dataset to load.')
 
 tf.app.flags.DEFINE_string(
     'dataset_split_name', 'train', 'The name of the train/test split.')
@@ -397,53 +403,52 @@ def main(_):
       global_step = slim.create_global_step()
 
     ######################
-    # Select the dataset #
+    # Select the dataset # (Modified)
     ######################
-    dataset = dataset_factory.get_dataset(
-        FLAGS.dataset_name, FLAGS.dataset_split_name, FLAGS.dataset_dir)
+    dataset = factory_data.get_dataset(
+            dataset_name,FLAGS.dataset_dir,'train')
 
     ######################
-    # Select the network #
+    # Select the network # (!!!!!!NEED TO BE MODIFIED)
     ######################
     network_fn = nets_factory.get_network_fn(
-        FLAGS.model_name,
-        num_classes=(dataset.num_classes - FLAGS.labels_offset),
-        weight_decay=FLAGS.weight_decay,
-        is_training=True)
+            FLAGS.model_name,
+            num_classes=(dataset.num_classes - FLAGS.labels_offset),
+            weight_decay=FLAGS.weight_decay,
+            is_training=True)
 
     #####################################
     # Select the preprocessing function #
     #####################################
     preprocessing_name = FLAGS.preprocessing_name or FLAGS.model_name
     image_preprocessing_fn = preprocessing_factory.get_preprocessing(
-        preprocessing_name,
-        is_training=True)
+            preprocessing_name,
+            is_training=True)
 
     ##############################################################
     # Create a dataset provider that loads data from the dataset #
     ##############################################################
     with tf.device(deploy_config.inputs_device()):
       provider = slim.dataset_data_provider.DatasetDataProvider(
-          dataset,
-          num_readers=FLAGS.num_readers,
-          common_queue_capacity=20 * FLAGS.batch_size,
-          common_queue_min=10 * FLAGS.batch_size)
-      [image, label] = provider.get(['image', 'label'])
-      label -= FLAGS.labels_offset
+              dataset,
+              num_readers=FLAGS.num_readers,
+              common_queue_capacity=20 * FLAGS.batch_size,
+              common_queue_min=10 * FLAGS.batch_size)
+      [image,lidar,y_true] = provider.get(['image','lidar','y'])
+      y_true -= FLAGS.labels_offset
 
       train_image_size = FLAGS.train_image_size or network_fn.default_image_size
 
       image = image_preprocessing_fn(image, train_image_size, train_image_size)
+      lidar = image_preprocessing_fn(lidar, train_image_size, train_image_size)
 
-      images, labels = tf.train.batch(
-          [image, label],
-          batch_size=FLAGS.batch_size,
-          num_threads=FLAGS.num_preprocessing_threads,
-          capacity=5 * FLAGS.batch_size)
-      labels = slim.one_hot_encoding(
-          labels, dataset.num_classes - FLAGS.labels_offset)
+      images, lidars, y_trues = tf.train.batch(
+              [image,lidar,y_true],
+              batch_size=FLAGS.batch_size,
+              num_threads=FLAGS.num_preprocessing_threads,
+              capacity=5 * FLAGS.batch_size)
       batch_queue = slim.prefetch_queue.prefetch_queue(
-          [images, labels], capacity=2 * deploy_config.num_clones)
+              [images,lidars,y_trues], capacity=2 * deploy_config.num_clones)
 
     ####################
     # Define the model #
@@ -451,19 +456,16 @@ def main(_):
     def clone_fn(batch_queue):
       """Allows data parallelism by creating multiple clones of network_fn."""
       with tf.device(deploy_config.inputs_device()):
-        images, labels = batch_queue.dequeue()
-      logits, end_points = network_fn(images)
+        images, lidars, y_trues = batch_queue.dequeue()
+      y_preds, end_points = network_fn(images,lidars)
 
       #############################
       # Specify the loss function #
       #############################
-      if 'AuxLogits' in end_points:
-        tf.losses.softmax_cross_entropy(
-            logits=end_points['AuxLogits'], onehot_labels=labels,
-            label_smoothing=FLAGS.label_smoothing, weights=0.4, scope='aux_loss')
-      tf.losses.softmax_cross_entropy(
-          logits=logits, onehot_labels=labels,
-          label_smoothing=FLAGS.label_smoothing, weights=1.0)
+      tf.losses.mean_squared_error(
+              labels=y_trues,
+              predictions=y_preds,
+              weights=1.0)
       return end_points
 
     # Gather initial summaries.
