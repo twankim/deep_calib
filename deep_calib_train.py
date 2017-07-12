@@ -23,14 +23,13 @@ from __future__ import print_function
 import os
 
 import tensorflow as tf
-import tensorflow.contrib.
+import tensorflow.contrib.slim as slim
 
+import _init_paths
 from datasets import factory_data
 from deployment import model_deploy
 from nets import factory_nets
 from preprocessing import preprocessing_factory
-
-slim = tf.contrib.slim
 
 tf.app.flags.DEFINE_string(
     'master', '', 'The address of the TensorFlow master to use.')
@@ -176,14 +175,8 @@ tf.app.flags.DEFINE_string(
 tf.app.flags.DEFINE_string(
     'dataset_dir', None, 'The directory where the dataset files are stored.')
 
-tf.app.flags.DEFINE_integer(
-    'labels_offset', 0,
-    'An offset for the labels in the dataset. This flag is primarily used to '
-    'evaluate the VGG and ResNet architectures which do not use a background '
-    'class for the ImageNet dataset.')
-
 tf.app.flags.DEFINE_string(
-    'model_name', 'inception_v3', 'The name of the architecture to train.')
+    'model_name', 'vgg_16', 'The name of the architecture to train.')
 
 tf.app.flags.DEFINE_string(
     'preprocessing_name', None, 'The name of the preprocessing to use. If left '
@@ -405,14 +398,13 @@ def main(_):
     # Select the dataset # (Modified)
     ######################
     dataset = factory_data.get_dataset(
-            dataset_name,FLAGS.dataset_dir,'train')
+            FLAGS.dataset_name,FLAGS.dataset_dir,'train')
 
     ######################
     # Select the network # (!!!!!!NEED TO BE MODIFIED)
     ######################
     network_fn = factory_nets.get_network_fn(
             FLAGS.model_name,
-            num_classes=(dataset.num_classes - FLAGS.labels_offset),
             weight_decay=FLAGS.weight_decay,
             is_training=True)
 
@@ -434,7 +426,6 @@ def main(_):
               common_queue_capacity=20 * FLAGS.batch_size,
               common_queue_min=10 * FLAGS.batch_size)
       [image,lidar,y_true] = provider.get(['image','lidar','y'])
-      y_true -= FLAGS.labels_offset
 
       train_image_size = FLAGS.train_image_size or network_fn.default_image_size
 

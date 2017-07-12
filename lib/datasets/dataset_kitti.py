@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-10 14:38:24
+# @Last Modified time: 2017-07-12 14:10:19
 
 from __future__ import absolute_import
 from __future__ import division
@@ -156,15 +156,18 @@ def get_data(path_data,image_set,reader=None):
         reader = tf.TFRecordReader
 
     keys_to_features = {
-        'image/encoded': tf.VarLenFeature((), tf.string, default_value=''),
-        'image/format': tf.FixedLenFeature((), tf.string, default_value='raw'),
-        'lidar/encoded': tf.VarLenFeature((), tf.string, default_value=''),
+        'image/encoded': tf.FixedLenFeature(
+            (), tf.string, default_value=''),
+        'image/format': tf.FixedLenFeature(
+            (), tf.string, default_value='raw'),
+        'lidar/encoded': tf.FixedLenFeature(
+            (), tf.string, default_value=''),
         'param/y_calib': tf.FixedLenFeature(
-            [7], tf.float64, default_value=tf.zeros([7], dtype=tf.float64)),
+            [7], tf.float32, default_value=tf.zeros([7], dtype=tf.float32)),
         'param/rot_angle': tf.FixedLenFeature(
-            [1], tf.float64, default_value=tf.zeros([1], dtype=tf.float64)),
+            [1], tf.float32, default_value=tf.zeros([1], dtype=tf.float32)),
         'param/a_vec': tf.FixedLenFeature(
-            [3], tf.float64, default_value=tf.zeros([3], dtype=tf.float64))
+            [3], tf.float32, default_value=tf.zeros([3], dtype=tf.float32))
     }
 
     items_to_handlers = {
@@ -179,7 +182,7 @@ def get_data(path_data,image_set,reader=None):
         'a_vec': slim.tfexample_decoder.Tensor('param/a_vec')
     }
 
-    decoder = slim.tfexample_decoder.TFEXampleDecoder(
+    decoder = slim.tfexample_decoder.TFExampleDecoder(
                             keys_to_features,items_to_handlers)
 
     return slim.dataset.Dataset(

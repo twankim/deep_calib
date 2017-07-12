@@ -23,15 +23,10 @@ from __future__ import print_function
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-# from preprocessing import cifarnet_preprocessing
-# from preprocessing import inception_preprocessing
-# from preprocessing import lenet_preprocessing
-# from preprocessing import vgg_preprocessing
-
-import cifarnet_preprocessing
-import inception_preprocessing
-import lenet_preprocessing
-import vgg_preprocessing
+from preprocessing import cifarnet_preprocessing
+from preprocessing import inception_preprocessing
+from preprocessing import lenet_preprocessing
+from preprocessing import vgg_preprocessing
 
 def get_preprocessing(name, is_training=False):
   """Returns preprocessing_fn(image, height, width, **kwargs).
