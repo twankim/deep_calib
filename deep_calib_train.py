@@ -446,7 +446,7 @@ def main(_):
               num_threads=FLAGS.num_preprocessing_threads,
               capacity=5 * FLAGS.batch_size)
       batch_queue = slim.prefetch_queue.prefetch_queue(
-              [images,lidars,y_trues], capacity=2 * deploy_config.num_clones)
+              [images,lidars,y_trues], capacity=3 * deploy_config.num_clones)
 
     ####################
     # Define the model #
