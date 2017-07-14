@@ -87,8 +87,8 @@ arg_scopes_map = {'vgg_a': vgg.vgg_arg_scope,
 #                  }
 
 
-def get_network_fn(name, weight_decay=0.0, is_training=False):
-  """Returns a network_fn such as `logits, end_points = network_fn(images)`.
+def get_network_fn(name, num_preds, weight_decay=0.0, is_training=False):
+  """Returns a network_fn such as `y_preds, end_points = network_fn(images)`.
 
   Args:
     name: The name of the network.
@@ -100,7 +100,7 @@ def get_network_fn(name, weight_decay=0.0, is_training=False):
   Returns:
     network_fn: A function that applies the model to a batch of images. It has
       the following signature:
-        logits, end_points = network_fn(images)
+        y_preds, end_points = network_fn(images)
   Raises:
     ValueError: If network `name` is not recognized.
   """
@@ -109,9 +109,9 @@ def get_network_fn(name, weight_decay=0.0, is_training=False):
   arg_scope = arg_scopes_map[name](weight_decay=weight_decay)
   func = networks_map[name]
   @functools.wraps(func)
-  def network_fn(images):
+  def network_fn(images,lidars):
     with slim.arg_scope(arg_scope):
-      return func(images, is_training=is_training)
+      return func(images,lidars, num_preds, is_training=is_training)
   if hasattr(func, 'default_image_size'):
     network_fn.default_image_size = func.default_image_size
 

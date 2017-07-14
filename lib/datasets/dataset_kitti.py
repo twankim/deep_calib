@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-12 14:10:19
+# @Last Modified time: 2017-07-14 03:22:14
 
 from __future__ import absolute_import
 from __future__ import division
@@ -17,6 +17,8 @@ import tensorflow.contrib.slim as slim
 from datasets.config import cfg
 
 _NAME_DATA = 'kitti'
+
+_NUM_PREDS = 7
 
 _NUM_TRAIN = 7481
 _NUM_TEST = 7518
@@ -190,4 +192,5 @@ def get_data(path_data,image_set,reader=None):
             reader=reader,
             decoder=decoder,
             num_samples=_NUM_SAMPLES[image_set],
+            num_preds=_NUM_PREDS,
             items_to_descriptions=None)

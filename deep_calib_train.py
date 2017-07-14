@@ -176,7 +176,7 @@ tf.app.flags.DEFINE_string(
     'dataset_dir', None, 'The directory where the dataset files are stored.')
 
 tf.app.flags.DEFINE_string(
-    'model_name', 'vgg_16', 'The name of the architecture to train.')
+    'model_name', 'vgg_a', 'The name of the architecture to train.')
 
 tf.app.flags.DEFINE_string(
     'preprocessing_name', None, 'The name of the preprocessing to use. If left '
@@ -401,10 +401,11 @@ def main(_):
             FLAGS.dataset_name,FLAGS.dataset_dir,'train')
 
     ######################
-    # Select the network # (!!!!!!NEED TO BE MODIFIED)
+    # Select the network #
     ######################
     network_fn = factory_nets.get_network_fn(
             FLAGS.model_name,
+            num_preds=dataset.num_preds,
             weight_decay=FLAGS.weight_decay,
             is_training=True)
 
