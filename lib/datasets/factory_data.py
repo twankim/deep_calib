@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-06 11:00:57
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-12 13:40:55
+# @Last Modified time: 2017-07-14 14:28:20
 
 from __future__ import absolute_import
 from __future__ import division
@@ -14,7 +14,7 @@ dict_data = {
     'kitti': kitti
 }
 
-def get_dataset(name, path_data, image_set, reader=None):
+def get_dataset(name, path_data, image_set, list_param=[], reader=None):
     assert name in dict_data,\
                 "! Dataset {} is not supported".format(name)
-    return dict_data[name].get_data(path_data,image_set)
+    return dict_data[name].get_data(path_data,image_set,list_param)

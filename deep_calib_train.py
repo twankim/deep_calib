@@ -176,6 +176,10 @@ tf.app.flags.DEFINE_string(
     'dataset_dir', None, 'The directory where the dataset files are stored.')
 
 tf.app.flags.DEFINE_string(
+    'list_param', '20,1.5',
+    'List of parameters for the file name of train/test data. max_rotation,max_translation')
+
+tf.app.flags.DEFINE_string(
     'model_name', 'vgg_a', 'The name of the architecture to train.')
 
 tf.app.flags.DEFINE_string(
@@ -398,7 +402,10 @@ def main(_):
     # Select the dataset # (Modified)
     ######################
     dataset = factory_data.get_dataset(
-            FLAGS.dataset_name,FLAGS.dataset_dir,'train')
+            FLAGS.dataset_name,
+            FLAGS.dataset_dir,
+            'train',
+            FLAGS.list_param.split(','))
 
     ######################
     # Select the network #

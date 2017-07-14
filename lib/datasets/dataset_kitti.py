@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-14 03:22:14
+# @Last Modified time: 2017-07-14 14:59:49
 
 from __future__ import absolute_import
 from __future__ import division
@@ -151,11 +151,19 @@ def dualquat_to_transmat(q_r,q_t):
     Rt[:3,3] = q_t[1:]
     return Rt
 
-def get_data(path_data,image_set,reader=None):
+def get_data(path_data,image_set,list_param=[],reader=None):
     assert image_set in _NUM_SAMPLES,\
             "!! {} data is not supported".format(image_set)
     if reader is None:
         reader = tf.TFRecordReader
+
+    list_param[0] = int(list_param[0])
+    list_param[1] = float(list_param[1])
+    list_param.insert(0,_NAME_DATA)
+    list_param.append(image_set)
+    path_file = os.path.join(path_data,
+                             cfg._TF_FORMAT.format(*list_param)
+                            )
 
     keys_to_features = {
         'image/encoded': tf.FixedLenFeature(
@@ -188,7 +196,7 @@ def get_data(path_data,image_set,reader=None):
                             keys_to_features,items_to_handlers)
 
     return slim.dataset.Dataset(
-            data_sources=path_data,
+            data_sources=path_file,
             reader=reader,
             decoder=decoder,
             num_samples=_NUM_SAMPLES[image_set],
