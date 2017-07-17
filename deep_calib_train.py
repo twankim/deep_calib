@@ -437,8 +437,13 @@ def main(_):
 
       train_image_size = FLAGS.train_image_size or network_fn.default_image_size
 
-      image = image_preprocessing_fn(image, train_image_size, train_image_size)
-      lidar = image_preprocessing_fn(lidar, train_image_size, train_image_size)
+      image = image_preprocessing_fn(image,
+                                     train_image_size,
+                                     train_image_size)
+      lidar = image_preprocessing_fn(lidar,
+                                     train_image_size,
+                                     train_image_size,
+                                     channels=1)
 
       images, lidars, y_trues = tf.train.batch(
               [image,lidar,y_true],
@@ -557,7 +562,7 @@ def main(_):
     ###########################
     slim.learning.train(
         train_tensor,
-        logdir=FLAGS.train_dir,
+        logdir=os.path.join(FLAGS.train_dir,FLAGS.model_name),
         master=FLAGS.master,
         is_chief=(FLAGS.task == 0),
         init_fn=_get_init_fn(),
