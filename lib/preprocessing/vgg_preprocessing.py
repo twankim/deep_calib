@@ -29,7 +29,7 @@ More information can be obtained from the VGG website:
 www.robots.ox.ac.uk/~vgg/research/very_deep/
 """
 # Modified for deep calibration application
-# Added B/W Setting
+# Support different types of channels (i.e. B/W channels=1)
 
 from __future__ import absolute_import
 from __future__ import division
@@ -43,13 +43,13 @@ _R_MEAN = 123.68
 _G_MEAN = 116.78
 _B_MEAN = 103.94
 
-_BW_MEAN = (_R_MEAN+_G_MEAN+_B_MEAN)/3.0 # Default value for channel mean
+_BW_MEAN = (_R_MEAN+_G_MEAN+_B_MEAN)/3.0
 
 _RESIZE_SIDE_MIN = 256
 _RESIZE_SIDE_MAX = 512
 
 
-def _crop(image, offset_height, offset_width, crop_height, crop_width):
+def _crop(image, offset_height, offset_width, crop_height, crop_width, channels=3):
   """Crops the given image using the provided offsets and sizes.
 
   Note that the method doesn't assume we know the input image size but it does
@@ -92,7 +92,7 @@ def _crop(image, offset_height, offset_width, crop_height, crop_width):
   return tf.reshape(image, cropped_shape)
 
 
-def _random_crop(image_list, crop_height, crop_width):
+def _random_crop(image_list, crop_height, crop_width, channels=3):
   """Crops the given list of images.
 
   The function applies the same crop to each image in the list. This can be
@@ -172,10 +172,10 @@ def _random_crop(image_list, crop_height, crop_width):
       [], maxval=max_offset_width, dtype=tf.int32)
 
   return [_crop(image, offset_height, offset_width,
-                crop_height, crop_width) for image in image_list]
+                crop_height, crop_width, channels) for image in image_list]
 
 
-def _central_crop(image_list, crop_height, crop_width):
+def _central_crop(image_list, crop_height, crop_width, channels=3):
   """Performs central crops of the given image list.
 
   Args:
@@ -196,7 +196,7 @@ def _central_crop(image_list, crop_height, crop_width):
     offset_width = (image_width - crop_width) / 2
 
     outputs.append(_crop(image, offset_height, offset_width,
-                         crop_height, crop_width))
+                         crop_height, crop_width, channels))
   return outputs
 
 
@@ -263,7 +263,7 @@ def _smallest_size_at_least(height, width, smallest_side):
   return new_height, new_width
 
 
-def _aspect_preserving_resize(image, smallest_side):
+def _aspect_preserving_resize(image, smallest_side, channels=3):
   """Resize images preserving the original aspect ratio.
 
   Args:
@@ -284,7 +284,7 @@ def _aspect_preserving_resize(image, smallest_side):
   resized_image = tf.image.resize_bilinear(image, [new_height, new_width],
                                            align_corners=False)
   resized_image = tf.squeeze(resized_image)
-  resized_image.set_shape([None, None, 3])
+  resized_image.set_shape([None, None, channels])
   return resized_image
 
 
@@ -314,17 +314,15 @@ def preprocess_for_train(image,
   resize_side = tf.random_uniform(
       [], minval=resize_side_min, maxval=resize_side_max+1, dtype=tf.int32)
 
-  image = _aspect_preserving_resize(image, resize_side)
-  image = _random_crop([image], output_height, output_width)[0]
+  image = _aspect_preserving_resize(image, resize_side, channels)
+  image = _random_crop([image], output_height, output_width, channels)[0]
   image.set_shape([output_height, output_width, channels])
   image = tf.to_float(image)
   image = tf.image.random_flip_left_right(image)
-  if channels==3:
+  if channels == 3:
     return _mean_image_subtraction(image, [_R_MEAN, _G_MEAN, _B_MEAN])
-  elif channels ==1:
-    return _mean_image_subtraction(image,[_BW_MEAN])
   else:
-    return _mean_image_subtraction(image,[_BW_MEAN]*channels)
+    return _mean_image_subtraction(image, [_BW_MEAN]*channels)
 
 
 def preprocess_for_eval(image,
@@ -343,16 +341,15 @@ def preprocess_for_eval(image,
   Returns:
     A preprocessed image.
   """
-  image = _aspect_preserving_resize(image, resize_side)
-  image = _central_crop([image], output_height, output_width)[0]
+  image = _aspect_preserving_resize(image, resize_side, channels)
+  image = _central_crop([image], output_height, output_width, channels)[0]
   image.set_shape([output_height, output_width, channels])
   image = tf.to_float(image)
-  if channels==3:
+  if channels == 3:
     return _mean_image_subtraction(image, [_R_MEAN, _G_MEAN, _B_MEAN])
-  elif channels ==1:
-    return _mean_image_subtraction(image,[_BW_MEAN])
   else:
-    return _mean_image_subtraction(image,[_BW_MEAN]*channels)
+    return _mean_image_subtraction(image, [_BW_MEAN]*channels)
+
 
 def preprocess_image(image, output_height, output_width, is_training=False,
                      resize_side_min=_RESIZE_SIDE_MIN,
@@ -382,4 +379,4 @@ def preprocess_image(image, output_height, output_width, is_training=False,
                                 resize_side_min, resize_side_max, channels)
   else:
     return preprocess_for_eval(image, output_height, output_width,
-                               resize_side_min, channels)
+                               resize_side_min,channels)

@@ -52,7 +52,7 @@ tf.app.flags.DEFINE_integer(
     'are handled locally by the worker.')
 
 tf.app.flags.DEFINE_integer(
-    'num_readers', 4,
+    'num_readers', 6,
     'The number of parallel readers that read data from the dataset.')
 
 tf.app.flags.DEFINE_integer(
@@ -423,6 +423,9 @@ def main(_):
     image_preprocessing_fn = preprocessing_factory.get_preprocessing(
             preprocessing_name,
             is_training=True)
+    lidar_preprocessing_fn = preprocessing_factory.get_preprocessing(
+            preprocessing_name,
+            is_training=True)
 
     ##############################################################
     # Create a dataset provider that loads data from the dataset #
@@ -437,13 +440,8 @@ def main(_):
 
       train_image_size = FLAGS.train_image_size or network_fn.default_image_size
 
-      image = image_preprocessing_fn(image,
-                                     train_image_size,
-                                     train_image_size)
-      lidar = image_preprocessing_fn(lidar,
-                                     train_image_size,
-                                     train_image_size,
-                                     channels=1)
+      image = image_preprocessing_fn(image,train_image_size,train_image_size)
+      lidar = lidar_preprocessing_fn(lidar,train_image_size,train_image_size,channels=1)
 
       images, lidars, y_trues = tf.train.batch(
               [image,lidar,y_true],
@@ -451,7 +449,7 @@ def main(_):
               num_threads=FLAGS.num_preprocessing_threads,
               capacity=5*FLAGS.batch_size)
       batch_queue = slim.prefetch_queue.prefetch_queue(
-              [images,lidars,y_trues], capacity=2*deploy_config.num_clones)
+              [images,lidars,y_trues], capacity=3*deploy_config.num_clones)
 
     ####################
     # Define the model #

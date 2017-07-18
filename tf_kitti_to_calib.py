@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-07 21:19:00
+# @Last Modified time: 2017-07-17 21:14:04
 
 from __future__ import absolute_import
 from __future__ import division
@@ -84,6 +84,9 @@ def main(args):
                                                                    im_height,
                                                                    im_width)
 
+                        im_depth_ho = points_to_img(points2D,pointsDist,im_height,im_width)
+                        cv2.imwrite('ho.png',im_depth_ho)
+
                         # ------- Generate random ratation for decalibration data --------
                         # Generate random rotation
                         for i_ran in xrange(cfg._NUM_GEN):
@@ -100,6 +103,8 @@ def main(args):
                                                      pointsDist_ran,
                                                      im_height,
                                                      im_width)
+
+                            cv2.imwrite('ho_{}.png'.format(i_ran),im_depth)
 
                             im_placeholder = tf.placeholder(dtype=tf.uint8)
                             im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
