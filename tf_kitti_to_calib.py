@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-17 21:14:04
+# @Last Modified time: 2017-07-18 15:33:47
 
 from __future__ import absolute_import
 from __future__ import division
@@ -84,8 +84,10 @@ def main(args):
                                                                    im_height,
                                                                    im_width)
 
+                        # !!!!!!!!! TEMPORARY
                         im_depth_ho = points_to_img(points2D,pointsDist,im_height,im_width)
-                        cv2.imwrite('ho.png',im_depth_ho)
+                        # cv2.imwrite('ho.png',im_depth_ho)
+                        # !!!!!!!!! TEMPORARY
 
                         # ------- Generate random ratation for decalibration data --------
                         # Generate random rotation
@@ -104,7 +106,9 @@ def main(args):
                                                      im_height,
                                                      im_width)
 
+                            # !!!!!!!!! TEMPORARY
                             cv2.imwrite('ho_{}.png'.format(i_ran),im_depth)
+                            # !!!!!!!!! TEMPORARY
 
                             im_placeholder = tf.placeholder(dtype=tf.uint8)
                             im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
@@ -117,9 +121,16 @@ def main(args):
 
                             png_string = sess.run(encoded_image,
                                                   feed_dict={im_placeholder:im})
+                            # png_string_depth = sess.run(encoded_image_depth,
+                            #                       feed_dict={im_depth_placeholder:im_depth.\
+                            #                                     reshape(im_height,im_width,1)})
+
+                            # !!!!!!!!! TEMPORARY
                             png_string_depth = sess.run(encoded_image_depth,
-                                                  feed_dict={im_depth_placeholder:im_depth.\
-                                                                reshape(im_height,im_width,1)})
+                                                  feed_dict={im_depth_placeholder:np.repeat(im_depth_ho.\
+                                                                reshape(im_height,im_width,1),3,axis=2)})
+                            # !!!!!!!!! TEMPORARY
+
                             example = calib_to_tfexample(png_string,
                                                          png_string_depth,
                                                          b'png',

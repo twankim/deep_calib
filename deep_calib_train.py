@@ -441,7 +441,8 @@ def main(_):
       train_image_size = FLAGS.train_image_size or network_fn.default_image_size
 
       image = image_preprocessing_fn(image,train_image_size,train_image_size)
-      lidar = lidar_preprocessing_fn(lidar,train_image_size,train_image_size,channels=1)
+      # lidar = lidar_preprocessing_fn(lidar,train_image_size,train_image_size,channels=1)
+      lidar = lidar_preprocessing_fn(lidar,train_image_size,train_image_size)
 
       images, lidars, y_trues = tf.train.batch(
               [image,lidar,y_true],

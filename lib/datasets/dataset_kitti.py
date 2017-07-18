@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-17 00:12:57
+# @Last Modified time: 2017-07-18 15:28:07
 
 from __future__ import absolute_import
 from __future__ import division
@@ -197,7 +197,7 @@ def get_data(path_data,image_set,list_param=[],reader=None):
                                               channels=3),
         'lidar': slim.tfexample_decoder.Image(image_key='lidar/encoded',
                                               format_key='image/format',
-                                              channels=1),
+                                              channels=3),
         'y': slim.tfexample_decoder.Tensor('param/y_calib'),
         'theta': slim.tfexample_decoder.Tensor('param/rot_angle'),
         'a_vec': slim.tfexample_decoder.Tensor('param/a_vec')
