@@ -114,20 +114,20 @@ def vgg_a(images,
       # net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv5')
       # net = slim.max_pool2d(net, [2, 2], scope='pool5')
 
-      # # ConvNets for lidar
-      # net2 = slim.repeat(lidars, 1, slim.conv2d, 32, [3, 3], scope='conv1_lidar')
-      # net2 = slim.max_pool2d(net2, [2, 2], scope='pool1_lidar')
-      # net2 = slim.repeat(net2, 1, slim.conv2d, 64, [3, 3], scope='conv2_lidar')
-      # net2 = slim.max_pool2d(net2, [2, 2], scope='pool2_lidar')
-      # net2 = slim.repeat(net2, 2, slim.conv2d, 128, [3, 3], scope='conv3_lidar')
-      # net2 = slim.max_pool2d(net2, [2, 2], scope='pool3_lidar')
-      # # net2 = slim.repeat(net2, 2, slim.conv2d, 512, [3, 3], scope='conv4_lidar')
-      # # net2 = slim.max_pool2d(net2, [2, 2], scope='pool4_lidar')
-      # # net2 = slim.repeat(net2, 2, slim.conv2d, 512, [3, 3], scope='conv5_lidar')
-      # # net2 = slim.max_pool2d(net2, [2, 2], scope='pool5_lidar')
+      # ConvNets for lidar
+      net2 = slim.repeat(lidars, 1, slim.conv2d, 32, [3, 3], scope='conv1_lidar')
+      net2 = slim.max_pool2d(net2, [2, 2], scope='pool1_lidar')
+      net2 = slim.repeat(net2, 1, slim.conv2d, 64, [3, 3], scope='conv2_lidar')
+      net2 = slim.max_pool2d(net2, [2, 2], scope='pool2_lidar')
+      net2 = slim.repeat(net2, 2, slim.conv2d, 128, [3, 3], scope='conv3_lidar')
+      net2 = slim.max_pool2d(net2, [2, 2], scope='pool3_lidar')
+      # net2 = slim.repeat(net2, 2, slim.conv2d, 512, [3, 3], scope='conv4_lidar')
+      # net2 = slim.max_pool2d(net2, [2, 2], scope='pool4_lidar')
+      # net2 = slim.repeat(net2, 2, slim.conv2d, 512, [3, 3], scope='conv5_lidar')
+      # net2 = slim.max_pool2d(net2, [2, 2], scope='pool5_lidar')
 
-      # # Concat two channels
-      # net = tf.concat(values=[net,net2],axis=3)
+      # Concat two channels
+      net = tf.concat(values=[net,net2],axis=3)
 
       # Remaining ConvNets for Feature Matching
       net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv4')
