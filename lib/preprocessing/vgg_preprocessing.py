@@ -30,6 +30,7 @@ www.robots.ox.ac.uk/~vgg/research/very_deep/
 """
 # Modified for deep calibration application
 # Support different types of channels (i.e. B/W channels=1)
+# tf.squeeze function was modified to support images with 1-dim channel
 
 from __future__ import absolute_import
 from __future__ import division
@@ -283,7 +284,7 @@ def _aspect_preserving_resize(image, smallest_side, channels=3):
   image = tf.expand_dims(image, 0)
   resized_image = tf.image.resize_bilinear(image, [new_height, new_width],
                                            align_corners=False)
-  resized_image = tf.squeeze(resized_image)
+  resized_image = tf.squeeze(resized_image, [0])
   resized_image.set_shape([None, None, channels])
   return resized_image
 
