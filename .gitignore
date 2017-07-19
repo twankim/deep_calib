@@ -1,6 +1,7 @@
 # Folders
 checkpoints/
 data_ex/
+pretrained/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
