@@ -19,3 +19,11 @@ python tf_kitti_to_calib.py -gid 0 -dir_in data/kitti -dir_out /data/tf/kitti_ca
 {KITTI_PATH}/object/data_object_image_2
 {KITTI_PATH}/object/data_object_velodyne
 ```
+## Train using KITTI dataset.
+First, you need to locate pretrained checkpoint file for each model.
+We assumed that the files are located at the folder '''pretrained'''
+
+ex) VGG_16
+'''
+CUDA_VISIBLE_DEVICES=1 ./scripts/train_vgg_16_gpu.sh
+'''
