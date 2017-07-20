@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-20 14:22:55
+# @Last Modified time: 2017-07-20 17:01:34
 
 from __future__ import absolute_import
 from __future__ import division
@@ -84,18 +84,20 @@ def main(args):
                                                                    im_height,
                                                                    im_width)
 
-                        # !!!!!!!!! TEMPORARY
-                        im_depth_ho = points_to_img(points2D,pointsDist,im_height,im_width)
-                        cv2.imwrite('data_ex/ho.png',im_depth_ho)
-                        # !!!!!!!!! TEMPORARY
+                        # !!!! For debugging
+                        # im_depth_ho = points_to_img(points2D,pointsDist,im_height,im_width)
+                        # cv2.imwrite('data_ex/ho_{}.png'.format(image_set),im_depth_ho)
 
                         # ------- Generate random ratation for decalibration data --------
                         # Generate random rotation
                         for i_ran in xrange(cfg._NUM_GEN):
                             param_decalib = gen_decalib(max_theta, max_dist)
+                            # Copy intrinsic parameters and rotation matrix for reference cam
                             ran_dict = temp_dict.copy()
-                            ran_dict[cfg._SET_CALIB[2]] = dualquat_to_transmat(param_decalib['q_r'],
-                                                                           param_decalib['q_t'])
+                            # Replace extrinsic parameters to decalibrated ones
+                            ran_dict[cfg._SET_CALIB[2]] = np.dot(
+                                        ran_dict[cfg._SET_CALIB[2]],
+                                        quat_to_transmat(param_decalib['q_r'],param_decalib['t_vec']))
                     
                             points2D_ran, pointsDist_ran = project_lidar_to_img(ran_dict,
                                                                                points,
@@ -106,39 +108,37 @@ def main(args):
                                                      im_height,
                                                      im_width)
 
-                            # !!!!!!!!! TEMPORARY
-                            cv2.imwrite('data_ex/ho_{}_{}.png'.format(image_set,i_ran),im_depth)
-                            print('  - Angle:{}, nonzero:{}'.format(
-                                                    param_decalib['rot'],
-                                                    sum(sum(im_depth>0)))
-                                                    )
-                            # !!!!!!!!! TEMPORARY
+                            # !!!! For debugging
+                            # cv2.imwrite('data_ex/ho_{}_{}.png'.format(image_set,i_ran),im_depth)
+                            # print('  - Angle:{}, nonzero:{}'.format(
+                            #                         param_decalib['rot'],
+                            #                         sum(sum(im_depth>0)))                                                    )
 
-                            # im_placeholder = tf.placeholder(dtype=tf.uint8)
-                            # im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
-                            # encoded_image = tf.image.encode_png(im_placeholder)
-                            # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
+                            im_placeholder = tf.placeholder(dtype=tf.uint8)
+                            im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
+                            encoded_image = tf.image.encode_png(im_placeholder)
+                            encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
-                            # sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
-                            #                         image_set,cfg._NUM_GEN*iter+i_ran+1,num_data))
-                            # sys.stdout.flush()
+                            sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
+                                                    image_set,cfg._NUM_GEN*iter+i_ran+1,num_data))
+                            sys.stdout.flush()
 
-                            # png_string = sess.run(encoded_image,
-                            #                       feed_dict={im_placeholder:im})
-                            # png_string_depth = sess.run(encoded_image_depth,
-                            #                       feed_dict={im_depth_placeholder:im_depth.\
-                            #                                     reshape(im_height,im_width,1)})
+                            png_string = sess.run(encoded_image,
+                                                  feed_dict={im_placeholder:im})
+                            png_string_depth = sess.run(encoded_image_depth,
+                                                  feed_dict={im_depth_placeholder:im_depth.\
+                                                                reshape(im_height,im_width,1)})
 
-                            # example = calib_to_tfexample(png_string,
-                            #                              png_string_depth,
-                            #                              b'png',
-                            #                              im_height,
-                            #                              im_width,
-                            #                              param_decalib['y'],
-                            #                              param_decalib['rot'],
-                            #                              param_decalib['a_vec']
-                            #                              )
-                            # tfrecord_writer.write(example.SerializeToString())
+                            example = calib_to_tfexample(png_string,
+                                                         png_string_depth,
+                                                         b'png',
+                                                         im_height,
+                                                         im_width,
+                                                         param_decalib['y'],
+                                                         param_decalib['rot'],
+                                                         param_decalib['a_vec']
+                                                         )
+                            tfrecord_writer.write(example.SerializeToString())
 
 def parse_args():
     def str2bool(v):
