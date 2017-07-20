@@ -22,6 +22,7 @@ python tf_kitti_to_calib.py -gid 0 -dir_in data/kitti -dir_out /data/tf/kitti_ca
 ## Train using KITTI dataset.
 First, you need to locate pretrained checkpoint file for each model.
 We assumed that the files are located at the folder pretrained.
+Pretrained models can be downloaded from the TensorFlow-Slim image classification library's [Pretrained models](https://github.com/tensorflow/models/tree/master/slim#Pretrained)
 
 ex) VGG_16
 Files located at:
