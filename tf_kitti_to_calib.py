@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-20 14:21:01
+# @Last Modified time: 2017-07-20 14:22:55
 
 from __future__ import absolute_import
 from __future__ import division
@@ -86,7 +86,7 @@ def main(args):
 
                         # !!!!!!!!! TEMPORARY
                         im_depth_ho = points_to_img(points2D,pointsDist,im_height,im_width)
-                        cv2.imwrite('ho.png',im_depth_ho)
+                        cv2.imwrite('data_ex/ho.png',im_depth_ho)
                         # !!!!!!!!! TEMPORARY
 
                         # ------- Generate random ratation for decalibration data --------
@@ -107,7 +107,7 @@ def main(args):
                                                      im_width)
 
                             # !!!!!!!!! TEMPORARY
-                            cv2.imwrite('ho_{}_{}.png'.format(image_set,i_ran),im_depth)
+                            cv2.imwrite('data_ex/ho_{}_{}.png'.format(image_set,i_ran),im_depth)
                             print('  - Angle:{}, nonzero:{}'.format(
                                                     param_decalib['rot'],
                                                     sum(sum(im_depth>0)))
