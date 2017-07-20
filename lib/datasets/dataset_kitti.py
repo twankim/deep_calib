@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-18 22:52:20
+# @Last Modified time: 2017-07-20 14:20:40
 
 from __future__ import absolute_import
 from __future__ import division
@@ -61,7 +61,7 @@ def coord_transform(points, t_mat):
     t_points = t_points[:,:-1]/t_points[:,[-1]]
     return t_points
 
-def project_velo_to_img(dict_calib,points,im_height,im_width):
+def project_lidar_to_img(dict_calib,points,im_height,im_width):
     # Extract depth data first before projection to 2d image space
     trans_mat = np.dot(dict_calib[cfg._SET_CALIB[1]],dict_calib[cfg._SET_CALIB[2]])
     points3D = coord_transform(points,trans_mat)
@@ -106,50 +106,6 @@ def points_to_img(points2D,pointsDist,im_height,im_width):
         x,y = np.round(points2D[i,:]).astype('int')
         im_depth[y,x] = dist_to_pixel(pointsDist[i])
     return im_depth
-
-# Product of quaternions
-def qprod(q_a,q_b):
-    assert np.shape(q_a) == (4,),\
-            "!! Size of q_a should be 4"
-    assert np.shape(q_b) == (4,),\
-            "!! Size of q_b should be 4"
-    
-    out = np.zeros(np.shape(q_a))
-    out[0] = q_a[0]*q_b[0] - np.dot(q_a[1:],q_b[1:])
-    out[1:] = q_a[0]*q_b[1:] + q_b[0]*q_a[1:] + np.cross(q_a[1:],q_b[1:])
-    return out
-
-# Dual quaternion to 4x4 homogenous transform matrix
-# q = q_r + 0.5eps q_t q_r
-def dualquat_to_transmat(q_r,q_t):
-    assert np.shape(q_r) == (4,),\
-            "!! Size of q_r should be 4"
-    assert np.shape(q_t) == (4,),\
-            "!! Size of q_t should be 4"
-    # assert np.linalg.norm(q_r) == 1,\
-    #         "q_r must be normalized. (||q_r|| = 1)"
-    assert q_t[0] == 0,\
-            "!! Real part of q_t must be 1"
-
-    Rt = np.zeros((4,4))
-    Rt[3,3] = 1
-    w,x,y,z = q_r
-
-    Rt[0,0] = w**2 + x**2 - y**2 - z**2
-    Rt[0,1] = 2*x*y - 2*w*z
-    Rt[0,2] = 2*x*z + 2*w*y
-    Rt[1,0] = 2*x*y + 2*w*z
-    Rt[1,1] = w**2 - x**2 + y**2 - z**2
-    Rt[1,2] = 2*y*z - 2*w*x
-    Rt[2,0] = 2*x*z - 2*w*y
-    Rt[2,1] = 2*y*z + 2*w*x
-    Rt[2,2] = w**2 - x**2 - y**2 + z**2
-
-    # q_rc = q_r.copy()
-    # q_rc[1:] = -q_rc[1:]
-    # q_t = 2*qprod(q_d,q_rc)
-    Rt[:3,3] = q_t[1:]
-    return Rt
 
 def get_data(path_data,image_set,list_param=[],reader=None):
     """ Returns a dataset

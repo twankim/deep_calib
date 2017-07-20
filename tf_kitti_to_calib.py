@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-18 15:46:19
+# @Last Modified time: 2017-07-20 14:21:01
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,9 +21,9 @@ import tensorflow.contrib.slim as slim
 import _init_paths
 from datasets.config import cfg
 from datasets.dataset_kitti import (get_calib_mat,
-                                    project_velo_to_img,
-                                    points_to_img,
-                                    dualquat_to_transmat)
+                                    project_lidar_to_img,
+                                    points_to_img)
+                                    
 from datasets.utils_dataset import *
 
 def main(args):
@@ -79,14 +79,14 @@ def main(args):
                         im_height,im_width = np.shape(im)[0:2]
         
                         # Project velodyne points to image plane
-                        points2D, pointsDist = project_velo_to_img(temp_dict,
+                        points2D, pointsDist = project_lidar_to_img(temp_dict,
                                                                    points,
                                                                    im_height,
                                                                    im_width)
 
                         # !!!!!!!!! TEMPORARY
                         im_depth_ho = points_to_img(points2D,pointsDist,im_height,im_width)
-                        # cv2.imwrite('ho.png',im_depth_ho)
+                        cv2.imwrite('ho.png',im_depth_ho)
                         # !!!!!!!!! TEMPORARY
 
                         # ------- Generate random ratation for decalibration data --------
@@ -97,7 +97,7 @@ def main(args):
                             ran_dict[cfg._SET_CALIB[2]] = dualquat_to_transmat(param_decalib['q_r'],
                                                                            param_decalib['q_t'])
                     
-                            points2D_ran, pointsDist_ran = project_velo_to_img(ran_dict,
+                            points2D_ran, pointsDist_ran = project_lidar_to_img(ran_dict,
                                                                                points,
                                                                                im_height,
                                                                                im_width)
@@ -107,40 +107,38 @@ def main(args):
                                                      im_width)
 
                             # !!!!!!!!! TEMPORARY
-                            # cv2.imwrite('ho_{}.png'.format(i_ran),im_depth)
+                            cv2.imwrite('ho_{}_{}.png'.format(image_set,i_ran),im_depth)
+                            print('  - Angle:{}, nonzero:{}'.format(
+                                                    param_decalib['rot'],
+                                                    sum(sum(im_depth>0)))
+                                                    )
                             # !!!!!!!!! TEMPORARY
 
-                            im_placeholder = tf.placeholder(dtype=tf.uint8)
-                            im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
-                            encoded_image = tf.image.encode_png(im_placeholder)
-                            encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
+                            # im_placeholder = tf.placeholder(dtype=tf.uint8)
+                            # im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
+                            # encoded_image = tf.image.encode_png(im_placeholder)
+                            # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
-                            sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
-                                                    image_set,cfg._NUM_GEN*iter+i_ran+1,num_data))
-                            sys.stdout.flush()
+                            # sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
+                            #                         image_set,cfg._NUM_GEN*iter+i_ran+1,num_data))
+                            # sys.stdout.flush()
 
-                            png_string = sess.run(encoded_image,
-                                                  feed_dict={im_placeholder:im})
+                            # png_string = sess.run(encoded_image,
+                            #                       feed_dict={im_placeholder:im})
                             # png_string_depth = sess.run(encoded_image_depth,
                             #                       feed_dict={im_depth_placeholder:im_depth.\
                             #                                     reshape(im_height,im_width,1)})
 
-                            # !!!!!!!!! TEMPORARY
-                            png_string_depth = sess.run(encoded_image_depth,
-                                                  feed_dict={im_depth_placeholder:im_depth_ho.\
-                                                                reshape(im_height,im_width,1)})
-                            # !!!!!!!!! TEMPORARY
-
-                            example = calib_to_tfexample(png_string,
-                                                         png_string_depth,
-                                                         b'png',
-                                                         im_height,
-                                                         im_width,
-                                                         param_decalib['y'],
-                                                         param_decalib['rot'],
-                                                         param_decalib['a_vec']
-                                                         )
-                            tfrecord_writer.write(example.SerializeToString())
+                            # example = calib_to_tfexample(png_string,
+                            #                              png_string_depth,
+                            #                              b'png',
+                            #                              im_height,
+                            #                              im_width,
+                            #                              param_decalib['y'],
+                            #                              param_decalib['rot'],
+                            #                              param_decalib['a_vec']
+                            #                              )
+                            # tfrecord_writer.write(example.SerializeToString())
 
 def parse_args():
     def str2bool(v):
