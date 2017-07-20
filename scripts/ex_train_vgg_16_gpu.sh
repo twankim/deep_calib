@@ -3,7 +3,6 @@
 
 MODEL_NAME=vgg_16
 
-CUDA_VISIBLE_DEVICES=1 \
 python deep_calib_train.py \
     --dataset_dir=data_ex/tf/kitti_calib \
     --train_dir=checkpoints/kitti_calib \
