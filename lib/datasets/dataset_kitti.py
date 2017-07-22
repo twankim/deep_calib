@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-20 14:20:40
+# @Last Modified time: 2017-07-22 03:09:00
 
 from __future__ import absolute_import
 from __future__ import division
@@ -18,7 +18,9 @@ from datasets.config import cfg
 
 _NAME_DATA = 'kitti'
 
-_NUM_PREDS = 7
+_NUM_PREDS = {'num_preds':[4,3],
+              'is_normalize':[True,False]
+              }
 
 _NUM_TRAIN = 7481
 _NUM_TEST = 7518
