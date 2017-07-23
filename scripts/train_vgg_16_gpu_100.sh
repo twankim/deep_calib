@@ -5,7 +5,7 @@ MODEL_NAME=vgg_16
 
 python deep_calib_train.py \
     --dataset_dir=/data/tf/kitti_calib \
-    --train_dir=checkpoints/kitti_calib/weight100 \
+    --train_dir=checkpoints/kitti_calib/${MODEL_NAME}/weight100 \
     --max_number_of_steps=5000 \
     --list_param=20,1.5 \
     --weight_loss=100 \
