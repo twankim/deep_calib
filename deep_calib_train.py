@@ -180,7 +180,11 @@ tf.app.flags.DEFINE_string(
     'List of parameters for the file name of train/test data. max_rotation,max_translation')
 
 tf.app.flags.DEFINE_string(
-    'model_name', 'vgg_a', 'The name of the architecture to train.')
+    'weight_loss', '10',
+    'The weight to balance predictions. ex) multiplied to the rotation quaternion')
+
+tf.app.flags.DEFINE_string(
+    'model_name', 'vgg_16', 'The name of the architecture to train.')
 
 tf.app.flags.DEFINE_string(
     'preprocessing_name', None, 'The name of the preprocessing to use. If left '
@@ -468,10 +472,23 @@ def main(_):
       #############################
       # Specify the loss function #
       #############################
+      # tf.losses.mean_squared_error(
+      #         labels=y_trues,
+      #         predictions=y_preds,
+      #         weights=1.0)
+      weights_preds = np.ones(sum(dataset.num_preds['num_preds']),
+                              dtype=int)
+      i_reg_start = 0
+      for i_reg,is_normalize in enumerate(dataset.num_preds['is_normalize']):
+        num_preds = dataset.num_preds['num_preds'][i_reg]
+        if is_normalize:
+          weights_preds[i_reg_start:i_reg_start+num_preds] = FLAGS.weight_loss
+        i_reg_start += num_preds
+      print(weights_preds)
       tf.losses.mean_squared_error(
               labels=y_trues,
               predictions=y_preds,
-              weights=1.0)
+              weights=weights_preds)
       return end_points
 
     # Gather initial summaries.
