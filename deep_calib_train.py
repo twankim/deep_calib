@@ -181,7 +181,7 @@ tf.app.flags.DEFINE_string(
     'List of parameters for the file name of train/test data. max_rotation,max_translation')
 
 tf.app.flags.DEFINE_string(
-    'weight_loss', '10',
+    'weight_loss', None,
     'The weight to balance predictions. ex) multiplied to the rotation quaternion')
 
 tf.app.flags.DEFINE_string(
@@ -477,15 +477,17 @@ def main(_):
       #         labels=y_trues,
       #         predictions=y_preds,
       #         weights=1.0)
-      weights_preds = np.ones(sum(dataset.num_preds['num_preds']),
-                              dtype=int)
-      i_reg_start = 0
-      for i_reg,is_normalize in enumerate(dataset.num_preds['is_normalize']):
-        num_preds = dataset.num_preds['num_preds'][i_reg]
-        if is_normalize:
-          weights_preds[i_reg_start:i_reg_start+num_preds] = FLAGS.weight_loss
-        i_reg_start += num_preds
-      weights_preds = tf.constant(np.tile(weights_preds,(FLAGS.batch_size,1)))
+      if FLAGS.weight_loss is not None:
+        weights_preds = np.ones(sum(dataset.num_preds['num_preds']))
+        i_reg_start = 0
+        for i_reg,is_normalize in enumerate(dataset.num_preds['is_normalize']):
+          num_preds = dataset.num_preds['num_preds'][i_reg]
+          if is_normalize:
+            weights_preds[i_reg_start:i_reg_start+num_preds] = FLAGS.weight_loss
+          i_reg_start += num_preds
+        weights_preds = tf.constant(np.tile(weights_preds,(FLAGS.batch_size,1)))
+      else:
+        weights_preds = 1.0
       tf.losses.mean_squared_error(
               labels=y_trues,
               predictions=y_preds,

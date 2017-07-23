@@ -7,6 +7,7 @@ python deep_calib_train.py \
     --dataset_dir=data_ex/tf/kitti_calib \
     --train_dir=checkpoints/kitti_calib \
     --list_param=20,1.5 \
+    --weight_loss=10 \
     --clone_on_cpu=True \
     --model_name=${MODEL_NAME} \
     --checkpoint_path=pretrained/${MODEL_NAME}.ckpt \
