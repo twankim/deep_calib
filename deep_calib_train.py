@@ -485,7 +485,7 @@ def main(_):
         if is_normalize:
           weights_preds[i_reg_start:i_reg_start+num_preds] = FLAGS.weight_loss
         i_reg_start += num_preds
-      print(weights_preds)
+      weights_preds = tf.constant(np.tile(weights_preds,(FLAGS.batch_size,1)))
       tf.losses.mean_squared_error(
               labels=y_trues,
               predictions=y_preds,
