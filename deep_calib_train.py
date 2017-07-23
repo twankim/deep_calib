@@ -477,7 +477,7 @@ def main(_):
       #         labels=y_trues,
       #         predictions=y_preds,
       #         weights=1.0)
-      if FLAGS.weight_loss is not None:
+      if FLAGS.weight_loss:
         weights_preds = np.ones(sum(dataset.num_preds['num_preds']))
         i_reg_start = 0
         for i_reg,is_normalize in enumerate(dataset.num_preds['is_normalize']):
@@ -583,9 +583,13 @@ def main(_):
     ###########################
     # Kicks off the training. #
     ###########################
+    path_log = os.path.join(FLAGS.train_dir,
+                            FLAGS.model_name,
+                            'weight_{}'.format(
+                                  FLAGS.weight_loss if FLAGS.weight_loss else 1))
     slim.learning.train(
         train_tensor,
-        logdir=os.path.join(FLAGS.train_dir,FLAGS.model_name),
+        logdir=path_log,
         master=FLAGS.master,
         is_chief=(FLAGS.task == 0),
         init_fn=_get_init_fn(),
