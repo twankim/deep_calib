@@ -133,8 +133,13 @@ def main(_):
 
     test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
 
-    image = image_preprocessing_fn(image, test_image_size, test_image_size)
-    lidar = image_preprocessing_fn(lidar, test_image_size, test_image_size)
+    image = image_preprocessing_fn(image,
+                                   test_image_size,
+                                   test_image_size)
+    lidar = image_preprocessing_fn(lidar,
+                                   test_image_size,
+                                   test_image_size,
+                                   channels=1)
 
     images, lidars, y_trues = tf.train.batch(
         [image, lidar, y_true],
