@@ -7,7 +7,7 @@ WEIGHT_LOSS=1
 python deep_calib_train.py \
     --dataset_dir=/data/tf/kitti_calib \
     --train_dir=/data/tf/checkpoints/kitti_calib \
-    --max_number_of_steps=5000 \
+    --max_number_of_steps=50000 \
     --list_param=20,1.5 \
     --clone_on_cpu=False \
     --model_name=${MODEL_NAME} \
