@@ -36,8 +36,10 @@ tf.app.flags.DEFINE_string(
     'master', '', 'The address of the TensorFlow master to use.')
 
 tf.app.flags.DEFINE_string(
-    'train_dir', 'checkpoints/kitti_calib',
-    'Directory where checkpoints and event logs are written to.')
+    'train_dir', '/data/tf/checkpionts/kitti_calib',
+    'Directory where checkpoints and event logs are written to. '
+     'Additional paths will be added. '
+     'train_dir/model_name/weight_weight_loss')
 
 tf.app.flags.DEFINE_integer('num_clones', 1,
                             'Number of model clones to deploy.')
