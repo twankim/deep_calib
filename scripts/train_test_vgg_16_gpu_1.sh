@@ -3,7 +3,7 @@
 
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=None
-if [ $WEIGHT_LOSS -eq None]
+if [ $WEIGHT_LOSS -eq None ]
 then 
     WEIGHT_LOSS=1
 fi
