@@ -19,5 +19,6 @@ python deep_calib_train.py \
 python deep_calib_test.py \
     --dataset_dir=/data/tf/kitti_calib \
     --checkpoints_path=/data/tf/kitti_calib/checkpoints/${MODEL_NAME}/weight_${WEIGHT_LOSS} \
+    --list_param=20,1.5 \
     --model_name=${MODEL_NAME} \
     --weight_loss=${WEIGHT_LOSS}

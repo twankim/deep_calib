@@ -57,10 +57,11 @@ tf.app.flags.DEFINE_string(
     'dataset_name', 'kitti', 'The name of the dataset to load.')
 
 tf.app.flags.DEFINE_string(
-    'dataset_split_name', 'test', 'The name of the train/test split.')
+    'dataset_dir', None, 'The directory where the dataset files are stored.')
 
 tf.app.flags.DEFINE_string(
-    'dataset_dir', None, 'The directory where the dataset files are stored.')
+    'list_param', '20,1.5',
+    'List of parameters for the file name of train/test data. max_rotation,max_translation')
 
 tf.app.flags.DEFINE_string(
     'model_name', 'vgg_16', 'The name of the architecture to evaluate.')
@@ -96,7 +97,10 @@ def main(_):
     # Select the dataset #
     ######################
     dataset = factory_data.get_dataset(
-        FLAGS.dataset_name, FLAGS.dataset_split_name, FLAGS.dataset_dir)
+            FLAGS.dataset_name,
+            FLAGS.dataset_dir,
+            'test',
+            FLAGS.list_param.split(','))
 
     ####################
     # Select the model #
