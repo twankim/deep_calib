@@ -2,11 +2,7 @@
 #
 
 MODEL_NAME=vgg_16
-WEIGHT_LOSS=None
-if [ $WEIGHT_LOSS -eq None ]
-then 
-    WEIGHT_LOSS=1
-fi
+WEIGHT_LOSS=1
 
 python deep_calib_train.py \
     --dataset_dir=/data/tf/kitti_calib \
