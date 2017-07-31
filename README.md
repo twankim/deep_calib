@@ -33,3 +33,13 @@ Then you can run
 ```
 CUDA_VISIBLE_DEVICES=1 ./scripts/train_vgg_16_gpu.sh
 ```
+## Train & Test using KITTI dataset.
+You can run scripts based on weight between rotation and translation. We are printing both MSE of 7 parameters and weighted MSE of 7 parameters.
+
+ex) VGG_16, weight=10
+```
+CUDA_VISIBLE_DEVICES=1 ./scripts/train_test_vgg_16_gpu_10.sh
+```
+
+## Use trained model to save calibrated image and parameters.
+
