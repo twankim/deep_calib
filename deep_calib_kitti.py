@@ -26,6 +26,8 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import cv2
+import glob
 import math
 import numpy as np
 
@@ -33,7 +35,10 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
 import _init_paths
-from datasets import factory_data
+from datasets.dataset_kitti import (get_calib_mat,
+                                    project_lidar_to_img,
+                                    points_to_img)
+from datasets.utils_dataset import *
 from nets import factory_nets
 from preprocessing import preprocessing_factory
 
@@ -52,9 +57,6 @@ tf.app.flags.DEFINE_string(
     'The directory where the model was written to or an absolute path to a '
     'checkpoint file.')
 
-tf.app.flags.DEFINE_string(
-    'eval_dir', None, 'Directory where the results are saved to.')
-
 tf.app.flags.DEFINE_integer(
     'num_preprocessing_threads', 4,
     'The number of threads used to create the batches.')
@@ -63,7 +65,25 @@ tf.app.flags.DEFINE_string(
     'dataset_name', 'kitti', 'The name of the dataset to load.')
 
 tf.app.flags.DEFINE_string(
-    'dataset_dir', None, 'The directory where the dataset files are stored.')
+    'dir_image', None, 'The directory where the image files are stored.')
+
+tf.app.flags.DEFINE_string(
+    'dir_lidar', None, 'The directory where the lidar files are stored.')
+
+tf.app.flags.DEFINE_string(
+    'dir_calib', None, 'The directory where the calibration files are stored.')
+
+tf.app.flags.DEFINE_string(
+    'dir_out', None, 'The directory where the output files are stored.')
+
+tf.app.flags.DEFINE_string(
+    'format_image', 'png', 'The format of image. default=png')
+
+tf.app.flags.DEFINE_string(
+    'format_lidar', 'bin', 'The format of lidar. default=bin')
+
+tf.app.flags.DEFINE_string(
+    'format_calib', 'txt', 'The format of calibartion file. default=txt')
 
 tf.app.flags.DEFINE_string(
     'list_param', '20,1.5',
@@ -92,12 +112,60 @@ FLAGS = tf.app.flags.FLAGS
 
 
 def main(_):
-  if not FLAGS.dataset_dir:
-    raise ValueError('You must supply the dataset directory with --dataset_dir')
+  if not FLAGS.dir_image:
+    raise ValueError('You must supply the image directory with --dir_image')
+  if not FLAGS.dir_lidar:
+    raise ValueError('You must supply the lidar directory with --dir_lidar')
+  if not FLAGS.dir_calib:
+    raise ValueError('You must supply the calibration directory with --dir_calib')
 
   tf.logging.set_verbosity(tf.logging.INFO)
   with tf.Graph().as_default():
     tf_global_step = slim.get_or_create_global_step()
+
+    # Get the list of images to process
+    imList = glob.glob(os.path.join(FLAGS.dir_image,'*'+FLAGS.format_image))
+    imList.sort()
+    imNames = [os.path.split(pp)[1].strip('.{}'.formt(FLAGS.format_image)) for pp in imList]
+
+    with tf.Session('') as sess:
+      for iter,imName in enumerate(imNames):
+        # Get original calibration info
+        f_calib = os.path.join(FLAGS.dir_calib,imName+FLAGS.format_calib)
+        temp_dict = get_calib_mat(f_calib)
+
+        # Read lidar points
+        f_lidar = os.path.join(FLAGS.dir_lidar,imName+FLAGS.format_lidar)
+        points_org = np.fromfile(f_lidar,dtype=np.float32).reshape(-1,4)
+        point = points_org[:,:3] # exclude reflectance
+
+        # Read image file
+        f_image = os.path.join(FLAGS.dir_image,imName+FLAGS.format_image)
+        im = cv2.imread(f_image)[:,:,(2,1,0)] # BGR to RGB
+        im_height,im_width = np.shape(im)[0:2]
+
+        # Project velodyne points to image plane
+        points2D, pointsDist = project_lidar_to_img(temp_dict,
+                                                    points,
+                                                    im_height,
+                                                    im_width)
+
+        # Write depth image before calibration
+        im_depth = points_to_img(points2D,pointsDist,im_height,im_width)
+
+        # To TF format
+        im_placeholder = tf.placeholder(dtype=tf.uint8)
+        im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
+        encoded_image = tf.image.encode_png(im_placeholder)
+        encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
+
+    '''
+    1. Write a temporary tfrecord file?
+    or
+    Find some way to process it without writing
+
+    2. Process one by one vs process batch?
+    '''
 
     ######################
     # Select the dataset #
@@ -213,10 +281,7 @@ def main(_):
 
     tf.logging.info('Evaluating %s' % checkpoint_path)
 
-    if FLAGS.eval_dir:
-      path_log = FLAGS.eval_dir
-    else:
-      path_log = checkpoint_path
+    path_log = checkpoint_path
 
     slim.evaluation.evaluate_once(
         master=FLAGS.master,
