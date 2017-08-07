@@ -17,8 +17,8 @@
 # Modified for deep learning based calibration code
 
 """ Code for real application on KITTI
-# Input: Image, LIDAR, calib file (P2, Rect0), initial guess (H_init)
-# Output: Result of calibration (image, H)
+- Input: Image, LIDAR, calib file (P2, Rect0), initial guess (H_init)
+- Output: Result of calibration (image, H)
 """
 
 from __future__ import absolute_import
