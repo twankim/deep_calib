@@ -2,13 +2,15 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-20 16:51:18
+# @Last Modified time: 2017-08-06 19:20:49
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import cv2
+import matplotlib.pylot as plt
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
@@ -39,7 +41,8 @@ def quat_to_transmat(q_r,t_vec):
     Quaternion & Translation to 4x4 homogenous transform matrix
         q_r: unit quaternion for rotation
         t_vec: 3D translation vector
-    - Note: Used quaternion istead of dual quaternion for simplicity in parameter learning
+    * Note: Used quaternion istead of dual quaternion for simplicity
+            in parameter learning
     """
     assert np.shape(q_r) == (4,),\
             "!! Size of q_r should be 4"
@@ -147,3 +150,19 @@ def calib_to_tfexample(im_data, im_data_depth, im_format, height, width,
             'param/rot_angle': float_feature(rot),
             'param/a_vec': float_feature(a_vec)
             }))
+
+def imlidarwrite(fname,im,im_depth):
+    """Write image with RGB and depth
+    Args:
+        fname: file name
+        im: RGB image array (h x w x 3)
+        im_depth: depth image array (h x w x 1)
+    """
+    im_out = im.copy()
+    idx_h, idx_w = np.nonzero(im_out)
+    cmap = plt.get_cmap('jet')
+    for i in xrange(len(idx_h)):
+        im_out[idx_h[i],idx_w[i]] = (255*np.array(
+                        cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
+                        .astype(np.uint8)
+    cv2.imwrite(fname,im_out)

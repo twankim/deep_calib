@@ -62,7 +62,7 @@ tf.app.flags.DEFINE_string(
 
 tf.app.flags.DEFINE_string(
     'list_param', '20,1.5',
-    'List of parameters for the file name of train/test data. max_rotation,max_translation')
+    'List of parameters for the train/test data. max_rotation,max_translation')
 
 tf.app.flags.DEFINE_string(
     'model_name', 'vgg_16', 'The name of the architecture to evaluate.')
@@ -108,7 +108,7 @@ def main(_):
     ####################
     network_fn = factory_nets.get_network_fn(
         FLAGS.model_name,
-        num_preds=dataset.num_preds,
+        num_preds=_NUM_PREDS,
         is_training=False)
 
     ##############################################################
