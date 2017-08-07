@@ -254,10 +254,10 @@ def main(_):
 
           if FLAGS.weight_loss:
             weight_loss = FLAGS.weight_loss
-            weights_preds = np.ones(sum(dataset.num_preds['num_preds']))
+            weights_preds = np.ones(sum(_NUM_PREDS['num_preds']))
             i_reg_start = 0
-            for i_reg,is_normalize in enumerate(dataset.num_preds['is_normalize']):
-              num_preds = dataset.num_preds['num_preds'][i_reg]
+            for i_reg,is_normalize in enumerate(_NUM_PREDS['is_normalize']):
+              num_preds = _NUM_PREDS['num_preds'][i_reg]
               if is_normalize:
                 weights_preds[i_reg_start:i_reg_start+num_preds] = FLAGS.weight_loss
               i_reg_start += num_preds
@@ -286,7 +286,7 @@ def main(_):
             num_batches = FLAGS.max_num_batches
           else:
             # This ensures that we make a single pass over all of the data.
-            num_batches = math.ceil(dataset.num_samples / float(FLAGS.batch_size))
+            num_batches = math.ceil(1 / float(FLAGS.batch_size))
 
           if tf.gfile.IsDirectory(FLAGS.checkpoint_path):
             checkpoint_path = tf.train.latest_checkpoint(FLAGS.checkpoint_path)
