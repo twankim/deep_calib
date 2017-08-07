@@ -136,7 +136,7 @@ def main(_):
     # Get the list of images to process
     imList = glob.glob(os.path.join(FLAGS.dir_image,'*.'+FLAGS.format_image))
     imList.sort()
-    imNames = [os.path.split(pp)[1].strip('.{}'.formt(FLAGS.format_image)) \
+    imNames = [os.path.split(pp)[1].strip('.{}'.format(FLAGS.format_image)) \
                for pp in imList]
 
     decalibs_gt = []
