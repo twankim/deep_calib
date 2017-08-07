@@ -307,9 +307,9 @@ def main(_):
               variables_to_restore=variables_to_restore)
 
           y_preds_val = sess.run(y_preds,
-                    feed_dict={im_placeholder:im,
-                               im_depth_placeholder:im_depth.\
-                                    reshape(im_height,im_width,1)})
+                                 feed_dict={im_placeholder:im,\
+                                            im_depth_placeholder:im_depth.\
+                                                reshape(im_height,im_width,1)})
 
           # Calibarte based on the prediction
           cal_dict = ran_dict.copy()
