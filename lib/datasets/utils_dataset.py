@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-08-06 19:20:49
+# @Last Modified time: 2017-08-07 18:14:57
 
 from __future__ import absolute_import
 from __future__ import division
@@ -10,7 +10,7 @@ from __future__ import print_function
 
 import numpy as np
 import cv2
-import matplotlib.pylot as plt
+import matplotlib.pyplot as plt
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
