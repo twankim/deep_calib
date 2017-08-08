@@ -319,7 +319,7 @@ def main(_):
         # Calibarte based on the prediction
         cal_dict = ran_dict.copy()
 
-        Rt = quat_to_transmat(y_preds_val[:3],y_preds_val[3:])
+        Rt = quat_to_transmat(y_preds_val[:4],y_preds_val[4:])
         Rt_cal = Rt.copy()
         Rt_cal[:3,:3] = Rt[:3,:3].T
         Rt_cal[:3,3] = -np.dot(Rt[:3,:3].T,Rt[:3,3])
