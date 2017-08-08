@@ -166,7 +166,6 @@ def main(_):
     im_depth = points_to_img(points2D,pointsDist,im_height,im_width)
     f_res_im = os.path.join(FLAGS.dir_out,'{}_gt.{}'.format(
                                   imName,FLAGS.format_image))
-    imlidarwrite(f_res_im,im,im_depth)
 
     #####################################
     # Select the preprocessing function #
@@ -210,7 +209,7 @@ def main(_):
                                  im_width)
         f_res_im_ran = os.path.join(FLAGS.dir_out,'{}_rand{}.{}'.format(
                                     imName,i_ran,FLAGS.format_image))
-        imlidarwrite(f_res_im_ran,im,im_depth_ran)
+        # imlidarwrite(f_res_im_ran,im,im_depth_ran)
         # Save ground truth decalibration
         decalibs_gt.append(param_decalib['y'])
 
@@ -312,41 +311,43 @@ def main(_):
             final_op=y_preds,
             variables_to_restore=variables_to_restore)
 
-        y_preds_val = np.squeeze(y_preds_val,axis=0)
+      y_preds_val = np.squeeze(y_preds_val,axis=0)
 
-        # y_preds_val = sess.run(y_preds,
-        #                        feed_dict={im_placeholder:im,\
-        #                                   im_depth_placeholder:im_depth_ran.\
-        #                                       reshape(im_height,im_width,1)})
+      # y_preds_val = sess.run(y_preds,
+      #                        feed_dict={im_placeholder:im,\
+      #                                   im_depth_placeholder:im_depth_ran.\
+      #                                       reshape(im_height,im_width,1)})
 
-        # Calibarte based on the prediction
-        cal_dict = ran_dict.copy()
+      # Calibarte based on the prediction
+      cal_dict = ran_dict.copy()
 
-        Rt = quat_to_transmat(y_preds_val[:4],y_preds_val[4:])
-        Rt_cal = Rt.copy()
-        Rt_cal[:3,:3] = Rt[:3,:3].T
-        Rt_cal[:3,3] = -np.dot(Rt[:3,:3].T,Rt[:3,3])
+      Rt = quat_to_transmat(y_preds_val[:4],y_preds_val[4:])
+      Rt_cal = Rt.copy()
+      Rt_cal[:3,:3] = Rt[:3,:3].T
+      Rt_cal[:3,3] = -np.dot(Rt[:3,:3].T,Rt[:3,3])
 
-        cal_dict[cfg._SET_CALIB[2]] = np.dot(
-                ran_dict[cfg._SET_CALIB[2]],Rt_cal)
+      cal_dict[cfg._SET_CALIB[2]] = np.dot(
+              ran_dict[cfg._SET_CALIB[2]],Rt_cal)
 
-        points2D_cal, pointsDist_cal = project_lidar_to_img(cal_dict,
-                                                            points,
-                                                            im_height,
-                                                            im_width)
-        # Write after the calibration
-        im_depth_cal = points_to_img(points2D_cal,
-                                 pointsDist_cal,
-                                 im_height,
-                                 im_width)
-        f_res_im_cal = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
-                                    imName,i_ran,FLAGS.format_image))
-        imlidarwrite(f_res_im_cal,im,im_depth_cal)
-        # Save predicted decalibration
-        decalibs_pred.append(y_preds_val)
-           
-        # write 7vec, MSE as txt file
-        # decalibs_pred, decalibs_gt
+      points2D_cal, pointsDist_cal = project_lidar_to_img(cal_dict,
+                                                          points,
+                                                          im_height,
+                                                          im_width)
+      # Write after the calibration
+      im_depth_cal = points_to_img(points2D_cal,
+                               pointsDist_cal,
+                               im_height,
+                               im_width)
+      f_res_im_cal = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
+                                  imName,i_ran,FLAGS.format_image))
+      imlidarwrite(f_res_im_cal,im,im_depth_cal)
+      # Save predicted decalibration
+      decalibs_pred.append(y_preds_val)
+
+      imlidarwrite(f_res_im_ran,im,im_depth_ran)
+         
+      # write 7vec, MSE as txt file
+      # decalibs_pred, decalibs_gt
 
 if __name__ == '__main__':
   tf.app.run()
