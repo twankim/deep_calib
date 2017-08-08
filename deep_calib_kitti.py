@@ -311,6 +311,8 @@ def main(_):
             final_op=y_preds,
             variables_to_restore=variables_to_restore)
 
+        print(y_preds_val.shape)
+
         # y_preds_val = sess.run(y_preds,
         #                        feed_dict={im_placeholder:im,\
         #                                   im_depth_placeholder:im_depth_ran.\
