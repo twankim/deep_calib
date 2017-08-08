@@ -191,6 +191,7 @@ def main(_):
     for i_ran in xrange(FLAGS.num_gen):
       with tf.Graph().as_default():
         tf_global_step = slim.get_or_create_global_step()
+
         param_decalib = gen_decalib(max_theta,max_dist)
         ran_dict = temp_dict.copy()
         ran_dict[cfg._SET_CALIB[2]] = np.dot(
@@ -207,9 +208,9 @@ def main(_):
                                  pointsDist_ran,
                                  im_height,
                                  im_width)
-        f_res_im = os.path.join(FLAGS.dir_out,'{}_rand{}.{}'.format(
+        f_res_im_ran = os.path.join(FLAGS.dir_out,'{}_rand{}.{}'.format(
                                     imName,i_ran,FLAGS.format_image))
-        imlidarwrite(f_res_im,im,im_depth_ran)
+        imlidarwrite(f_res_im_ran,im,im_depth_ran)
         # Save ground truth decalibration
         decalibs_gt.append(param_decalib['y'])
 
@@ -338,9 +339,9 @@ def main(_):
                                  pointsDist_cal,
                                  im_height,
                                  im_width)
-        f_res_im = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
+        f_res_im_cal = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
                                     imName,i_ran,FLAGS.format_image))
-        imlidarwrite(f_res_im,im,im_depth_cal)
+        imlidarwrite(f_res_im_cal,im,im_depth_cal)
         # Save predicted decalibration
         decalibs_pred.append(y_preds_val)
            
