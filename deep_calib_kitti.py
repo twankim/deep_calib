@@ -137,10 +137,10 @@ def main(_):
   imNames = [os.path.split(pp)[1].strip('.{}'.format(FLAGS.format_image)) \
              for pp in imList]
 
-  decalibs_gt = []
-  decalibs_pred = []
-
   for iter,imName in enumerate(imNames):
+    decalibs_gt = []
+    decalibs_pred = []
+
     # Get original calibration info
     f_calib = os.path.join(FLAGS.dir_calib,imName+'.'+FLAGS.format_calib)
     temp_dict = get_calib_mat(f_calib)
@@ -350,7 +350,10 @@ def main(_):
       # write 7vec, MSE as txt file
       # decalibs_pred, decalibs_gt
 
-  print('Done!!!!!!!')
+    with open(os.path.join(FLAGS.dir_out,imName+'_res.txt'),'w') as f_res:
+      for i_ran,vec_gt,vec_pred in enumerate(zip(decalibs_gt,decalibs_pred)):
+        f_res.write('i_ran:{}, gt:{}'.format(i_ran,decalibs_gt))
+        f_res.write('i_ran:{}, pred:{}'.format(i_ran,decalibs_pred))
 
 if __name__ == '__main__':
   tf.app.run()
