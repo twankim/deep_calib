@@ -130,69 +130,68 @@ def main(_):
   max_theta,max_dist = map(float,FLAGS.list_param.split(','))
 
   tf.logging.set_verbosity(tf.logging.INFO)
-  # with tf.Graph().as_default():
-  #   tf_global_step = slim.get_or_create_global_step()
+  with tf.Graph().as_default():
+    tf_global_step = slim.get_or_create_global_step()
 
-  # Get the list of images to process
-  imList = glob.glob(os.path.join(FLAGS.dir_image,'*.'+FLAGS.format_image))
-  imList.sort()
-  imNames = [os.path.split(pp)[1].strip('.{}'.format(FLAGS.format_image)) \
-             for pp in imList]
+    # Get the list of images to process
+    imList = glob.glob(os.path.join(FLAGS.dir_image,'*.'+FLAGS.format_image))
+    imList.sort()
+    imNames = [os.path.split(pp)[1].strip('.{}'.format(FLAGS.format_image)) \
+               for pp in imList]
 
-  decalibs_gt = []
-  decalibs_pred = []
+    decalibs_gt = []
+    decalibs_pred = []
 
-  # with tf.Session('') as sess:
-  for iter,imName in enumerate(imNames):
-    # Get original calibration info
-    f_calib = os.path.join(FLAGS.dir_calib,imName+'.'+FLAGS.format_calib)
-    temp_dict = get_calib_mat(f_calib)
+    # with tf.Session('') as sess:
+    for iter,imName in enumerate(imNames):
+      # Get original calibration info
+      f_calib = os.path.join(FLAGS.dir_calib,imName+'.'+FLAGS.format_calib)
+      temp_dict = get_calib_mat(f_calib)
 
-    # Read lidar points
-    f_lidar = os.path.join(FLAGS.dir_lidar,imName+'.'+FLAGS.format_lidar)
-    points_org = np.fromfile(f_lidar,dtype=np.float32).reshape(-1,4)
-    points = points_org[:,:3] # exclude reflectance
+      # Read lidar points
+      f_lidar = os.path.join(FLAGS.dir_lidar,imName+'.'+FLAGS.format_lidar)
+      points_org = np.fromfile(f_lidar,dtype=np.float32).reshape(-1,4)
+      points = points_org[:,:3] # exclude reflectance
 
-    # Read image file
-    f_image = os.path.join(FLAGS.dir_image,imName+'.'+FLAGS.format_image)
-    im = cv2.imread(f_image)[:,:,(2,1,0)] # BGR to RGB
-    im_height,im_width = np.shape(im)[0:2]
+      # Read image file
+      f_image = os.path.join(FLAGS.dir_image,imName+'.'+FLAGS.format_image)
+      im = cv2.imread(f_image)
+      im = im[:,:,(2,1,0)] # BGR to RGB
+      im_height,im_width = np.shape(im)[0:2]
 
-    # Project velodyne points to image plane
-    points2D, pointsDist = project_lidar_to_img(temp_dict,
-                                                points,
-                                                im_height,
-                                                im_width)
+      # Project velodyne points to image plane
+      points2D, pointsDist = project_lidar_to_img(temp_dict,
+                                                  points,
+                                                  im_height,
+                                                  im_width)
 
-    # Write as one image (Ground truth)
-    im_depth = points_to_img(points2D,pointsDist,im_height,im_width)
-    f_res_im = os.path.join(FLAGS.dir_out,'{}_gt.{}'.format(
-                                  imName,FLAGS.format_image))
-    imlidarwrite(f_res_im,im,im_depth)
+      # Write as one image (Ground truth)
+      im_depth = points_to_img(points2D,pointsDist,im_height,im_width)
+      f_res_im = os.path.join(FLAGS.dir_out,'{}_gt.{}'.format(
+                                    imName,FLAGS.format_image))
+      imlidarwrite(f_res_im,im,im_depth)
 
-    #####################################
-    # Select the preprocessing function #
-    #####################################
-    preprocessing_name = FLAGS.preprocessing_name or FLAGS.model_name
-    image_preprocessing_fn = preprocessing_factory.get_preprocessing(
-        preprocessing_name,
-        is_training=False)
-    lidar_preprocessing_fn = preprocessing_factory.get_preprocessing(
-        preprocessing_name,
-        is_training=False)
+      #####################################
+      # Select the preprocessing function #
+      #####################################
+      preprocessing_name = FLAGS.preprocessing_name or FLAGS.model_name
+      image_preprocessing_fn = preprocessing_factory.get_preprocessing(
+          preprocessing_name,
+          is_training=False)
+      lidar_preprocessing_fn = preprocessing_factory.get_preprocessing(
+          preprocessing_name,
+          is_training=False)
 
-    ####################
-    # Select the model #
-    ####################
-    network_fn = factory_nets.get_network_fn(
-        FLAGS.model_name,
-        num_preds=_NUM_PREDS,
-        is_training=False)
+      ####################
+      # Select the model #
+      ####################
+      network_fn = factory_nets.get_network_fn(
+          FLAGS.model_name,
+          num_preds=_NUM_PREDS,
+          is_training=False)
 
-    # Randomly generate dealibration
-    for i_ran in xrange(FLAGS.num_gen):
-      with tf.Graph().as_default():
-        tf_global_step = slim.get_or_create_global_step()
+      # Randomly generate dealibration
+      for i_ran in xrange(FLAGS.num_gen):
         param_decalib = gen_decalib(max_theta,max_dist)
         ran_dict = temp_dict.copy()
         ran_dict[cfg._SET_CALIB[2]] = np.dot(
