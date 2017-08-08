@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-08-08 14:06:19
+# @Last Modified time: 2017-08-08 16:02:22
 
 from __future__ import absolute_import
 from __future__ import division
@@ -107,6 +107,7 @@ def points_to_img(points2D,pointsDist,im_height,im_width):
     for i in xrange(np.shape(points2D)[0]):
         x,y = np.round(points2D[i,:]).astype('int')
         im_depth[y,x] = dist_to_pixel(pointsDist[i])
+        im_depth[y,x] = dist_to_pixel(pointsDist[i],mode='standard')
     return im_depth
 
 def get_data(path_data,image_set,list_param=[],reader=None):
