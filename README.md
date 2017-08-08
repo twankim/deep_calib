@@ -42,4 +42,10 @@ CUDA_VISIBLE_DEVICES=1 ./scripts/train_test_vgg_16_gpu_10.sh
 ```
 
 ## Use trained model to save calibrated image and parameters.
+Load image, lidar, calibration files, and generate randomly decalibrated samples. Then we predict 7-dimensional decalibration vector to calibrate.
+Output: image which contains both RGB and depth info, 7-dim vectors, MSE
 
+ex) VGG_16, weight=10
+```
+CUDA_VISIBLE_DEVICES=1 ./scripts/eval_vgg_16_gpu_10.sh
+```
