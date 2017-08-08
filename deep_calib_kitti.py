@@ -334,9 +334,9 @@ def main(_):
                                                           im_width)
       # Write after the calibration
       im_depth_cal = points_to_img(points2D_cal,
-                               pointsDist_cal,
-                               im_height,
-                               im_width)
+                                   pointsDist_cal,
+                                   im_height,
+                                   im_width)
       f_res_im_cal = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
                                   imName,i_ran,FLAGS.format_image))
       imlidarwrite(f_res_im_cal,im,im_depth_cal)
@@ -349,6 +349,8 @@ def main(_):
          
       # write 7vec, MSE as txt file
       # decalibs_pred, decalibs_gt
+
+  print('Done!!!!!!!')
 
 if __name__ == '__main__':
   tf.app.run()
