@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-08-08 02:45:06
+# @Last Modified time: 2017-08-08 03:00:13
 
 from __future__ import absolute_import
 from __future__ import division
@@ -162,7 +162,7 @@ def imlidarwrite(fname,im,im_depth):
     idx_h, idx_w = np.nonzero(im_depth)
     cmap = plt.get_cmap('jet')
     for i in xrange(len(idx_h)):
-        im_out[idx_h[i],idx_w[i]] = (255*np.array(
+        im_out[idx_h[i],idx_w[i],:] = (255*np.array(
                         cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
                         .astype(np.uint8)
     cv2.imwrite(fname,im_out)
