@@ -354,7 +354,7 @@ def main(_):
       for i_ran,(vec_gt,vec_pred) in enumerate(zip(decalibs_gt,decalibs_pred)):
         f_res.write('i_ran:{},   gt:{}\n'.format(i_ran,vec_gt))
         f_res.write('i_ran:{}, pred:{}\n'.format(i_ran,vec_pred))
-        mse_val = ((vec_true - vec_pred)**2).mean()
+        mse_val = ((vec_gt - vec_pred)**2).mean()
         f_res.write('i_ran:{}, MSE:{}\n'.format(i_ran,mse_val))
 
 if __name__ == '__main__':
