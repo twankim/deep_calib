@@ -142,201 +142,205 @@ def main(_):
     decalibs_gt = []
     decalibs_pred = []
 
-    with tf.Session('') as sess:
-      for iter,imName in enumerate(imNames):
-        # Get original calibration info
-        f_calib = os.path.join(FLAGS.dir_calib,imName+'.'+FLAGS.format_calib)
-        temp_dict = get_calib_mat(f_calib)
+    # with tf.Session('') as sess:
+    for iter,imName in enumerate(imNames):
+      # Get original calibration info
+      f_calib = os.path.join(FLAGS.dir_calib,imName+'.'+FLAGS.format_calib)
+      temp_dict = get_calib_mat(f_calib)
 
-        # Read lidar points
-        f_lidar = os.path.join(FLAGS.dir_lidar,imName+'.'+FLAGS.format_lidar)
-        points_org = np.fromfile(f_lidar,dtype=np.float32).reshape(-1,4)
-        points = points_org[:,:3] # exclude reflectance
+      # Read lidar points
+      f_lidar = os.path.join(FLAGS.dir_lidar,imName+'.'+FLAGS.format_lidar)
+      points_org = np.fromfile(f_lidar,dtype=np.float32).reshape(-1,4)
+      points = points_org[:,:3] # exclude reflectance
 
-        # Read image file
-        f_image = os.path.join(FLAGS.dir_image,imName+'.'+FLAGS.format_image)
-        im = cv2.imread(f_image)[:,:,(2,1,0)] # BGR to RGB
-        im_height,im_width = np.shape(im)[0:2]
+      # Read image file
+      f_image = os.path.join(FLAGS.dir_image,imName+'.'+FLAGS.format_image)
+      im = cv2.imread(f_image)[:,:,(2,1,0)] # BGR to RGB
+      im_height,im_width = np.shape(im)[0:2]
 
-        # Project velodyne points to image plane
-        points2D, pointsDist = project_lidar_to_img(temp_dict,
-                                                    points,
-                                                    im_height,
-                                                    im_width)
+      # Project velodyne points to image plane
+      points2D, pointsDist = project_lidar_to_img(temp_dict,
+                                                  points,
+                                                  im_height,
+                                                  im_width)
 
-        # Write as one image (Ground truth)
-        im_depth = points_to_img(points2D,pointsDist,im_height,im_width)
-        f_res_im = os.path.join(FLAGS.dir_out,'{}_gt.{}'.format(
-                                      imName,FLAGS.format_image))
-        imlidarwrite(f_res_im,im,im_depth)
+      # Write as one image (Ground truth)
+      im_depth = points_to_img(points2D,pointsDist,im_height,im_width)
+      f_res_im = os.path.join(FLAGS.dir_out,'{}_gt.{}'.format(
+                                    imName,FLAGS.format_image))
+      imlidarwrite(f_res_im,im,im_depth)
 
-        #####################################
-        # Select the preprocessing function #
-        #####################################
-        preprocessing_name = FLAGS.preprocessing_name or FLAGS.model_name
-        image_preprocessing_fn = preprocessing_factory.get_preprocessing(
-            preprocessing_name,
-            is_training=False)
-        lidar_preprocessing_fn = preprocessing_factory.get_preprocessing(
-            preprocessing_name,
-            is_training=False)
+      #####################################
+      # Select the preprocessing function #
+      #####################################
+      preprocessing_name = FLAGS.preprocessing_name or FLAGS.model_name
+      image_preprocessing_fn = preprocessing_factory.get_preprocessing(
+          preprocessing_name,
+          is_training=False)
+      lidar_preprocessing_fn = preprocessing_factory.get_preprocessing(
+          preprocessing_name,
+          is_training=False)
+
+      ####################
+      # Select the model #
+      ####################
+      network_fn = factory_nets.get_network_fn(
+          FLAGS.model_name,
+          num_preds=_NUM_PREDS,
+          is_training=False)
+
+      # Randomly generate dealibration
+      for i_ran in xrange(FLAGS.num_gen):
+        param_decalib = gen_decalib(max_theta,max_dist)
+        ran_dict = temp_dict.copy()
+        ran_dict[cfg._SET_CALIB[2]] = np.dot(
+                ran_dict[cfg._SET_CALIB[2]],
+                quat_to_transmat(param_decalib['q_r'],param_decalib['t_vec']))
+
+        points2D_ran, pointsDist_ran = project_lidar_to_img(ran_dict,
+                                                            points,
+                                                            im_height,
+                                                            im_width)
+
+        # Write before the calibration
+        im_depth_ran = points_to_img(points2D_ran,
+                                 pointsDist_ran,
+                                 im_height,
+                                 im_width)
+        f_res_im = os.path.join(FLAGS.dir_out,'{}_rand{}.{}'.format(
+                                    imName,i_ran,FLAGS.format_image))
+        imlidarwrite(f_res_im,im,im_depth_ran)
+        # Save ground truth decalibration
+        decalibs_gt.append(param_decalib['y'])
+
+        # ---------- Prediction of y (decalibration) ----------
+        # To TF format
+        im_placeholder = tf.placeholder(dtype=tf.uint8)
+        im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
+        # encoded_image = tf.image.encode_png(im_placeholder)
+        # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
+
+        test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
+
+        image = image_preprocessing_fn(im_placeholder,
+                                       test_image_size,
+                                       test_image_size)
+        lidar = image_preprocessing_fn(im_depth_placeholder,
+                                       test_image_size,
+                                       test_image_size,
+                                       channels=1)
+
+        # Change format to [batch_size, height, width, channels]
+        # batch_size = 1
+        images = tf.expand_dims(image, 0)
+        lidars = tf.expand_dims(lidar, 0)
 
         ####################
-        # Select the model #
+        # Define the model #
         ####################
-        network_fn = factory_nets.get_network_fn(
-            FLAGS.model_name,
-            num_preds=_NUM_PREDS,
-            is_training=False)
+        y_preds, _ = network_fn(images,lidars)
 
-        # Randomly generate dealibration
-        for i_ran in xrange(FLAGS.num_gen):
-          param_decalib = gen_decalib(max_theta,max_dist)
-          ran_dict = temp_dict.copy()
-          ran_dict[cfg._SET_CALIB[2]] = np.dot(
-                  ran_dict[cfg._SET_CALIB[2]],
-                  quat_to_transmat(param_decalib['q_r'],param_decalib['t_vec']))
+        if FLAGS.moving_average_decay:
+          variable_averages = tf.train.ExponentialMovingAverage(
+              FLAGS.moving_average_decay, tf_global_step)
+          variables_to_restore = variable_averages.variables_to_restore(
+              slim.get_model_variables())
+          variables_to_restore[tf_global_step.op.name] = tf_global_step
+        else:
+          variables_to_restore = slim.get_variables_to_restore()
 
-          points2D_ran, pointsDist_ran = project_lidar_to_img(ran_dict,
-                                                              points,
-                                                              im_height,
-                                                              im_width)
+        # predictions = tf.argmax(logits, 1)
+        # labels = tf.squeeze(labels)
 
-          # Write before the calibration
-          im_depth_ran = points_to_img(points2D_ran,
-                                   pointsDist_ran,
-                                   im_height,
-                                   im_width)
-          f_res_im = os.path.join(FLAGS.dir_out,'{}_rand{}.{}'.format(
-                                      imName,i_ran,FLAGS.format_image))
-          imlidarwrite(f_res_im,im,im_depth_ran)
-          # Save ground truth decalibration
-          decalibs_gt.append(param_decalib['y'])
+        if FLAGS.weight_loss:
+          weight_loss = FLAGS.weight_loss
+          weights_preds = np.ones(sum(_NUM_PREDS['num_preds']))
+          i_reg_start = 0
+          for i_reg,is_normalize in enumerate(_NUM_PREDS['is_normalize']):
+            num_preds = _NUM_PREDS['num_preds'][i_reg]
+            if is_normalize:
+              weights_preds[i_reg_start:i_reg_start+num_preds] = FLAGS.weight_loss
+            i_reg_start += num_preds
+          weights_preds = tf.constant(np.tile(weights_preds,(FLAGS.batch_size,1)))
+        else:
+          weight_loss = 1
+          weights_preds = 1.0
 
-          # ---------- Prediction of y (decalibration) ----------
-          # To TF format
-          im_placeholder = tf.placeholder(dtype=tf.uint8)
-          im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
-          # encoded_image = tf.image.encode_png(im_placeholder)
-          # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
+        # Define the metrics:
+        y_trues = tf.constant(np.expand_dims(param_decalib['y'].copy(),0),
+                              dtype=tf.float32)
+        names_to_values, names_to_updates = slim.metrics.aggregate_metric_map({
+          'MSE': slim.metrics.streaming_mean_squared_error(
+                                  y_preds, y_trues),
+          'MSE_{}'.format(weight_loss): slim.metrics.streaming_mean_squared_error(
+                                  y_preds, y_trues, weights=weights_preds),
+        })
 
-          test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
+        # Print the summaries to screen.
+        for name, value in names_to_values.items():
+          summary_name = 'eval/%s' % name
+          op = tf.summary.scalar(summary_name, value, collections=[])
+          op = tf.Print(op, [value], summary_name)
+          tf.add_to_collection(tf.GraphKeys.SUMMARIES, op)
 
-          image = image_preprocessing_fn(im_placeholder,
-                                         test_image_size,
-                                         test_image_size)
-          lidar = image_preprocessing_fn(im_depth_placeholder,
-                                         test_image_size,
-                                         test_image_size,
-                                         channels=1)
+        # TODO(sguada) use num_epochs=1
+        if FLAGS.max_num_batches:
+          num_batches = FLAGS.max_num_batches
+        else:
+          # This ensures that we make a single pass over all of the data.
+          num_batches = math.ceil(1 / float(FLAGS.batch_size))
 
-          # Change format to [batch_size, height, width, channels]
-          # batch_size = 1
-          images = tf.expand_dims(image, 0)
-          lidars = tf.expand_dims(lidar, 0)
+        if tf.gfile.IsDirectory(FLAGS.checkpoint_path):
+          checkpoint_path = tf.train.latest_checkpoint(FLAGS.checkpoint_path)
+        else:
+          checkpoint_path = FLAGS.checkpoint_path
 
-          ####################
-          # Define the model #
-          ####################
-          y_preds, _ = network_fn(images,lidars)
+        tf.logging.info('Evaluating %s' % checkpoint_path)
 
-          if FLAGS.moving_average_decay:
-            variable_averages = tf.train.ExponentialMovingAverage(
-                FLAGS.moving_average_decay, tf_global_step)
-            variables_to_restore = variable_averages.variables_to_restore(
-                slim.get_model_variables())
-            variables_to_restore[tf_global_step.op.name] = tf_global_step
-          else:
-            variables_to_restore = slim.get_variables_to_restore()
+        path_log = FLAGS.dir_out
 
-          # predictions = tf.argmax(logits, 1)
-          # labels = tf.squeeze(labels)
+        y_preds_val = slim.evaluation.evaluate_once(
+            master=FLAGS.master,
+            checkpoint_path=checkpoint_path,
+            logdir=path_log,
+            num_evals=num_batches,
+            eval_op=list(names_to_updates.values()),
+            final_op=y_preds,
+            final_op_feed_dict={im_placeholder:im,\
+                                im_depth_placeholder:im_depth_ran.\
+                                     reshape(im_height,im_width,1)},
+            variables_to_restore=variables_to_restore)
 
-          if FLAGS.weight_loss:
-            weight_loss = FLAGS.weight_loss
-            weights_preds = np.ones(sum(_NUM_PREDS['num_preds']))
-            i_reg_start = 0
-            for i_reg,is_normalize in enumerate(_NUM_PREDS['is_normalize']):
-              num_preds = _NUM_PREDS['num_preds'][i_reg]
-              if is_normalize:
-                weights_preds[i_reg_start:i_reg_start+num_preds] = FLAGS.weight_loss
-              i_reg_start += num_preds
-            weights_preds = tf.constant(np.tile(weights_preds,(FLAGS.batch_size,1)))
-          else:
-            weight_loss = 1
-            weights_preds = 1.0
+        # y_preds_val = sess.run(y_preds,
+        #                        feed_dict={im_placeholder:im,\
+        #                                   im_depth_placeholder:im_depth_ran.\
+        #                                       reshape(im_height,im_width,1)})
 
-          # Define the metrics:
-          y_trues = tf.constant(np.expand_dims(param_decalib['y'].copy(),0),
-                                dtype=tf.float32)
-          names_to_values, names_to_updates = slim.metrics.aggregate_metric_map({
-            'MSE': slim.metrics.streaming_mean_squared_error(
-                                    y_preds, y_trues),
-            'MSE_{}'.format(weight_loss): slim.metrics.streaming_mean_squared_error(
-                                    y_preds, y_trues, weights=weights_preds),
-          })
+        # Calibarte based on the prediction
+        cal_dict = ran_dict.copy()
 
-          # Print the summaries to screen.
-          for name, value in names_to_values.items():
-            summary_name = 'eval/%s' % name
-            op = tf.summary.scalar(summary_name, value, collections=[])
-            op = tf.Print(op, [value], summary_name)
-            tf.add_to_collection(tf.GraphKeys.SUMMARIES, op)
+        Rt = quat_to_transmat(param_decalib['q_r'],param_decalib['t_vec'])
+        Rt_cal = Rt.copy()
+        Rt_cal[:3,:3] = Rt[:3,:3].T
+        Rt_cal[:3,3] = -np.dot(Rt[:3,:3].T,Rt[:3,3])
 
-          # TODO(sguada) use num_epochs=1
-          if FLAGS.max_num_batches:
-            num_batches = FLAGS.max_num_batches
-          else:
-            # This ensures that we make a single pass over all of the data.
-            num_batches = math.ceil(1 / float(FLAGS.batch_size))
+        cal_dict[cfg._SET_CALIB[2]] = np.dot(
+                ran_dict[cfg._SET_CALIB[2]],Rt_cal)
 
-          if tf.gfile.IsDirectory(FLAGS.checkpoint_path):
-            checkpoint_path = tf.train.latest_checkpoint(FLAGS.checkpoint_path)
-          else:
-            checkpoint_path = FLAGS.checkpoint_path
-
-          tf.logging.info('Evaluating %s' % checkpoint_path)
-
-          path_log = FLAGS.dir_out
-
-          slim.evaluation.evaluate_once(
-              master=FLAGS.master,
-              checkpoint_path=checkpoint_path,
-              logdir=path_log,
-              num_evals=num_batches,
-              eval_op=list(names_to_updates.values()),
-              variables_to_restore=variables_to_restore)
-
-          y_preds_val = sess.run(y_preds,
-                                 feed_dict={im_placeholder:im,\
-                                            im_depth_placeholder:im_depth_ran.\
-                                                reshape(im_height,im_width,1)})
-
-          # Calibarte based on the prediction
-          cal_dict = ran_dict.copy()
-
-          Rt = quat_to_transmat(param_decalib['q_r'],param_decalib['t_vec'])
-          Rt_cal = Rt.copy()
-          Rt_cal[:3,:3] = Rt[:3,:3].T
-          Rt_cal[:3,3] = -np.dot(Rt[:3,:3].T,Rt[:3,3])
-
-          cal_dict[cfg._SET_CALIB[2]] = np.dot(
-                  ran_dict[cfg._SET_CALIB[2]],Rt_cal)
-
-          points2D_cal, pointsDist_cal = project_lidar_to_img(cal_dict,
-                                                              points,
-                                                              im_height,
-                                                              im_width)
-          # Write after the calibration
-          im_depth_cal = points_to_img(points2D_cal,
-                                   pointsDist_cal,
-                                   im_height,
-                                   im_width)
-          f_res_im = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
-                                      imName,i_ran,FLAGS.format_image))
-          imlidarwrite(f_res_im,im,im_depth_cal)
-          # Save predicted decalibration
-          decalibs_pred.append(y_preds_val)
+        points2D_cal, pointsDist_cal = project_lidar_to_img(cal_dict,
+                                                            points,
+                                                            im_height,
+                                                            im_width)
+        # Write after the calibration
+        im_depth_cal = points_to_img(points2D_cal,
+                                 pointsDist_cal,
+                                 im_height,
+                                 im_width)
+        f_res_im = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
+                                    imName,i_ran,FLAGS.format_image))
+        imlidarwrite(f_res_im,im,im_depth_cal)
+        # Save predicted decalibration
+        decalibs_pred.append(y_preds_val)
            
         # write 7vec, MSE as txt file
         # decalibs_pred, decalibs_gt
