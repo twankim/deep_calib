@@ -215,8 +215,10 @@ def main(_):
 
         # ---------- Prediction of y (decalibration) ----------
         # To TF format
-        im_placeholder = tf.placeholder(dtype=tf.uint8)
-        im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
+        # im_placeholder = tf.placeholder(dtype=tf.uint8)
+        # im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
+        im_placeholder = tf.constant(im)
+        im_depth_placeholder = tf.constant(im_depth_ran)
         # encoded_image = tf.image.encode_png(im_placeholder)
         # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
@@ -306,9 +308,6 @@ def main(_):
             num_evals=num_batches,
             eval_op=list(names_to_updates.values()),
             final_op=y_preds,
-            final_op_feed_dict={im_placeholder:im,\
-                                im_depth_placeholder:im_depth_ran.\
-                                     reshape(im_height,im_width,1)},
             variables_to_restore=variables_to_restore)
 
         # y_preds_val = sess.run(y_preds,
