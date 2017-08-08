@@ -352,8 +352,8 @@ def main(_):
 
     with open(os.path.join(FLAGS.dir_out,imName+'_res.txt'),'w') as f_res:
       for i_ran,(vec_gt,vec_pred) in enumerate(zip(decalibs_gt,decalibs_pred)):
-        f_res.write('i_ran:{}, gt:{}'.format(i_ran,vec_gt))
-        f_res.write('i_ran:{}, pred:{}'.format(i_ran,vec_pred))
+        f_res.write('i_ran:{}, gt:{}\n'.format(i_ran,vec_gt))
+        f_res.write('i_ran:{}, pred:{}\n'.format(i_ran,vec_pred))
 
 if __name__ == '__main__':
   tf.app.run()
