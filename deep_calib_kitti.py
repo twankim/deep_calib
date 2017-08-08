@@ -346,7 +346,7 @@ def main(_):
 
       imlidarwrite(f_res_im_ran,im,im_depth_ran)
       if i_ran==0:
-        imlidarwrite(f_res_im,im,im_depth_ran)
+        imlidarwrite(f_res_im,im,im_depth)
          
       # write 7vec, MSE as txt file
       # decalibs_pred, decalibs_gt
