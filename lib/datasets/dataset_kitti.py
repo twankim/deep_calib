@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-08-08 16:02:22
+# @Last Modified time: 2017-08-08 16:05:43
 
 from __future__ import absolute_import
 from __future__ import division
@@ -83,7 +83,7 @@ def project_lidar_to_img(dict_calib,points,im_height,im_width):
 
     return points2D_fin, pointsDist_fin
 
-def dist_to_pixel(val_dist, mode='inverse', d_max=100, d_min =1):
+def dist_to_pixel(val_dist, mode='inverse', d_max=50, d_min =1):
     """ Returns pixel value from distance measurment
     Args:
         val_dist: distance value (m)
@@ -106,7 +106,7 @@ def points_to_img(points2D,pointsDist,im_height,im_width):
     im_depth = np.zeros((im_height,im_width),dtype=np.uint8)
     for i in xrange(np.shape(points2D)[0]):
         x,y = np.round(points2D[i,:]).astype('int')
-        im_depth[y,x] = dist_to_pixel(pointsDist[i])
+        # im_depth[y,x] = dist_to_pixel(pointsDist[i])
         im_depth[y,x] = dist_to_pixel(pointsDist[i],mode='standard')
     return im_depth
 
