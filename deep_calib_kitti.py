@@ -203,13 +203,13 @@ def main(_):
                                                               im_width)
 
           # Write before the calibration
-          im_depth = points_to_img(points2D_ran,
+          im_depth_ran = points_to_img(points2D_ran,
                                    pointsDist_ran,
                                    im_height,
                                    im_width)
           f_res_im = os.path.join(FLAGS.dir_out,'{}_rand{}.{}'.format(
                                       imName,i_ran,FLAGS.format_image))
-          imlidarwrite(f_res_im,im,im_depth)
+          imlidarwrite(f_res_im,im,im_depth_ran)
           # Save ground truth decalibration
           decalibs_gt.append(param_decalib['y'])
 
@@ -308,7 +308,7 @@ def main(_):
 
           y_preds_val = sess.run(y_preds,
                                  feed_dict={im_placeholder:im,\
-                                            im_depth_placeholder:im_depth.\
+                                            im_depth_placeholder:im_depth_ran.\
                                                 reshape(im_height,im_width,1)})
 
           # Calibarte based on the prediction
@@ -327,13 +327,13 @@ def main(_):
                                                               im_height,
                                                               im_width)
           # Write after the calibration
-          im_depth = points_to_img(points2D_cal,
+          im_depth_cal = points_to_img(points2D_cal,
                                    pointsDist_cal,
                                    im_height,
                                    im_width)
           f_res_im = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
                                       imName,i_ran,FLAGS.format_image))
-          imlidarwrite(f_res_im,im,im_depth)
+          imlidarwrite(f_res_im,im,im_depth_cal)
           # Save predicted decalibration
           decalibs_pred.append(y_preds_val)
            
