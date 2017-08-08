@@ -209,7 +209,6 @@ def main(_):
                                  im_width)
         f_res_im_ran = os.path.join(FLAGS.dir_out,'{}_rand{}.{}'.format(
                                     imName,i_ran,FLAGS.format_image))
-        # imlidarwrite(f_res_im_ran,im,im_depth_ran)
         # Save ground truth decalibration
         decalibs_gt.append(param_decalib['y'])
 
@@ -345,6 +344,8 @@ def main(_):
       decalibs_pred.append(y_preds_val)
 
       imlidarwrite(f_res_im_ran,im,im_depth_ran)
+      if i_ran==0:
+        imlidarwrite(f_res_im,im,im_depth_ran)
          
       # write 7vec, MSE as txt file
       # decalibs_pred, decalibs_gt
