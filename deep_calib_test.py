@@ -108,7 +108,7 @@ def main(_):
     ####################
     network_fn = factory_nets.get_network_fn(
         FLAGS.model_name,
-        num_preds=_NUM_PREDS,
+        num_preds=dataset.num_preds,
         is_training=False)
 
     ##############################################################
