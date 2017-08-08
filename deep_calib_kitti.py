@@ -131,7 +131,7 @@ def main(_):
 
   tf.logging.set_verbosity(tf.logging.INFO)
   with tf.Graph().as_default():
-    tf_global_step = slim.get_or_create_global_step()
+    # tf_global_step = slim.get_or_create_global_step()
 
     # Get the list of images to process
     imList = glob.glob(os.path.join(FLAGS.dir_image,'*.'+FLAGS.format_image))
@@ -191,6 +191,7 @@ def main(_):
 
       # Randomly generate dealibration
       for i_ran in xrange(FLAGS.num_gen):
+        tf_global_step = slim.get_or_create_global_step()
         param_decalib = gen_decalib(max_theta,max_dist)
         ran_dict = temp_dict.copy()
         ran_dict[cfg._SET_CALIB[2]] = np.dot(
