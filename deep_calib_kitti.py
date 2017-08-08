@@ -142,7 +142,6 @@ def main(_):
     decalibs_gt = []
     decalibs_pred = []
 
-    # with tf.Session('') as sess:
     for iter,imName in enumerate(imNames):
       # Get original calibration info
       f_calib = os.path.join(FLAGS.dir_calib,imName+'.'+FLAGS.format_calib)
@@ -344,6 +343,8 @@ def main(_):
         imlidarwrite(f_res_im,im,im_depth_cal)
         # Save predicted decalibration
         decalibs_pred.append(y_preds_val)
+
+        tf.reset_default_graph()
            
         # write 7vec, MSE as txt file
         # decalibs_pred, decalibs_gt
