@@ -12,7 +12,9 @@ python deep_calib_train.py \
     --clone_on_cpu=False \
     --model_name=${MODEL_NAME} \
     --checkpoint_path=pretrained/${MODEL_NAME}.ckpt \
-    --checkpoint_exclude_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression
+    --checkpoint_exclude_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
+    --learning_rate=0.00001 \
+    --end_learning_rate=0.0000001
     # --trainable_scopes=
     # --ignore_missing_vars=
 
