@@ -2,7 +2,7 @@
 #
 
 MODEL_NAME=vgg_16
-WEIGHT_LOSS=10
+WEIGHT_LOSS=100
 
 python deep_calib_kitti.py \
     --dataset_dir=/data/tf/kitti_calib \
