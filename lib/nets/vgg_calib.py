@@ -80,7 +80,7 @@ def last_layer(net,num_preds):
     idx_pred = []
     idx_start = 0 
     for i_pred, num_pred in enumerate(num_preds['num_preds']):
-      if num_preds['is_narmalize'][i_pred]:
+      if num_preds['is_normalize'][i_pred]:
         for idx in range(idx_start,idx_start+num_pred):
           idx_pred.append(idx)
       idx_start += num_pred
