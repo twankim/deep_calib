@@ -77,18 +77,15 @@ def last_layer(net,num_preds):
     #                              normalizer_fn=None,
     #                              scope='fc8_{}'.format(i_pred)))
     # net = tf.concat(values=preds,axis=3,name='fc8')
-    idx_pred = []
-    idx_start = 0 
-    for i_pred, num_pred in enumerate(num_preds['num_preds']):
-      if num_preds['is_normalize'][i_pred]:
-        for idx in range(idx_start,idx_start+num_pred):
-          idx_pred.append(idx)
-      idx_start += num_pred
     net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
                       activation_fn=None,
                       normalizer_fn=None,
                       scope='fc8_prev')
-    norm_rot = tf.norm(net[:,:,:,:4],axis=3,keep_dims=True)
+    pred_splits = tf.split(net,num_preds['num_preds'],axis=3)
+    pred_isnorm = tf.concat([pred_splits[i] for i in xrange(len(num_preds['is_normalize'])) \
+                             if num_preds['is_normalize'][i]],axis=3)
+    norm_rot = tf.norm(tf.concat(pred_isnorm,axis=3),
+                       axis=3,keep_dims=True)
     net = tf.div(net,norm_rot,name='fc8')
   else:
     net = slim.conv2d(net, num_preds, [1, 1],
