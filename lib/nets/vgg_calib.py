@@ -84,7 +84,7 @@ def last_layer(net,num_preds):
         for idx in range(idx_start,idx_start+num_pred):
           idx_pred.append(idx)
       idx_start += num_pred
-    net = slim.conv2d(net,num_preds,[1,1],
+    net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
                       activation_fn=None,
                       normalizer_fn=None,
                       scope='fc8_prev')
