@@ -3,6 +3,8 @@
 
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=10
+LEARNING_RATE=0.0001
+END_LEARNING_RATE=0.000001
 
 python deep_calib_train.py \
     --dataset_dir=/data/tf/kitti_calib \
@@ -14,8 +16,8 @@ python deep_calib_train.py \
     --model_name=${MODEL_NAME} \
     --checkpoint_path=pretrained/${MODEL_NAME}.ckpt \
     --checkpoint_exclude_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
-    --learning_rate=0.00001 \
-    --end_learning_rate=0.0000001
+    --learning_rate=${LEARNING_RATE} \
+    --end_learning_rate=${END_LEARNING_RATE}
     # --trainable_scopes=
     # --ignore_missing_vars=
 
