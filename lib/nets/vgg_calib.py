@@ -63,20 +63,33 @@ def last_layer(net,num_preds):
 
   """
   if isinstance(num_preds,dict):
-    preds = []
+    # preds = []
+    # for i_pred, num_pred in enumerate(num_preds['num_preds']):
+    #   if num_preds['is_normalize'][i_pred]:
+    #     pred = slim.conv2d(net, num_pred, [1, 1],
+    #                        activation_fn=None,
+    #                        normalizer_fn=None,
+    #                        scope='fc8_{}'.format(i_pred))
+    #     preds.append(tf.nn.l2_normalize(pred,dim=3))
+    #   else:
+    #     preds.append(slim.conv2d(net, num_pred, [1, 1],
+    #                              activation_fn=None,
+    #                              normalizer_fn=None,
+    #                              scope='fc8_{}'.format(i_pred)))
+    # net = tf.concat(values=preds,axis=3,name='fc8')
+    idx_pred = []
+    idx_start = 0 
     for i_pred, num_pred in enumerate(num_preds['num_preds']):
-      if num_preds['is_normalize'][i_pred]:
-        pred = slim.conv2d(net, num_pred, [1, 1],
-                           activation_fn=None,
-                           normalizer_fn=None,
-                           scope='fc8_{}'.format(i_pred))
-        preds.append(tf.nn.l2_normalize(pred,dim=3))
-      else:
-        preds.append(slim.conv2d(net, num_pred, [1, 1],
-                                 activation_fn=None,
-                                 normalizer_fn=None,
-                                 scope='fc8_{}'.format(i_pred)))
-    net = tf.concat(values=preds,axis=3,name='fc8')
+      if num_preds['is_narmalize'][i_pred]:
+        for idx in range(idx_start,idx_start+num_pred):
+          idx_pred.append(idx)
+      idx_start += num_pred
+    net = slim.conv2d(net,num_preds,[1,1],
+                      activation_fn=None,
+                      normalizer_fn=None,
+                      scope='fc8_prev')
+    norm_rot = tf.norm(net[:,:,:,:4],axis=3,keep_dims=True)
+    net = tf.div(net,norm_rot,name='fc8')
   else:
     net = slim.conv2d(net, num_preds, [1, 1],
                       activation_fn=None,
