@@ -267,10 +267,10 @@ def vgg_16(images,
         # net2 = slim.repeat(net2, 2, slim.conv2d, 512, [3, 3], scope='conv5_lidar')
         # net2 = slim.max_pool2d(net2, [2, 2], scope='pool5_lidar')
 
+      # Concat two channels
+      net = tf.concat(values=[net,net2],axis=3)
+
       with tf.variable_scope('match_feat'):
-        # Concat two channels
-        net = tf.concat(values=[net,net2],axis=3)
-        
         # Remaining ConvNets for Feature Matching
         net = slim.repeat(net, 3, slim.conv2d, 512, [3, 3], scope='conv4')
         net = slim.max_pool2d(net, [2, 2], scope='pool4')
