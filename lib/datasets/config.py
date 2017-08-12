@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:38:36
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-07-06 14:03:52
+# @Last Modified time: 2017-08-12 16:55:04
 
 # Configureation file for dataset
 from easydict import EasyDict as edict
@@ -29,4 +29,4 @@ __C._NUM_GEN = 5 # Number of random generation per image (<=10)
 
 __C._SET_CALIB = ['P2','R0_rect','Tr_velo_to_cam']
 
-__C._TF_FORMAT = '{}_calib_{:2d}_{:.1f}_{}.tfrecord'
+__C._TF_FORMAT = '{}_calib_{:02d}_{:.1f}_{}.tfrecord'
