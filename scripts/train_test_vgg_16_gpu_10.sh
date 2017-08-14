@@ -6,12 +6,13 @@ WEIGHT_LOSS=10
 LEARNING_RATE=0.0001
 END_LEARNING_RATE=0.000001
 DATA_NAME=kitti_calib_small
+LIST_PARAM=5,0.5
 
 python deep_calib_train.py \
     --dataset_dir=/data/tf/${DATA_NAME} \
     --train_dir=/data/tf/checkpoints/${DATA_NAME} \
     --max_number_of_steps=50000 \
-    --list_param=20,1.5 \
+    --list_param=${LIST_PARAM} \
     --weight_loss=${WEIGHT_LOSS} \
     --clone_on_cpu=False \
     --model_name=${MODEL_NAME} \
@@ -25,6 +26,6 @@ python deep_calib_train.py \
 python deep_calib_test.py \
     --dataset_dir=/data/tf/${DATA_NAME} \
     --checkpoint_path=/data/tf/checkpoints/${DATA_NAME}/${MODEL_NAME}/weight_${WEIGHT_LOSS} \
-    --list_param=20,1.5 \
+    --list_param=${LIST_PARAM} \
     --model_name=${MODEL_NAME} \
     --weight_loss=${WEIGHT_LOSS}
