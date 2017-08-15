@@ -3,11 +3,13 @@
 
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=10
+DATA_NAME=kitti_calib_small
+LIST_PARAM=5,0.5
 
 python deep_calib_kitti.py \
-    --dataset_dir=/data/tf/kitti_calib \
-    --checkpoint_path=/data/tf/checkpoints/kitti_calib/${MODEL_NAME}/weight_${WEIGHT_LOSS} \
-    --list_param=20,1.5 \
+    --dataset_dir=/data/tf/${DATA_NAME} \
+    --checkpoint_path=/data/tf/checkpoints/${DATA_NAME}/${MODEL_NAME}/weight_${WEIGHT_LOSS} \
+    --list_param=${LIST_PARAM} \
     --model_name=${MODEL_NAME} \
     --weight_loss=${WEIGHT_LOSS} \
     --dir_image=data_ex/kitti/object/data_object_image_2/testing/image_2 \
