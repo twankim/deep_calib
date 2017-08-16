@@ -355,7 +355,10 @@ def main(_):
         f_res.write('i_ran:{},   gt:{}\n'.format(i_ran,vec_gt))
         f_res.write('i_ran:{}, pred:{}\n'.format(i_ran,vec_pred))
         mse_val = ((vec_gt - vec_pred)**2).mean()
-        f_res.write('i_ran:{}, MSE:{}\n'.format(i_ran,mse_val))
+        mse_rot = ((vec_gt[:4]-vec_pred[:4]**2).mean())
+        mse_tran = ((vec_gt[4:]-vec_pred[4:]**2).mean())
+        f_res.write('i_ran:{}, MSE:{}, MSE_rot:{}, MSE_trans:\n'.format(
+                    i_ran,mse_val,mse_rot,mse_tran))
 
 if __name__ == '__main__':
   tf.app.run()
