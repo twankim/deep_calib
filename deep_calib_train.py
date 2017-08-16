@@ -105,7 +105,7 @@ tf.app.flags.DEFINE_float(
     'adam_beta2', 0.999,
     'The exponential decay rate for the 2nd moment estimates.')
 
-tf.app.flags.DEFINE_float('opt_epsilon', 1e-9, 'Epsilon term for the optimizer.')
+tf.app.flags.DEFINE_float('opt_epsilon', 1e-10, 'Epsilon term for the optimizer.')
 
 tf.app.flags.DEFINE_float('ftrl_learning_rate_power', -0.5,
                           'The learning rate power.')
