@@ -357,7 +357,7 @@ def main(_):
         mse_val = ((vec_gt - vec_pred)**2).mean()
         mse_rot = ((vec_gt[:4]-vec_pred[:4])**2).mean()
         mse_tran = ((vec_gt[4:]-vec_pred[4:])**2).mean()
-        f_res.write('i_ran:{}, MSE:{}, MSE_rot:{}, MSE_trans:\n'.format(
+        f_res.write('i_ran:{}, MSE:{}, MSE_rot:{}, MSE_trans:{}\n'.format(
                     i_ran,mse_val,mse_rot,mse_tran))
 
 if __name__ == '__main__':
