@@ -235,7 +235,8 @@ def main(_):
         with tf.Session('') as sess:
           lidar_temp = sess.run(lidar)
           img_temp = sess.run(image)
-          cv2.imwrite('data_ex/hoho_rgb.png',img_temp)
+          cv2.imwrite('data_ex/hoho_rgb.png',img_temp[:,:,(2,1,0)])
+          cv2.imwrite('data_ex/hoho_rgb_org.png',im[:,:,(2,1,0)])
           cv2.imwrite('data_ex/hoho_lidar.png',lidar_temp)
           cv2.imwrite('data_ex/hoho_lidar_org.png',im_depth_ran)
 
