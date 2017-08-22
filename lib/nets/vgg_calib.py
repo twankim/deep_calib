@@ -252,10 +252,10 @@ def vgg_16(images,
 
       with tf.variable_scope('lidar_feat'):
         # ConvNets for lidar
-        # net2 = slim.max_pool2d(lidars, [2, 2], scope='pool0_lidar')
-        # net2 = slim.repeat(net2, 2, slim.conv2d, 32, [3, 3], scope='conv1_lidar')
+        net2 = slim.max_pool2d(lidars, [2, 2], scope='pool0_lidar')
+        net2 = slim.repeat(net2, 2, slim.conv2d, 32, [3, 3], scope='conv1_lidar')
 
-        net2 = slim.repeat(lidars, 2, slim.conv2d, 32, [3, 3], scope='conv1_lidar')
+        # net2 = slim.repeat(lidars, 2, slim.conv2d, 32, [3, 3], scope='conv1_lidar')
 
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool1_lidar')
         net2 = slim.repeat(net2, 2, slim.conv2d, 64, [3, 3], scope='conv2_lidar')
