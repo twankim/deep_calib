@@ -233,7 +233,7 @@ def main(_):
                                        channels=1)
 
         with tf.Session('') as sess:
-          lidar_temp = sess.run()
+          lidar_temp = sess.run(lidar)
           cv2.imwrite('hohoho.png',lidar_temp)
 
         # Change format to [batch_size, height, width, channels]
