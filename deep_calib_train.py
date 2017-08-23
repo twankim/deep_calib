@@ -450,7 +450,8 @@ def main(_):
       lidar = lidar_preprocessing_fn(lidar,
                                      train_image_size,
                                      train_image_size,
-                                     channels=1)
+                                     channels=1,
+                                     is_lidar=True)
 
       images, lidars, y_trues = tf.train.batch(
               [image,lidar,y_true],

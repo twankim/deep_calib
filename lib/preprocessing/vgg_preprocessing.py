@@ -288,13 +288,34 @@ def _aspect_preserving_resize(image, smallest_side, channels=3):
   resized_image.set_shape([None, None, channels])
   return resized_image
 
+def _interpolate_image(image,channels==3):
+  """Interpolate sparse image (lidar)
+
+  Args:
+    image: A 3-D image 'Tensor'
+
+  Returns:
+    interpolated_image: A 3-D tensor contianing the interpolated image
+  """
+  image = tf.expand_dims(image, 0)
+  # Interpolate using max_pooling
+  interpolated_image = tf.layers.max_pooling2d(image,
+                                               pool_size=[2,2],
+                                               strides=1,
+                                               padding='same')
+
+  interpolated_image = tf.squeeze(interpolated_image, [0])
+  interpolated_image.set_shape([None, None, channels])
+  return interpolated_image
+
 
 def preprocess_for_train(image,
                          output_height,
                          output_width,
                          resize_side_min=_RESIZE_SIDE_MIN,
                          resize_side_max=_RESIZE_SIDE_MAX,
-                         channels=3):
+                         channels=3,
+                         is_lidar=False):
   """Preprocesses the given image for training.
 
   Note that the actual resizing scale is sampled from
@@ -315,6 +336,8 @@ def preprocess_for_train(image,
   resize_side = tf.random_uniform(
       [], minval=resize_side_min, maxval=resize_side_max+1, dtype=tf.int32)
 
+  if is_lidar:
+    image = _interpolate_image(image,channels)
   image = _aspect_preserving_resize(image, resize_side, channels)
   image = _random_crop([image], output_height, output_width, channels)[0]
   image.set_shape([output_height, output_width, channels])
@@ -330,7 +353,8 @@ def preprocess_for_eval(image,
                         output_height,
                         output_width,
                         resize_side,
-                        channels=3):
+                        channels=3,
+                        is_lidar=False):
   """Preprocesses the given image for evaluation.
 
   Args:
@@ -342,6 +366,8 @@ def preprocess_for_eval(image,
   Returns:
     A preprocessed image.
   """
+  if is_lidar:
+    image = _interpolate_image(image,channels)
   image = _aspect_preserving_resize(image, resize_side, channels)
   image = _central_crop([image], output_height, output_width, channels)[0]
   image.set_shape([output_height, output_width, channels])
@@ -355,7 +381,8 @@ def preprocess_for_eval(image,
 def preprocess_image(image, output_height, output_width, is_training=False,
                      resize_side_min=_RESIZE_SIDE_MIN,
                      resize_side_max=_RESIZE_SIDE_MAX,
-                     channels=3):
+                     channels=3,
+                     is_lidar=False):
   """Preprocesses the given image.
 
   Args:
@@ -377,7 +404,7 @@ def preprocess_image(image, output_height, output_width, is_training=False,
   """
   if is_training:
     return preprocess_for_train(image, output_height, output_width,
-                                resize_side_min, resize_side_max, channels)
+                                resize_side_min, resize_side_max, channels,is_lidar)
   else:
     return preprocess_for_eval(image, output_height, output_width,
-                               resize_side_min,channels)
+                               resize_side_min,channels,is_lidar)
