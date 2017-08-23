@@ -288,7 +288,7 @@ def _aspect_preserving_resize(image, smallest_side, channels=3):
   resized_image.set_shape([None, None, channels])
   return resized_image
 
-def _interpolate_image(image,channels==3):
+def _interpolate_image(image,channels=3):
   """Interpolate sparse image (lidar)
 
   Args:
