@@ -231,7 +231,8 @@ def main(_):
                                        test_image_size,
                                        test_image_size,
                                        channels=1,
-                                       is_lidar=True)
+                                       is_lidar=True,
+                                       pool_size=[2,4])
 
         with tf.Session('') as sess:
           lidar_temp = sess.run(lidar)

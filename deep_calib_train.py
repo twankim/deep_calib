@@ -451,7 +451,8 @@ def main(_):
                                      train_image_size,
                                      train_image_size,
                                      channels=1,
-                                     is_lidar=True)
+                                     is_lidar=True,
+                                     pool_size=[2,4])
 
       images, lidars, y_trues = tf.train.batch(
               [image,lidar,y_true],
