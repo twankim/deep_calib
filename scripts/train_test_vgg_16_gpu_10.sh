@@ -11,7 +11,7 @@ LIST_PARAM=5,0.5
 python deep_calib_train.py \
     --dataset_dir=/data/tf/${DATA_NAME} \
     --train_dir=/data/tf/checkpoints/${DATA_NAME} \
-    --max_number_of_steps=30000 \
+    --max_number_of_steps=10000 \
     --list_param=${LIST_PARAM} \
     --weight_loss=${WEIGHT_LOSS} \
     --clone_on_cpu=False \
@@ -20,7 +20,7 @@ python deep_calib_train.py \
     --checkpoint_exclude_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
     --learning_rate=${LEARNING_RATE} \
     --end_learning_rate=${END_LEARNING_RATE} \
-    --trainable_scopes=vgg_16/lidar_feat,vgg_16/match_feat,vgg_16/regression
+    # --trainable_scopes=vgg_16/lidar_feat,vgg_16/match_feat,vgg_16/regression
     # --ignore_missing_vars=
 
 python deep_calib_test.py \
