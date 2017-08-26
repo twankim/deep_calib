@@ -454,10 +454,6 @@ def main(_):
                                      is_lidar=True,
                                      pool_size=[4,2])
 
-      # with tf.Session('') as sess:
-      #   y_ho = sess.run(y_true)
-      #   print(y_ho)
-
       images, lidars, y_trues = tf.train.batch(
               [image,lidar,y_true],
               batch_size=FLAGS.batch_size,
@@ -473,6 +469,10 @@ def main(_):
       """Allows data parallelism by creating multiple clones of network_fn."""
       with tf.device(deploy_config.inputs_device()):
         images, lidars, y_trues = batch_queue.dequeue()
+
+        with tf.Session('') as sess:
+          y_hos = sess.run(y_trues)
+          print(y_hos)
       y_preds, end_points = network_fn(images,lidars)
 
       #############################
