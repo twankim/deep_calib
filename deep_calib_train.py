@@ -454,9 +454,9 @@ def main(_):
                                      is_lidar=True,
                                      pool_size=[4,2])
 
-      with tf.Session('') as sess:
-        y_ho = sess.run(y_true)
-        print(y_ho)
+      # with tf.Session('') as sess:
+      #   y_ho = sess.run(y_true)
+      #   print(y_ho)
 
       images, lidars, y_trues = tf.train.batch(
               [image,lidar,y_true],
