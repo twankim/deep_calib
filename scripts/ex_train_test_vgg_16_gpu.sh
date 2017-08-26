@@ -20,6 +20,7 @@ python deep_calib_train.py \
     --checkpoint_exclude_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
     --learning_rate=${LEARNING_RATE} \
     --end_learning_rate=${END_LEARNING_RATE} \
+    --save_summaries_secs=60
     # --trainable_scopes=vgg_16/lidar_feat,vgg_16/match_feat,vgg_16/regression
     # --ignore_missing_vars=
 
