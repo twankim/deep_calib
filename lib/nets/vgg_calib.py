@@ -62,7 +62,8 @@ def last_layer(net,num_preds):
     output tensor with size [batch, 1, 1, number of predictions]
 
   """
-  if isinstance(num_preds,dict):
+  # if isinstance(num_preds,dict):
+  if False:
     # preds = []
     # for i_pred, num_pred in enumerate(num_preds['num_preds']):
     #   if num_preds['is_normalize'][i_pred]:
