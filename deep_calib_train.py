@@ -191,7 +191,7 @@ tf.app.flags.DEFINE_string(
     'as `None`, then the model_name flag is used.')
 
 tf.app.flags.DEFINE_integer(
-    'batch_size', 32, 'The number of samples in each batch.')
+    'batch_size', 10, 'The number of samples in each batch.')
 
 tf.app.flags.DEFINE_integer(
     'train_image_size', None, 'Train image size')
@@ -458,8 +458,7 @@ def main(_):
               [image,lidar,y_true],
               batch_size=FLAGS.batch_size,
               num_threads=FLAGS.num_preprocessing_threads,
-              capacity=5*FLAGS.batch_size,
-              allow_smaller_final_batch=True)
+              capacity=5*FLAGS.batch_size)
       batch_queue = slim.prefetch_queue.prefetch_queue(
               [images,lidars,y_trues], capacity=3*deploy_config.num_clones)
 
