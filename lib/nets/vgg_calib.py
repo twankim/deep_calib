@@ -89,7 +89,8 @@ def last_layer(net,num_preds):
                        axis=3,keep_dims=True)
     net = tf.div(net,norm_rot,name='fc8')
   else:
-    net = slim.conv2d(net, num_preds, [1, 1],
+    # net = slim.conv2d(net, num_preds, [1, 1],
+    net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
                       activation_fn=None,
                       normalizer_fn=None,
                       scope='fc8')
