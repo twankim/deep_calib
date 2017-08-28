@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-08-08 16:48:35
+# @Last Modified time: 2017-08-28 11:26:33
 
 from __future__ import absolute_import
 from __future__ import division
@@ -58,13 +58,13 @@ def quat_to_transmat(q_r,t_vec):
     w,x,y,z = q_r
 
     Rt[0,0] = w**2 + x**2 - y**2 - z**2
-    Rt[0,1] = 2*x*y - 2*w*z
-    Rt[0,2] = 2*x*z + 2*w*y
-    Rt[1,0] = 2*x*y + 2*w*z
+    Rt[0,1] = 2*(x*y - w*z)
+    Rt[0,2] = 2*(x*z + w*y)
+    Rt[1,0] = 2*(x*y + w*z)
     Rt[1,1] = w**2 - x**2 + y**2 - z**2
-    Rt[1,2] = 2*y*z - 2*w*x
-    Rt[2,0] = 2*x*z - 2*w*y
-    Rt[2,1] = 2*y*z + 2*w*x
+    Rt[1,2] = 2*(y*z - w*x)
+    Rt[2,0] = 2*(x*z - w*y)
+    Rt[2,1] = 2*(y*z + w*x)
     Rt[2,2] = w**2 - x**2 - y**2 + z**2
 
     Rt[:3,3] = t_vec
