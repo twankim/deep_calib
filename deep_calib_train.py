@@ -458,7 +458,8 @@ def main(_):
               [image,lidar,y_true],
               batch_size=FLAGS.batch_size,
               num_threads=FLAGS.num_preprocessing_threads,
-              capacity=5*FLAGS.batch_size)
+              capacity=5*FLAGS.batch_size,
+              allow_smaller_final_batch=True)
       batch_queue = slim.prefetch_queue.prefetch_queue(
               [images,lidars,y_trues], capacity=3*deploy_config.num_clones)
 
