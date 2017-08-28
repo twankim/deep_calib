@@ -9,9 +9,10 @@ DATA_NAME=kitti_calib_small
 LIST_PARAM=5,0.5
 
 python deep_calib_train.py \
+    --save_summaries_secs=60 \
     --dataset_dir=/data/tf/${DATA_NAME} \
     --train_dir=/data/tf/checkpoints/${DATA_NAME} \
-    --max_number_of_steps=10000 \
+    --max_number_of_steps=30000 \
     --list_param=${LIST_PARAM} \
     --weight_loss=${WEIGHT_LOSS} \
     --clone_on_cpu=False \
