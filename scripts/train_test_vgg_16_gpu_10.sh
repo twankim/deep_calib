@@ -3,16 +3,19 @@
 
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=10
+BATCH_SIZE=16
 LEARNING_RATE=0.00001
 END_LEARNING_RATE=0.0000001
 DATA_NAME=kitti_calib_small
 LIST_PARAM=5,0.5
+SUMMARY_SECS=600
 
 python deep_calib_train.py \
-    --save_summaries_secs=60 \
+    --save_summaries_secs=${SUMMARY_SECS} \
     --dataset_dir=/data/tf/${DATA_NAME} \
     --train_dir=/data/tf/checkpoints/${DATA_NAME} \
-    --max_number_of_steps=30000 \
+    --max_number_of_steps=80000 \
+    --batch_size=${BATCH_SIZE} \
     --list_param=${LIST_PARAM} \
     --weight_loss=${WEIGHT_LOSS} \
     --clone_on_cpu=False \
