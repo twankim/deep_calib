@@ -335,8 +335,8 @@ def main(_):
             variables_to_restore=variables_to_restore)
 
       y_preds_val = np.squeeze(y_preds_val,axis=0)
-      print('Norm_previous:{}'.format(np.norm(y_preds_val[:4])))
-      y_preds_val[:4] = y_preds_val[:4]/np.norm(y_preds_val[:4])
+      print('Norm_previous:{}'.format(np.linalg.norm(y_preds_val[:4])))
+      y_preds_val[:4] = y_preds_val[:4]/np.linalg.norm(y_preds_val[:4])
 
       # y_preds_val = sess.run(y_preds,
       #                        feed_dict={im_placeholder:im,\
