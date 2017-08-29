@@ -62,8 +62,7 @@ def last_layer(net,num_preds):
     output tensor with size [batch, 1, 1, number of predictions]
 
   """
-  # if isinstance(num_preds,dict):
-  if False:
+  if isinstance(num_preds,dict):
     # preds = []
     # for i_pred, num_pred in enumerate(num_preds['num_preds']):
     #   if num_preds['is_normalize'][i_pred]:
@@ -288,7 +287,11 @@ def vgg_16(images,
         # net = slim.conv2d(net, 4096, [1, 1], scope='fc7')
         net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
                            scope='dropout7')
-        net = last_layer(net,num_preds)
+        # net = last_layer(net,num_preds)
+        net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
+                      activation_fn=None,
+                      normalizer_fn=None,
+                      scope='fc8')
 
         # Convert end_points_collection into a end_point dict.
         end_points = slim.utils.convert_collection_to_dict(end_points_collection)
