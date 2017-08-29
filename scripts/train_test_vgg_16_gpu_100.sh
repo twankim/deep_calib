@@ -8,6 +8,7 @@ LEARNING_RATE=0.00001
 END_LEARNING_RATE=0.0000001
 DATA_NAME=kitti_calib_small
 LIST_PARAM=5,0.5
+LIDAR_POOL=5,2
 SUMMARY_SECS=600
 
 python deep_calib_train.py \
@@ -17,6 +18,7 @@ python deep_calib_train.py \
     --max_number_of_steps=80000 \
     --batch_size=${BATCH_SIZE} \
     --list_param=${LIST_PARAM} \
+    --lidar_pool=${LIDAR_POOL} \
     --weight_loss=${WEIGHT_LOSS} \
     --clone_on_cpu=False \
     --model_name=${MODEL_NAME} \
@@ -31,5 +33,6 @@ python deep_calib_test.py \
     --dataset_dir=/data/tf/${DATA_NAME} \
     --checkpoint_path=/data/tf/checkpoints/${DATA_NAME}/${MODEL_NAME}/weight_${WEIGHT_LOSS} \
     --list_param=${LIST_PARAM} \
+    --lidar_pool=${LIDAR_POOL} \
     --model_name=${MODEL_NAME} \
     --weight_loss=${WEIGHT_LOSS}

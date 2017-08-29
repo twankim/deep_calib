@@ -65,6 +65,10 @@ tf.app.flags.DEFINE_string(
     'List of parameters for the train/test data. max_rotation,max_translation')
 
 tf.app.flags.DEFINE_string(
+    'lidar_pool', '5,2',
+    'Kernel size for Max-pooling LIDAR Image: height,width. defualt=5,2')
+
+tf.app.flags.DEFINE_string(
     'model_name', 'vgg_16', 'The name of the architecture to evaluate.')
 
 tf.app.flags.DEFINE_string(
@@ -132,6 +136,8 @@ def main(_):
         preprocessing_name,
         is_training=False)
 
+    lidar_pool = [int(l_i) for l_i in FLAGS.lidar_pool.split(',')]
+
     test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
 
     image = image_preprocessing_fn(image,
@@ -142,7 +148,7 @@ def main(_):
                                    test_image_size,
                                    channels=1,
                                    is_lidar=True,
-                                   pool_size=[4,2])
+                                   pool_size=lidar_pool)
 
     images, lidars, y_trues = tf.train.batch(
         [image, lidar, y_true],

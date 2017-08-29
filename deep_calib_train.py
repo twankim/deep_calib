@@ -180,6 +180,10 @@ tf.app.flags.DEFINE_string(
     'List of parameters for the file name of train/test data. max_rotation,max_translation')
 
 tf.app.flags.DEFINE_string(
+    'lidar_pool', '5,2',
+    'Kernel size for Max-pooling LIDAR Image: height,width. defualt=5,2')
+
+tf.app.flags.DEFINE_string(
     'weight_loss', None,
     'The weight to balance predictions. ex) multiplied to the rotation quaternion')
 
@@ -431,6 +435,8 @@ def main(_):
             preprocessing_name,
             is_training=True)
 
+    lidar_pool = [int(l_i) for l_i in FLAGS.lidar_pool.split(',')]
+
     ##############################################################
     # Create a dataset provider that loads data from the dataset #
     ##############################################################
@@ -452,7 +458,7 @@ def main(_):
                                      train_image_size,
                                      channels=1,
                                      is_lidar=True,
-                                     pool_size=[4,2])
+                                     pool_size=lidar_pool)
 
       images, lidars, y_trues = tf.train.batch(
               [image,lidar,y_true],

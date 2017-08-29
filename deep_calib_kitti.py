@@ -97,6 +97,10 @@ tf.app.flags.DEFINE_string(
     'List of parameters for the train/test data. max_rotation,max_translation')
 
 tf.app.flags.DEFINE_string(
+    'lidar_pool', '5,2',
+    'Kernel size for Max-pooling LIDAR Image: height,width. defualt=5,2')
+
+tf.app.flags.DEFINE_string(
     'model_name', 'vgg_16', 'The name of the architecture to evaluate.')
 
 tf.app.flags.DEFINE_string(
@@ -178,6 +182,8 @@ def main(_):
         preprocessing_name,
         is_training=False)
 
+    lidar_pool = [int(l_i) for l_i in FLAGS.lidar_pool.split(',')]
+
     ####################
     # Select the model #
     ####################
@@ -232,23 +238,23 @@ def main(_):
                                        test_image_size,
                                        channels=1,
                                        is_lidar=True,
-                                       pool_size=[4,2])
+                                       pool_size=lidar_pool)
 
-        # with tf.Session('') as sess:
-        #   lidar_temp = sess.run(lidar)
-        #   img_temp = sess.run(image)
-        #   _R_MEAN = 123.68
-        #   _G_MEAN = 116.78
-        #   _B_MEAN = 103.94
-        #   _BW_MEAN = (_R_MEAN+_G_MEAN+_B_MEAN)/3.0
-        #   img_temp[:,:,2] += _R_MEAN
-        #   img_temp[:,:,1] += _G_MEAN
-        #   img_temp[:,:,0] += _B_MEAN
-        #   lidar_temp += _BW_MEAN
-        #   cv2.imwrite('data_ex/hoho_rgb.png',img_temp[:,:,(2,1,0)])
-        #   cv2.imwrite('data_ex/hoho_rgb_org.png',im[:,:,(2,1,0)])
-        #   cv2.imwrite('data_ex/hoho_lidar.png',lidar_temp)
-        #   cv2.imwrite('data_ex/hoho_lidar_org.png',im_depth_ran)
+        with tf.Session('') as sess:
+          lidar_temp = sess.run(lidar)
+          img_temp = sess.run(image)
+          _R_MEAN = 123.68
+          _G_MEAN = 116.78
+          _B_MEAN = 103.94
+          _BW_MEAN = (_R_MEAN+_G_MEAN+_B_MEAN)/3.0
+          img_temp[:,:,2] += _R_MEAN
+          img_temp[:,:,1] += _G_MEAN
+          img_temp[:,:,0] += _B_MEAN
+          lidar_temp += _BW_MEAN
+          cv2.imwrite('data_ex/hoho_rgb.png',img_temp[:,:,(2,1,0)])
+          cv2.imwrite('data_ex/hoho_rgb_org.png',im[:,:,(2,1,0)])
+          cv2.imwrite('data_ex/hoho_lidar.png',lidar_temp)
+          cv2.imwrite('data_ex/hoho_lidar_org.png',im_depth_ran)
 
         # Change format to [batch_size, height, width, channels]
         # batch_size = 1
