@@ -9,7 +9,7 @@ END_LEARNING_RATE=0.000000001
 DATA_NAME=kitti_calib_small
 LIST_PARAM=5,0.5
 LIDAR_POOL=5,2
-SUMMARY_SECS=600
+SUMMARY_SECS=60
 
 python deep_calib_train.py \
     --save_summaries_secs=${SUMMARY_SECS} \
