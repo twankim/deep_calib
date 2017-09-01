@@ -214,4 +214,3 @@ vgg_16.default_image_size = 224
 
 # Alias
 vgg_d = vgg_16
-vgg_e = vgg_19
