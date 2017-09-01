@@ -281,24 +281,24 @@ def vgg_16(images,
       with tf.variable_scope('regression'):
         # Use conv2d instead of fully_connected layers.
         # net = slim.conv2d(net, 4096, [7, 7], padding=fc_conv_padding, scope='fc6')
-        net = slim.conv2d(net, 512, [7, 7], padding=fc_conv_padding, scope='fc6')
+        net = slim.conv2d(net, 256, [7, 7], padding=fc_conv_padding, scope='fc6')
         net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
                            scope='dropout6')
         # net = slim.conv2d(net, 4096, [1, 1], scope='fc7')
-        net = slim.conv2d(net, 256, [1, 1], scope='fc7')
-        net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
-                           scope='dropout7')
+        # net = slim.conv2d(net, 256, [1, 1], scope='fc7')
+        # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
+        #                    scope='dropout7')
         # net = last_layer(net,num_preds)
         net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
                       activation_fn=None,
                       normalizer_fn=None,
-                      scope='fc8')
+                      scope='fc7')
 
         # Convert end_points_collection into a end_point dict.
         end_points = slim.utils.convert_collection_to_dict(end_points_collection)
         if spatial_squeeze:
-          net = tf.squeeze(net, [1, 2], name='fc8/squeezed')
-          end_points[sc.name + '/fc8'] = net
+          net = tf.squeeze(net, [1, 2], name='fc7/squeezed')
+          end_points[sc.name + '/fc7'] = net
       
       return net, end_points
 vgg_16.default_image_size = 224
