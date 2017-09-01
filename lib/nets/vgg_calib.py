@@ -170,7 +170,7 @@ def vgg_16(images,
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool1_lidar')
         net2 = slim.repeat(net2, 2, slim.conv2d, 64, [3, 3], scope='conv2_lidar')
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool2_lidar')
-        net2 = slim.repeat(net2, 3, slim.conv2d, 128, [3, 3], scope='conv3_lidar')
+        net2 = slim.repeat(net2, 2, slim.conv2d, 128, [3, 3], scope='conv3_lidar')
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool3_lidar')
         # net2 = slim.repeat(net2, 2, slim.conv2d, 512, [3, 3], scope='conv4_lidar')
         # net2 = slim.max_pool2d(net2, [2, 2], scope='pool4_lidar')
