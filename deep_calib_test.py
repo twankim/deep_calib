@@ -170,9 +170,6 @@ def main(_):
     else:
       variables_to_restore = slim.get_variables_to_restore()
 
-    # predictions = tf.argmax(logits, 1)
-    # labels = tf.squeeze(labels)
-
     if FLAGS.weight_loss:
       weight_loss = FLAGS.weight_loss
       weights_preds = np.ones(sum(dataset.num_preds['num_preds']))
