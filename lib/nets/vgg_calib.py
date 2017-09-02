@@ -79,7 +79,7 @@ def last_layer(net,num_preds):
     net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
                       activation_fn=None,
                       normalizer_fn=None,
-                      scope='fc8_prev')
+                      scope='fc7_prev')
     pred_splits = tf.split(net,num_preds['num_preds'],axis=3)
     pred_isnorm = tf.concat(
             [pred_splits[i] for i in xrange(len(num_preds['is_normalize'])) \
@@ -88,13 +88,13 @@ def last_layer(net,num_preds):
                        axis=3,keep_dims=True)
     net = tf.concat([tf.div(pred_splits[i],norm_rot) \
             for i in xrange(len(num_preds['is_normalize'])) \
-            if num_preds['is_normalize'][i]], axis=3, name='fc8')
+            if num_preds['is_normalize'][i]], axis=3, name='f78')
     # net = tf.div(net,norm_rot,name='fc8')
   else:
     net = slim.conv2d(net, num_preds, [1, 1],
                       activation_fn=None,
                       normalizer_fn=None,
-                      scope='fc8')
+                      scope='fc7')
   return net
 
 
@@ -185,15 +185,15 @@ def vgg_16(images,
       
       with tf.variable_scope('match_feat'):
         # Remaining ConvNets for Feature Matching
-        net = slim.repeat(net, 2, slim.conv2d, 384, [3, 3], scope='conv4')
+        net = slim.repeat(net, 2, slim.conv2d, 256, [3, 3], scope='conv4')
         net = slim.max_pool2d(net, [2, 2], scope='pool4')
-        net = slim.repeat(net, 2, slim.conv2d, 384, [3, 3], scope='conv5')
+        net = slim.repeat(net, 2, slim.conv2d, 256, [3, 3], scope='conv5')
         net = slim.max_pool2d(net, [2, 2], scope='pool5')
 
       with tf.variable_scope('regression'):
         # Use conv2d instead of fully_connected layers.
         # net = slim.conv2d(net, 4096, [7, 7], padding=fc_conv_padding, scope='fc6')
-        net = slim.conv2d(net, 256, [7, 7], padding=fc_conv_padding, scope='fc6')
+        net = slim.conv2d(net, 128, [7, 7], padding=fc_conv_padding, scope='fc6')
         net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
                            scope='dropout6')
         # net = slim.conv2d(net, 4096, [1, 1], scope='fc7')
