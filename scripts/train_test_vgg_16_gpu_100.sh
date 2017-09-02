@@ -3,13 +3,13 @@
 
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=100
-BATCH_SIZE=16
-LEARNING_RATE=0.00001
-END_LEARNING_RATE=0.0000001
+BATCH_SIZE=32
+LEARNING_RATE=0.000001
+END_LEARNING_RATE=0.00000001
 DATA_NAME=kitti_calib_small
 LIST_PARAM=5,0.5
 LIDAR_POOL=5,2
-SUMMARY_SECS=600
+SUMMARY_SECS=180
 
 python deep_calib_train.py \
     --save_summaries_secs=${SUMMARY_SECS} \
@@ -18,8 +18,8 @@ python deep_calib_train.py \
     --max_number_of_steps=80000 \
     --batch_size=${BATCH_SIZE} \
     --list_param=${LIST_PARAM} \
-    --lidar_pool=${LIDAR_POOL} \
     --weight_loss=${WEIGHT_LOSS} \
+    --lidar_pool=${LIDAR_POOL} \
     --clone_on_cpu=False \
     --model_name=${MODEL_NAME} \
     --checkpoint_path=pretrained/${MODEL_NAME}.ckpt \
