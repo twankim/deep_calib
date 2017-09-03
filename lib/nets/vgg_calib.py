@@ -193,7 +193,7 @@ def vgg_16(images,
       with tf.variable_scope('regression'):
         # Use conv2d instead of fully_connected layers.
         # net = slim.conv2d(net, 4096, [7, 7], padding=fc_conv_padding, scope='fc6')
-        net = slim.conv2d(net, 128, [7, 7], padding=fc_conv_padding, scope='fc6')
+        net = slim.conv2d(net, 256, [7, 7], padding=fc_conv_padding, scope='fc6')
         net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
                            scope='dropout6')
         # net = slim.conv2d(net, 4096, [1, 1], scope='fc7')
