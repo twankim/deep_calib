@@ -87,9 +87,8 @@ def last_layer(net,num_preds):
     norm_rot = tf.norm(tf.concat(pred_isnorm,axis=3),
                        axis=3,keep_dims=True)
     net = tf.concat([tf.div(pred_splits[i],norm_rot) \
-            for i in xrange(len(num_preds['is_normalize'])) \
-            if num_preds['is_normalize'][i] \
-            else pred_splits[i]], axis=3, name='f7')
+            if num_preds['is_normalize'][i] else pred_splits[i] \
+            for i in xrange(len(num_preds['is_normalize']))], axis=3, name='f7')
     # net = tf.div(net,norm_rot,name='fc8')
   else:
     net = slim.conv2d(net, num_preds, [1, 1],
