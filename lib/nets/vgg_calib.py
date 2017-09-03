@@ -79,7 +79,7 @@ def last_layer(net,num_preds):
     net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
                       activation_fn=None,
                       normalizer_fn=None,
-                      scope='fc7_prev')
+                      scope='fc7')
     pred_splits = tf.split(net,num_preds['num_preds'],axis=3)
     pred_isnorm = tf.concat(
             [pred_splits[i] for i in xrange(len(num_preds['is_normalize'])) \
@@ -88,7 +88,8 @@ def last_layer(net,num_preds):
                        axis=3,keep_dims=True)
     net = tf.concat([tf.div(pred_splits[i],norm_rot) \
             if num_preds['is_normalize'][i] else pred_splits[i] \
-            for i in xrange(len(num_preds['is_normalize']))], axis=3, name='f7')
+            for i in xrange(len(num_preds['is_normalize']))], axis=3,
+            name='fc7_normalized')
     # net = tf.div(net,norm_rot,name='fc8')
   else:
     net = slim.conv2d(net, num_preds, [1, 1],
