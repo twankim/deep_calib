@@ -105,7 +105,7 @@ tf.app.flags.DEFINE_float(
     'adam_beta2', 0.999,
     'The exponential decay rate for the 2nd moment estimates.')
 
-tf.app.flags.DEFINE_float('opt_epsilon', 1e-12, 'Epsilon term for the optimizer.')
+tf.app.flags.DEFINE_float('opt_epsilon', 1e-10, 'Epsilon term for the optimizer.')
 
 tf.app.flags.DEFINE_float('ftrl_learning_rate_power', -0.5,
                           'The learning rate power.')
@@ -149,7 +149,7 @@ tf.app.flags.DEFINE_float(
     'learning_rate_decay_factor', 0.94, 'Learning rate decay factor.')
 
 tf.app.flags.DEFINE_float(
-    'num_epochs_per_decay', 10.0,
+    'num_epochs_per_decay', 2.0,
     'Number of epochs after which learning rate decays.')
 
 tf.app.flags.DEFINE_bool(
@@ -195,7 +195,7 @@ tf.app.flags.DEFINE_string(
     'as `None`, then the model_name flag is used.')
 
 tf.app.flags.DEFINE_integer(
-    'batch_size', 16, 'The number of samples in each batch.')
+    'batch_size', 32, 'The number of samples in each batch.')
 
 tf.app.flags.DEFINE_integer(
     'train_image_size', None, 'Train image size')
