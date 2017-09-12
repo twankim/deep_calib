@@ -334,7 +334,8 @@ def main(_):
             final_op=y_preds,
             variables_to_restore=variables_to_restore)
 
-      # y_preds_val = np.squeeze(y_preds_val,axis=0)
+      y_preds_val = np.squeeze(y_preds_val,axis=0)
+      
       # print('Norm_previous:{}'.format(np.linalg.norm(y_preds_val[:4])))
       # y_preds_val[:4] = y_preds_val[:4]/np.linalg.norm(y_preds_val[:4])
 
