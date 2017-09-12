@@ -172,7 +172,7 @@ def vgg_16(images,
       # Concat two channels
       net = tf.concat(values=[net,net2],axis=3)
     
-    with slim.arg_scope([slim.conv2d, slim.max_pool2d, slim.batch_norm],
+    with slim.arg_scope([slim.conv2d, slim.max_pool2d],
       normalizer_fn=slim.batch_norm,
       outputs_collections=end_points_collection):
       with tf.variable_scope('match_feat'):
