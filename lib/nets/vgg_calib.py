@@ -174,7 +174,7 @@ def vgg_16(images,
     
     with slim.arg_scope([slim.conv2d, slim.max_pool2d, slim.batch_norm],
       normalizer_fn=slim.batch_norm,
-      outputs_collections=end_points_collection)
+      outputs_collections=end_points_collection):
       with tf.variable_scope('match_feat'):
         # Remaining ConvNets for Feature Matching
         net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv4')
