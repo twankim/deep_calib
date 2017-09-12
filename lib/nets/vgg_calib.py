@@ -108,7 +108,7 @@ def vgg_arg_scope(weight_decay=0.0005):
   Returns:
     An arg_scope.
   """
-  with slim.arg_scope([slim.conv2d, slim.fully_connected,slim.batch_norm],
+  with slim.arg_scope([slim.conv2d, slim.fully_connected],
                       activation_fn=tf.nn.relu,
                       normalizer_fn=slim.batch_norm,
                       weights_initializer=tf.contrib.layers.xavier_initializer(),
