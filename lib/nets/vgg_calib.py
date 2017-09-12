@@ -108,9 +108,8 @@ def vgg_arg_scope(weight_decay=0.0005):
   Returns:
     An arg_scope.
   """
-  with slim.arg_scope([slim.conv2d, slim.fully_connected],
+  with slim.arg_scope([slim.conv2d],
                       activation_fn=tf.nn.relu,
-                      normalizer_fn=slim.batch_norm,
                       weights_initializer=tf.contrib.layers.xavier_initializer(),
                       weights_regularizer=slim.l2_regularizer(weight_decay),
                       biases_initializer=tf.zeros_initializer()):
@@ -152,7 +151,7 @@ def vgg_16(images,
   with tf.variable_scope(scope, 'vgg_16', [images,lidars]) as sc:
     end_points_collection = sc.name + '_end_points'
     # Collect outputs for conv2d, fully_connected and max_pool2d.
-    with slim.arg_scope([slim.conv2d, slim.fully_connected, slim.max_pool2d],
+    with slim.arg_scope([slim.conv2d, slim.max_pool2d],
                         outputs_collections=end_points_collection):
       net = slim.repeat(images, 2, slim.conv2d, 64, [3, 3], scope='conv1')
       net = slim.max_pool2d(net, [2, 2], scope='pool1')
@@ -172,7 +171,10 @@ def vgg_16(images,
       
       # Concat two channels
       net = tf.concat(values=[net,net2],axis=3)
-      
+    
+    with slim.arg_scope([slim.conv2d, slim.max_pool2d, slim.batch_norm],
+      normalizer_fn=slim.batch_norm,
+      outputs_collections=end_points_collection)
       with tf.variable_scope('match_feat'):
         # Remaining ConvNets for Feature Matching
         net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv4')
