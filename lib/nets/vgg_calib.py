@@ -171,34 +171,33 @@ def vgg_16(images,
       
       # Concat two channels
       net = tf.concat(values=[net,net2],axis=3)
-    
-    with slim.arg_scope([slim.conv2d, slim.max_pool2d],
-      normalizer_fn=slim.batch_norm,
-      outputs_collections=end_points_collection):
-      with tf.variable_scope('match_feat'):
-        # Remaining ConvNets for Feature Matching
-        net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv4')
-        net = slim.max_pool2d(net, [2, 2], scope='pool4')
-        net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv5')
-        net = slim.max_pool2d(net, [2, 2], scope='pool5')
 
-      with tf.variable_scope('regression'):
-        # Use conv2d instead of fully_connected layers.
-        # net = slim.conv2d(net, 4096, [7, 7], padding=fc_conv_padding, scope='fc6')
-        net = slim.conv2d(net, 4096, [7, 7], padding=fc_conv_padding, scope='fc6')
-        net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
-                           scope='dropout6')
-        net = slim.conv2d(net, 1024, [1, 1], scope='fc7')
-        net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
-                           scope='dropout7')
-        # Normalize Quaternion only in Testing
-        if is_training:
-          net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
-                      activation_fn=None,
-                      normalizer_fn=None,
-                      scope='fc8')
-        else:
-          net = last_layer(net,num_preds)
+      # Apply Batch_Norm on rest of the network    
+      with slim.arg_scope([slim.conv2d],normalizer_fn=slim.batch_norm):
+        with tf.variable_scope('match_feat'):
+          # Remaining ConvNets for Feature Matching
+          net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv4')
+          net = slim.max_pool2d(net, [2, 2], scope='pool4')
+          net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv5')
+          net = slim.max_pool2d(net, [2, 2], scope='pool5')
+
+        with tf.variable_scope('regression'):
+          # Use conv2d instead of fully_connected layers.
+          # net = slim.conv2d(net, 4096, [7, 7], padding=fc_conv_padding, scope='fc6')
+          net = slim.conv2d(net, 4096, [7, 7], padding=fc_conv_padding, scope='fc6')
+          net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
+                             scope='dropout6')
+          net = slim.conv2d(net, 1024, [1, 1], scope='fc7')
+          net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
+                             scope='dropout7')
+          # Normalize Quaternion only in Testing
+          if is_training:
+            net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
+                        activation_fn=None,
+                        normalizer_fn=None,
+                        scope='fc8')
+          else:
+            net = last_layer(net,num_preds)
 
     # Convert end_points_collection into a end_point dict.
     end_points = slim.utils.convert_collection_to_dict(end_points_collection)
