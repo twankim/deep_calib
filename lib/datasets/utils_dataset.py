@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-08-28 11:26:33
+# @Last Modified time: 2017-09-13 13:25:46
 
 from __future__ import absolute_import
 from __future__ import division
@@ -70,6 +70,48 @@ def quat_to_transmat(q_r,t_vec):
     Rt[:3,3] = t_vec
     return Rt
 
+def minmax_scale(x,i_min,i_max,o_min,o_max):
+    # MinMax scaling of x
+    # i_min<= x <= i_max to o_min<= x_new <= o_max
+    return (x-i_min)/float(i_max-i_min)*(o_max-o_min)+o_min
+
+def qr_to_yr(q_r,max_theta):
+    # Normalize q_r (rotation quaternion) to [-1,1]
+    assert (max_theta>0) & (max_theta<180),\
+            "Maximum value of max_theta(degree) must be in (0,180)"
+    y_r = np.zeros(4)
+    y_r[0] = minmax_scale(q_r[0],np.cos(max_theta*np.pi/360.0),1,-1,1)
+    y_r[1] = minmax_scale(q_r[1],
+                          np.sin(max_theta*np.pi/360.0),
+                         -np.sin(max_theta*np.pi/360.0),
+                         -1,1)
+    y_r[2] = minmax_scale(q_r[2],
+                          np.sin(max_theta*np.pi/360.0),
+                         -np.sin(max_theta*np.pi/360.0),
+                         -1,1)
+    y_r[3] = minmax_scale(q_r[3],
+                          np.sin(max_theta*np.pi/360.0),
+                         -np.sin(max_theta*np.pi/360.0),
+                         -1,1)
+    return y_r
+
+def yr_to_qr(y_r,max_theta):
+    # Scale y_r back to q_r(rotation quaternion)
+    assert (max_theta>0) & (max_theta<180),\
+            "Maximum value of max_theta(degree) must be in (0,180)"
+    q_r = np.zeros(4)
+    q_r[0] = minmax_scale(y_r[0],np.cos(-1,1,max_theta*np.pi/360.0),1)
+    q_r[1] = minmax_scale(y_r[1],-1,1,
+                          np.sin(max_theta*np.pi/360.0),
+                          -np.sin(max_theta*np.pi/360.0))
+    q_r[2] = minmax_scale(y_r[2],-1,1,
+                          np.sin(max_theta*np.pi/360.0),
+                          -np.sin(max_theta*np.pi/360.0))
+    q_r[3] = minmax_scale(y_r[3],-1,1,
+                          np.sin(max_theta*np.pi/360.0),
+                          -np.sin(max_theta*np.pi/360.0))
+    return q_r
+
 # theta (degree) (randomly generate unit vector for axis, and rotate theta)
 # dist (m) for (x,y,z)
 def gen_decalib(max_theta, max_dist):
@@ -97,7 +139,8 @@ def gen_decalib(max_theta, max_dist):
     q_r[1:] = np.sin(param_decalib['rot']*np.pi/360.0)*param_decalib['a_vec']
     param_decalib['q_r'] = q_r
 
-    param_decalib['y'] = np.concatenate((q_r,param_decalib['t_vec']))
+    param_decalib['y'] = np.concatenate((qr_to_yr(q_r,max_theta),
+                                         param_decalib['t_vec']))
 
     return param_decalib
 

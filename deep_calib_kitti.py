@@ -144,6 +144,8 @@ def main(_):
   for iter,imName in enumerate(imNames):
     decalibs_gt = []
     decalibs_pred = []
+    decalibs_qr_gt = []
+    decalibs_qr_pred = []
 
     # Get original calibration info
     f_calib = os.path.join(FLAGS.dir_calib,imName+'.'+FLAGS.format_calib)
@@ -217,6 +219,7 @@ def main(_):
                                     imName,i_ran,FLAGS.format_image))
         # Save ground truth decalibration
         decalibs_gt.append(param_decalib['y'])
+        decalibs_qr_gt.append(param_decalib['q_r'])
 
         # ---------- Prediction of y (decalibration) ----------
         # To TF format
@@ -335,19 +338,16 @@ def main(_):
             variables_to_restore=variables_to_restore)
 
       y_preds_val = np.squeeze(y_preds_val,axis=0)
-      
-      # print('Norm_previous:{}'.format(np.linalg.norm(y_preds_val[:4])))
-      # y_preds_val[:4] = y_preds_val[:4]/np.linalg.norm(y_preds_val[:4])
+      # Normalize quaternion to have unit norm
+      q_r_preds = yr_to_qr(y_preds_val,max_theta)
 
-      # y_preds_val = sess.run(y_preds,
-      #                        feed_dict={im_placeholder:im,\
-      #                                   im_depth_placeholder:im_depth_ran.\
-      #                                       reshape(im_height,im_width,1)})
+      print('Norm_previous:{}'.format(np.linalg.norm(q_r_preds[:4])))
+      q_r_preds[:4] = q_r_preds[:4]/np.linalg.norm(q_r_preds[:4])
 
       # Calibarte based on the prediction
       cal_dict = ran_dict.copy()
 
-      Rt = quat_to_transmat(y_preds_val[:4],y_preds_val[4:])
+      Rt = quat_to_transmat(q_r_preds[:4],q_r_preds[4:])
       Rt_cal = Rt.copy()
       Rt_cal[:3,:3] = Rt[:3,:3].T
       Rt_cal[:3,3] = -np.dot(Rt[:3,:3].T,Rt[:3,3])
@@ -369,6 +369,7 @@ def main(_):
       imlidarwrite(f_res_im_cal,im,im_depth_cal)
       # Save predicted decalibration
       decalibs_pred.append(y_preds_val)
+      decalibs_qr_pred.append(q_r_preds)
 
       imlidarwrite(f_res_im_ran,im,im_depth_ran)
       if i_ran==0:
@@ -386,6 +387,13 @@ def main(_):
         mse_tran = ((vec_gt[4:]-vec_pred[4:])**2).mean()
         f_res.write('i_ran:{}, MSE:{}, MSE_rot:{}, MSE_trans:{}\n'.format(
                     i_ran,mse_val,mse_rot,mse_tran))
+
+    with open(os.path.join(FLAGS.dir_out,imName+'_res_qr.txt'),'w') as f_res:
+      for i_ran,(qr_gt,qr_pred) in enumerate(zip(decalibs_qr_gt,decalibs_qr_pred)):
+        f_res.write('i_ran:{},   gt:{}\n'.format(i_ran,qr_gt))
+        f_res.write('i_ran:{}, pred:{}\n'.format(i_ran,qr_pred))
+        mse_qr = ((qr_gt-qr_pred)**2).mean()
+        f_res.write('i_ran:{}, MSE_qr:{}\n'.format(i_ran,mse_qr))
 
 if __name__ == '__main__':
   tf.app.run()
