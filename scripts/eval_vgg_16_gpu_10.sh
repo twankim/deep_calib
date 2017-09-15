@@ -3,8 +3,8 @@
 
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=10
-DATA_NAME=kitti_calib_small
-LIST_PARAM=5,0.5
+DATA_NAME=kitti_calib_10_10
+LIST_PARAM=10,1.0
 LIDAR_POOL=5,2
 
 python deep_calib_kitti.py \
