@@ -195,7 +195,7 @@ def main(_):
         is_training=False)
 
     # Randomly generate dealibration
-    # for i_ran in xrange(FLAGS.num_gen):
+    for i_ran in xrange(FLAGS.num_gen):
       with tf.Graph().as_default():
         tf_global_step = slim.get_or_create_global_step()
 
