@@ -339,15 +339,15 @@ def main(_):
 
       y_preds_val = np.squeeze(y_preds_val,axis=0)
       # Normalize quaternion to have unit norm
-      q_r_preds = yr_to_qr(y_preds_val,max_theta)
+      q_r_preds = yr_to_qr(y_preds_val[:4],max_theta)
 
-      print('Norm_previous:{}'.format(np.linalg.norm(q_r_preds[:4])))
-      q_r_preds[:4] = q_r_preds[:4]/np.linalg.norm(q_r_preds[:4])
+      print('Norm_previous:{}'.format(np.linalg.norm(q_r_preds)))
+      q_r_preds = q_r_preds/np.linalg.norm(q_r_preds)
 
       # Calibarte based on the prediction
       cal_dict = ran_dict.copy()
 
-      Rt = quat_to_transmat(q_r_preds[:4],q_r_preds[4:])
+      Rt = quat_to_transmat(q_r_preds,y_r_preds[4:])
       Rt_cal = Rt.copy()
       Rt_cal[:3,:3] = Rt[:3,:3].T
       Rt_cal[:3,3] = -np.dot(Rt[:3,:3].T,Rt[:3,3])
