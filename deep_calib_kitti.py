@@ -337,46 +337,47 @@ def main(_):
             final_op=y_preds,
             variables_to_restore=variables_to_restore)
 
-      y_preds_val = np.squeeze(y_preds_val,axis=0)
-      # Normalize quaternion to have unit norm
-      q_r_preds = yr_to_qr(y_preds_val[:4],max_theta)
+        y_preds_val = np.squeeze(y_preds_val,axis=0)
+        # Normalize quaternion to have unit norm
+        q_r_preds = yr_to_qr(y_preds_val[:4],max_theta)
 
-      print('Norm_previous:{}'.format(np.linalg.norm(q_r_preds)))
-      q_r_preds = q_r_preds/np.linalg.norm(q_r_preds)
+        print('Norm_previous:{}'.format(np.linalg.norm(q_r_preds)))
+        q_r_preds = q_r_preds/np.linalg.norm(q_r_preds)
 
-      # Calibarte based on the prediction
-      cal_dict = ran_dict.copy()
+        # Calibarte based on the prediction
+        cal_dict = ran_dict.copy()
 
-      Rt = quat_to_transmat(q_r_preds,y_preds_val[4:])
-      Rt_cal = Rt.copy()
-      Rt_cal[:3,:3] = Rt[:3,:3].T
-      Rt_cal[:3,3] = -np.dot(Rt[:3,:3].T,Rt[:3,3])
+        Rt = quat_to_transmat(q_r_preds,y_preds_val[4:])
+        Rt_cal = Rt.copy()
+        Rt_cal[:3,:3] = Rt[:3,:3].T
+        Rt_cal[:3,3] = -np.dot(Rt[:3,:3].T,Rt[:3,3])
 
-      cal_dict[cfg._SET_CALIB[2]] = np.dot(
-              ran_dict[cfg._SET_CALIB[2]],Rt_cal)
+        cal_dict[cfg._SET_CALIB[2]] = np.dot(
+                ran_dict[cfg._SET_CALIB[2]],Rt_cal)
 
-      points2D_cal, pointsDist_cal = project_lidar_to_img(cal_dict,
-                                                          points,
-                                                          im_height,
-                                                          im_width)
-      # Write after the calibration
-      im_depth_cal = points_to_img(points2D_cal,
-                                   pointsDist_cal,
-                                   im_height,
-                                   im_width)
-      f_res_im_cal = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
-                                  imName,i_ran,FLAGS.format_image))
-      imlidarwrite(f_res_im_cal,im,im_depth_cal)
-      # Save predicted decalibration
-      decalibs_pred.append(y_preds_val)
-      decalibs_qr_pred.append(q_r_preds)
+        points2D_cal, pointsDist_cal = project_lidar_to_img(cal_dict,
+                                                            points,
+                                                            im_height,
+                                                            im_width)
+        # Save predicted decalibration
+        decalibs_pred.append(y_preds_val)
+        decalibs_qr_pred.append(q_r_preds)
+      
+      # # Write after the calibration
+      # im_depth_cal = points_to_img(points2D_cal,
+      #                              pointsDist_cal,
+      #                              im_height,
+      #                              im_width)
+      # f_res_im_cal = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
+      #                             imName,i_ran,FLAGS.format_image))
+      # imlidarwrite(f_res_im_cal,im,im_depth_cal)
 
-      imlidarwrite(f_res_im_ran,im,im_depth_ran)
-      if i_ran==0:
-        imlidarwrite(f_res_im,im,im_depth)
+      # imlidarwrite(f_res_im_ran,im,im_depth_ran)
+      # if i_ran==0:
+      #   imlidarwrite(f_res_im,im,im_depth)
          
-      # write 7vec, MSE as txt file
-      # decalibs_pred, decalibs_gt
+    # write 7vec, MSE as txt file
+    # decalibs_pred, decalibs_gt
 
     with open(os.path.join(FLAGS.dir_out,imName+'_res.txt'),'w') as f_res:
       for i_ran,(vec_gt,vec_pred) in enumerate(zip(decalibs_gt,decalibs_pred)):
