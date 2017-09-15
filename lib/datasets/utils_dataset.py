@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-13 13:25:46
+# @Last Modified time: 2017-09-15 11:10:05
 
 from __future__ import absolute_import
 from __future__ import division
@@ -100,7 +100,7 @@ def yr_to_qr(y_r,max_theta):
     assert (max_theta>0) & (max_theta<180),\
             "Maximum value of max_theta(degree) must be in (0,180)"
     q_r = np.zeros(4)
-    q_r[0] = minmax_scale(y_r[0],np.cos(-1,1,max_theta*np.pi/360.0),1)
+    q_r[0] = minmax_scale(y_r[0],-1,1,np.cos(max_theta*np.pi/360.0),1)
     q_r[1] = minmax_scale(y_r[1],-1,1,
                           np.sin(max_theta*np.pi/360.0),
                           -np.sin(max_theta*np.pi/360.0))
