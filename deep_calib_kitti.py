@@ -336,7 +336,7 @@ def main(_):
             eval_op=list(names_to_updates.values()),
             final_op=y_preds,
             variables_to_restore=variables_to_restore)
-        print y_preds_val
+        print(y_preds_val)
 
       y_preds_val = np.squeeze(y_preds_val,axis=0)
       # Normalize quaternion to have unit norm
