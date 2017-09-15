@@ -141,8 +141,7 @@ def main(_):
   imNames = [os.path.split(pp)[1].strip('.{}'.format(FLAGS.format_image)) \
              for pp in imList]
 
-  for i_ran in xrange(FLAGS.num_gen):
-  # for iter,imName in enumerate(imNames):
+  for iter,imName in enumerate(imNames):
     decalibs_gt = []
     decalibs_pred = []
     decalibs_qr_gt = []
@@ -197,7 +196,6 @@ def main(_):
 
     # Randomly generate dealibration
     # for i_ran in xrange(FLAGS.num_gen):
-    for iter,imName in enumerate(imNames):
       with tf.Graph().as_default():
         tf_global_step = slim.get_or_create_global_step()
 
