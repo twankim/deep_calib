@@ -192,7 +192,7 @@ def main(_):
     ####################
     network_fn = nets_factory.get_network_fn(
         FLAGS.model_name,
-        num_preds=_NUM_PREDS,
+        num_classes=_NUM_PREDS,
         is_training=False)
 
     # Randomly generate dealibration
