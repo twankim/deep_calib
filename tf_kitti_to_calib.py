@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-16 16:58:23
+# @Last Modified time: 2017-09-16 17:23:27
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,6 +29,8 @@ from datasets.utils_dataset import *
 def main(args):
     if not args.is_cpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gid
+    else:
+        os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
     max_theta = args.max_theta
     max_dist = args.max_dist
