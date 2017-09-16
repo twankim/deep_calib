@@ -7,7 +7,7 @@ DATA_NAME=kitti_calib_10_10
 LIST_PARAM=10,1.0
 LIDAR_POOL=5,2
 
-python deep_calib_kitti.py \
+python deep_temp.py \
     --dataset_dir=/data/tf/${DATA_NAME} \
     --checkpoint_path=pretrained \
     --list_param=${LIST_PARAM} \
