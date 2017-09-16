@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-08-12 16:50:13
+# @Last Modified time: 2017-09-16 16:58:23
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,6 +33,8 @@ def main(args):
     max_theta = args.max_theta
     max_dist = args.max_dist
 
+    verbose = args.verbose
+
     path_kitti = args.path_kitti
     assert os.path.exists(path_kitti),\
             "Download KITTI Dataset or enter correct path"
@@ -58,6 +60,8 @@ def main(args):
         imNames = [os.path.split(d)[1].strip('.txt') for d in imList]
 
         num_data = len(imNames)*cfg._NUM_GEN # Number of data to be gerated
+
+        print("... Writing {} set".format(image_set))
 
         with tf.python_io.TFRecordWriter(f_tfrec) as tfrecord_writer:
             with tf.Graph().as_default():
@@ -119,9 +123,10 @@ def main(args):
                             encoded_image = tf.image.encode_png(im_placeholder)
                             encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
-                            sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
+                            if verbose:
+                                sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
                                                     image_set,cfg._NUM_GEN*iter+i_ran+1,num_data))
-                            sys.stdout.flush()
+                                sys.stdout.flush()
 
                             png_string = sess.run(encoded_image,
                                                   feed_dict={im_placeholder:im})
@@ -164,6 +169,9 @@ def parse_args():
     parser.add_argument('-max_dist', dest='max_dist',
                         help='Maximum translation distance in meter',
                         default = 1.5, type=float)
+    parser.add_argument('-verbose', dest='verbose',
+                        help='True: Print every data, False: print only train/test',
+                        default = False, type=bool)
     args = parser.parse_args()
     return args
 
