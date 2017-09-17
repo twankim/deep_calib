@@ -281,21 +281,19 @@ def main(_):
         # predictions = tf.argmax(logits, 1)
         # labels = tf.squeeze(labels)
 
-        # if FLAGS.weight_loss:
-        #   weight_loss = FLAGS.weight_loss
-        #   weights_preds = np.ones(sum(_NUM_PREDS['num_preds']))
-        #   i_reg_start = 0
-        #   for i_reg,is_normalize in enumerate(_NUM_PREDS['is_normalize']):
-        #     num_preds = _NUM_PREDS['num_preds'][i_reg]
-        #     if is_normalize:
-        #       weights_preds[i_reg_start:i_reg_start+num_preds] = FLAGS.weight_loss
-        #     i_reg_start += num_preds
-        #   weights_preds = tf.constant(np.tile(weights_preds,(FLAGS.batch_size,1)))
-        # else:
-        #   weight_loss = 1
-        #   weights_preds = 1.0
-        weight_loss = 1
-        weights_preds = 1.0
+        if FLAGS.weight_loss:
+          weight_loss = FLAGS.weight_loss
+          weights_preds = np.ones(sum(_NUM_PREDS['num_preds']))
+          i_reg_start = 0
+          for i_reg,is_normalize in enumerate(_NUM_PREDS['is_normalize']):
+            num_preds = _NUM_PREDS['num_preds'][i_reg]
+            if is_normalize:
+              weights_preds[i_reg_start:i_reg_start+num_preds] = FLAGS.weight_loss
+            i_reg_start += num_preds
+          weights_preds = tf.constant(np.tile(weights_preds,(FLAGS.batch_size,1)))
+        else:
+          weight_loss = 1
+          weights_preds = 1.0
 
         # Define the metrics:
         y_trues = tf.constant(np.expand_dims(param_decalib['y'].copy(),0),
@@ -364,7 +362,7 @@ def main(_):
         # Save predicted decalibration
         decalibs_pred.append(y_preds_val)
         decalibs_qr_pred.append(q_r_preds)
-
+      
       # # Write after the calibration
       # im_depth_cal = points_to_img(points2D_cal,
       #                              pointsDist_cal,
