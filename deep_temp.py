@@ -297,7 +297,7 @@ def main(_):
         #   weights_preds = 1.0
 
         # # Define the metrics:
-        y_trues = tf.constant(np.ones(_NUM_PREDS),
+        y_trues = tf.constant(np.expand_dims(np.ones(_NUM_PREDS),0),
                               dtype=tf.float32)
         names_to_values, names_to_updates = slim.metrics.aggregate_metric_map({
           'MSE': slim.metrics.streaming_mean_squared_error(
