@@ -48,55 +48,55 @@ from __future__ import print_function
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-def last_layer(net,num_preds):
-  """ Defines last layer for prediction
+# def last_layer(net,num_preds):
+#   """ Defines last layer for prediction
 
-  Args:
-    net: output of the previous layer. [batch_size, height, width, channels]
-    num_preds: number of predictin outputs (integer or dictionary)
-            if dictionary, should include following values
-                - num_preds['num_preds']: list of prediction numbers
-                - num_preds['is_normalize']: corresponding boolean list
-  return:
-    output tensor with size [batch, 1, 1, number of predictions]
+#   Args:
+#     net: output of the previous layer. [batch_size, height, width, channels]
+#     num_preds: number of predictin outputs (integer or dictionary)
+#             if dictionary, should include following values
+#                 - num_preds['num_preds']: list of prediction numbers
+#                 - num_preds['is_normalize']: corresponding boolean list
+#   return:
+#     output tensor with size [batch, 1, 1, number of predictions]
 
-  """
-  if isinstance(num_preds,dict):
-    # preds = []
-    # for i_pred, num_pred in enumerate(num_preds['num_preds']):
-    #   if num_preds['is_normalize'][i_pred]:
-    #     pred = slim.conv2d(net, num_pred, [1, 1],
-    #                        activation_fn=None,
-    #                        normalizer_fn=None,
-    #                        scope='fc8_{}'.format(i_pred))
-    #     preds.append(tf.nn.l2_normalize(pred,dim=3))
-    #   else:
-    #     preds.append(slim.conv2d(net, num_pred, [1, 1],
-    #                              activation_fn=None,
-    #                              normalizer_fn=None,
-    #                              scope='fc8_{}'.format(i_pred)))
-    # net = tf.concat(values=preds,axis=3,name='fc8')
-    net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
-                      activation_fn=None,
-                      normalizer_fn=None,
-                      scope='fc8')
-    pred_splits = tf.split(net,num_preds['num_preds'],axis=3)
-    pred_isnorm = tf.concat(
-            [pred_splits[i] for i in xrange(len(num_preds['is_normalize'])) \
-            if num_preds['is_normalize'][i]],axis=3)
-    norm_rot = tf.norm(tf.concat(pred_isnorm,axis=3),
-                       axis=3,keep_dims=True)
-    net = tf.concat([tf.div(pred_splits[i],norm_rot) \
-            if num_preds['is_normalize'][i] else pred_splits[i] \
-            for i in xrange(len(num_preds['is_normalize']))], axis=3,
-            name='fc8_normalized')
-    # net = tf.div(net,norm_rot,name='fc8')
-  else:
-    net = slim.conv2d(net, num_preds, [1, 1],
-                      activation_fn=None,
-                      normalizer_fn=None,
-                      scope='fc8')
-  return net
+#   """
+#   if isinstance(num_preds,dict):
+#     # preds = []
+#     # for i_pred, num_pred in enumerate(num_preds['num_preds']):
+#     #   if num_preds['is_normalize'][i_pred]:
+#     #     pred = slim.conv2d(net, num_pred, [1, 1],
+#     #                        activation_fn=None,
+#     #                        normalizer_fn=None,
+#     #                        scope='fc8_{}'.format(i_pred))
+#     #     preds.append(tf.nn.l2_normalize(pred,dim=3))
+#     #   else:
+#     #     preds.append(slim.conv2d(net, num_pred, [1, 1],
+#     #                              activation_fn=None,
+#     #                              normalizer_fn=None,
+#     #                              scope='fc8_{}'.format(i_pred)))
+#     # net = tf.concat(values=preds,axis=3,name='fc8')
+#     net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
+#                       activation_fn=None,
+#                       normalizer_fn=None,
+#                       scope='fc8')
+#     pred_splits = tf.split(net,num_preds['num_preds'],axis=3)
+#     pred_isnorm = tf.concat(
+#             [pred_splits[i] for i in xrange(len(num_preds['is_normalize'])) \
+#             if num_preds['is_normalize'][i]],axis=3)
+#     norm_rot = tf.norm(tf.concat(pred_isnorm,axis=3),
+#                        axis=3,keep_dims=True)
+#     net = tf.concat([tf.div(pred_splits[i],norm_rot) \
+#             if num_preds['is_normalize'][i] else pred_splits[i] \
+#             for i in xrange(len(num_preds['is_normalize']))], axis=3,
+#             name='fc8_normalized')
+#     # net = tf.div(net,norm_rot,name='fc8')
+#   else:
+#     net = slim.conv2d(net, num_preds, [1, 1],
+#                       activation_fn=None,
+#                       normalizer_fn=None,
+#                       scope='fc8')
+#   return net
 
 
 def vgg_arg_scope(weight_decay=0.0005):
