@@ -190,14 +190,14 @@ def vgg_16(images,
         net = slim.conv2d(net, 256, [1, 1], scope='fc7')
         net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
                            scope='dropout7')
-        # Normalize Quaternion only in Testing
-        if is_training:
-          net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
+        # # Normalize Quaternion only in Testing
+        # if is_training:
+        net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
                       activation_fn=None,
                       normalizer_fn=None,
                       scope='fc8')
-        else:
-          net = last_layer(net,num_preds)
+        # else:
+        #   net = last_layer(net,num_preds)
 
     # Convert end_points_collection into a end_point dict.
     end_points = slim.utils.convert_collection_to_dict(end_points_collection)
