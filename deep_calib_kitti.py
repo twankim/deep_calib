@@ -294,6 +294,8 @@ def main(_):
         # else:
         #   weight_loss = 1
         #   weights_preds = 1.0
+        weight_loss = 1
+        weights_preds = 1.0
 
         # Define the metrics:
         y_trues = tf.constant(np.expand_dims(param_decalib['y'].copy(),0),
@@ -362,7 +364,7 @@ def main(_):
         # Save predicted decalibration
         decalibs_pred.append(y_preds_val)
         decalibs_qr_pred.append(q_r_preds)
-      
+
       # # Write after the calibration
       # im_depth_cal = points_to_img(points2D_cal,
       #                              pointsDist_cal,
