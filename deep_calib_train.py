@@ -495,9 +495,9 @@ def main(_):
         weights_preds = tf.constant(np.tile(weights_preds,(FLAGS.batch_size,1)))
       else:
         weights_preds = 1.0
-      tf.losses.mean_squared_error(
+      slim.losses.mean_squared_error(
+              y_preds,
               labels=y_trues,
-              predictions=y_preds,
               weights=weights_preds)
       return end_points
 
