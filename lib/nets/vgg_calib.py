@@ -168,7 +168,7 @@ def vgg_16(images,
       net2 = slim.max_pool2d(net2, [2, 2], scope='pool3_lidar')
 
       net = tf.concat(values=[net,net2],axis=3)
-      net = slim.repeat(net, 1, slim.conv2d, 512, [28, 28], scope='conv4_ho')
+      net = slim.conv2d(net, 512, [28, 28], padding=fc_conv_padding, scope='fc_hoho')
       net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
                         activation_fn=None,
                         normalizer_fn=None,
