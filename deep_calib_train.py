@@ -473,8 +473,8 @@ def main(_):
     ####################
     def clone_fn(batch_queue):
       """Allows data parallelism by creating multiple clones of network_fn."""
-      with tf.device(deploy_config.inputs_device()):
-        images, lidars, y_trues = batch_queue.dequeue()
+      # with tf.device(deploy_config.inputs_device()):
+      images, lidars, y_trues = batch_queue.dequeue()
       y_preds, end_points = network_fn(images,lidars)
 
       #############################
