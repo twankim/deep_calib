@@ -4,8 +4,8 @@
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=10
 BATCH_SIZE=32
-LEARNING_RATE=0.00000001
-END_LEARNING_RATE=0.0000000001
+LEARNING_RATE=0.00001
+END_LEARNING_RATE=0.0000001
 DATA_NAME=kitti_calib_05_05
 LIST_PARAM=5,0.5
 LIDAR_POOL=5,2
@@ -15,7 +15,7 @@ python deep_calib_train.py \
     --save_summaries_secs=${SUMMARY_SECS} \
     --dataset_dir=/data/tf/${DATA_NAME} \
     --train_dir=/data/tf/checkpoints/${DATA_NAME} \
-    --max_number_of_steps=50 \
+    --max_number_of_steps=80000 \
     --batch_size=${BATCH_SIZE} \
     --list_param=${LIST_PARAM} \
     --weight_loss=${WEIGHT_LOSS} \
@@ -26,7 +26,6 @@ python deep_calib_train.py \
     --checkpoint_exclude_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
     --learning_rate=${LEARNING_RATE} \
     --end_learning_rate=${END_LEARNING_RATE} \
-    --save_interval_secs=1 \
     --ignore_missing_vars=True
     # --trainable_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
     # --ignore_missing_vars=
