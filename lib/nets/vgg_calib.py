@@ -187,9 +187,9 @@ def vgg_16(images,
           net = slim.conv2d(net, 512, [7, 7], padding=fc_conv_padding, scope='fc6')
           net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
                              scope='dropout6')
-          # net = slim.conv2d(net, 256, [1, 1], scope='fc7')
-          # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
-          #                    scope='dropout7')
+          net = slim.conv2d(net, 256, [1, 1], scope='fc7')
+          net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
+                             scope='dropout7')
           # # Normalize Quaternion only in Testing
           # if is_training:
           net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
