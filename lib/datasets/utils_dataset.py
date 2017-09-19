@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 12:43:36
+# @Last Modified time: 2017-09-19 12:44:06
 
 from __future__ import absolute_import
 from __future__ import division
@@ -128,7 +128,7 @@ def gen_ran_decalib(max_theta, max_dist, num_gen):
     t_vecs = (dists*(t_vecs/np.linalg.norm(t_vecs,axis=0))).T
     param_rands['t_vec'] = [t_vecs[i] for i in xrange(num_gen)]
 
-    return paran_rands
+    return param_rands
 
 # theta (degree) (randomly generate unit vector for axis, and rotate theta)
 # dist (m) for (x,y,z)
