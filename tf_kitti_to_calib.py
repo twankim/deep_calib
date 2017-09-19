@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-18 13:26:30
+# @Last Modified time: 2017-09-19 11:45:24
 
 from __future__ import absolute_import
 from __future__ import division
@@ -95,9 +95,10 @@ def main(args):
                         # cv2.imwrite('data_ex/ho_{}.png'.format(image_set),im_depth_ho)
 
                         # ------- Generate random ratation for decalibration data --------
-                        # Generate random rotation
+                        # Generate random vectors for decalibration
+                        param_rands = gen_ran_decalib(max_theta,max_dist,cfg._NUM_GEN)
                         for i_ran in xrange(cfg._NUM_GEN):
-                            param_decalib = gen_decalib(max_theta, max_dist)
+                            param_decalib = gen_decalib(max_theta,max_dist,param_rands,i_ran)
                             # Copy intrinsic parameters and rotation matrix for reference cam
                             ran_dict = temp_dict.copy()
                             # Replace extrinsic parameters to decalibrated ones

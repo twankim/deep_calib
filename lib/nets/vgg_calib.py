@@ -162,11 +162,11 @@ def vgg_16(images,
 
       with tf.variable_scope('lidar_feat'):
         # ConvNets for lidar
-        net2 = slim.repeat(lidars, 1, slim.conv2d, 32, [3, 3], scope='conv1_lidar')
+        net2 = slim.repeat(lidars, 2, slim.conv2d, 32, [3, 3], scope='conv1_lidar')
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool1_lidar')
-        net2 = slim.repeat(net2, 1, slim.conv2d, 64, [3, 3], scope='conv2_lidar')
+        net2 = slim.repeat(net2, 2, slim.conv2d, 64, [3, 3], scope='conv2_lidar')
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool2_lidar')
-        net2 = slim.repeat(net2, 1, slim.conv2d, 128, [3, 3], scope='conv3_lidar')
+        net2 = slim.repeat(net2, 2, slim.conv2d, 128, [3, 3], scope='conv3_lidar')
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool3_lidar')
       
       # Concat two channels
@@ -176,10 +176,10 @@ def vgg_16(images,
       with slim.arg_scope([slim.conv2d],normalizer_fn=slim.batch_norm):
         with tf.variable_scope('match_feat'):
           # Remaining ConvNets for Feature Matching
-          net = slim.repeat(net, 1, slim.conv2d, 512, [3, 3], scope='conv4')
+          net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv4')
           net = slim.max_pool2d(net, [2, 2], scope='pool4')
-          net = slim.repeat(net, 1, slim.conv2d, 512, [3, 3], scope='conv5')
-          net = slim.max_pool2d(net, [2, 2], scope='pool5')
+          # net = slim.repeat(net, 1, slim.conv2d, 512, [3, 3], scope='conv5')
+          # net = slim.max_pool2d(net, [2, 2], scope='pool5')
 
         with tf.variable_scope('regression'):
           # Use conv2d instead of fully_connected layers.
