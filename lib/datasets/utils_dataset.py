@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 11:47:54
+# @Last Modified time: 2017-09-19 12:42:50
 
 from __future__ import absolute_import
 from __future__ import division
@@ -125,7 +125,7 @@ def gen_ran_decalib(max_theta, max_dist, num_gen):
     # Translation vector
     dists = np.random.uniform(0,max_dist,num_gen)
     t_vecs = np.random.standard_normal((3,num_gen))
-    t_vecs = (dist*(t_vecs/np.linalg.norm(tt_vecs,axis=0))).T
+    t_vecs = (dists*(t_vecs/np.linalg.norm(tt_vecs,axis=0))).T
     param_rands['t_vec'] = [t_vecs[i] for i in xrange(num_gen)]
 
     return paran_rands
