@@ -195,11 +195,12 @@ def main(_):
         is_training=False)
 
     # Randomly generate dealibration
+    param_rands = gen_ran_decalib(max_theta,max_dist,FLAGS.num_gen)
     for i_ran in xrange(FLAGS.num_gen):
       with tf.Graph().as_default():
         tf_global_step = slim.get_or_create_global_step()
 
-        param_decalib = gen_decalib(max_theta,max_dist)
+        param_decalib = gen_decalib(max_theta,max_dist,param_rands,i_ran)
         ran_dict = temp_dict.copy()
         ran_dict[cfg._SET_CALIB[2]] = np.dot(
                 ran_dict[cfg._SET_CALIB[2]],
@@ -362,7 +363,7 @@ def main(_):
       # Save predicted decalibration
       decalibs_pred.append(y_preds_val)
       decalibs_qr_pred.append(q_r_preds)
-      
+
       # Write after the calibration
       im_depth_cal = points_to_img(points2D_cal,
                                    pointsDist_cal,
