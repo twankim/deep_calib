@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 22:29:22
+# @Last Modified time: 2017-09-19 22:35:53
 
 from __future__ import absolute_import
 from __future__ import division
@@ -188,10 +188,10 @@ def parse_args():
                         default = 1.5, type=float)
     parser.add_argument('-verbose', dest='verbose',
                         help='True: Print every data, False: print only train/test',
-                        default = False, type=bool)
+                        default = False, type=str2bool)
     parser.add_argument('-is_train', dest='is_train',
                         help='True: Generate training set',
-                        default = True, type=bool)
+                        default = True, type=str2bool)
     args = parser.parse_args()
     return args
 
