@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 21:41:05
+# @Last Modified time: 2017-09-19 21:49:05
 
 from __future__ import absolute_import
 from __future__ import division
@@ -106,8 +106,8 @@ def main(args):
                             ran_dict = temp_dict.copy()
                             # Replace extrinsic parameters to decalibrated ones
                             ran_dict[cfg._SET_CALIB[2]] = np.dot(
-                                        ran_dict[cfg._SET_CALIB[2]],
-                                        quat_to_transmat(param_decalib['q_r'],param_decalib['t_vec']))
+                                     ran_dict[cfg._SET_CALIB[2]],
+                                     quat_to_transmat(param_decalib['q_r'],param_decalib['t_vec']))
                     
                             points2D_ran, pointsDist_ran = project_lidar_to_img(ran_dict,
                                                                                points,
@@ -139,13 +139,13 @@ def main(args):
                                        for im in list_im]
 
                         png_string_depths = [sess.run(encoded_image_depth,
-                                                feed_dict={im_placeholder:im_depth.\
-                                                        reshape(im_height,im_width,1)}) \
+                                                feed_dict={im_depth_placeholder:im_depth.\
+                                                           reshape(im_height,im_width,1)}) \
                                              for im_depth in list_im_depth]
 
                         for i_string in xrange(cfg._NUM_GEN):
-                            example = calib_to_tfexample(png_string[i_string],
-                                                         png_string_depth[i_string],
+                            example = calib_to_tfexample(png_strings[i_string],
+                                                         png_string_depths[i_string],
                                                          b'png',
                                                          im_height,
                                                          im_width,
