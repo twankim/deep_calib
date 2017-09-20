@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 11:45:24
+# @Last Modified time: 2017-09-19 21:39:27
 
 from __future__ import absolute_import
 from __future__ import division
@@ -61,7 +61,7 @@ def main(args):
         imList.sort()
         imNames = [os.path.split(d)[1].strip('.txt') for d in imList]
 
-        num_data = len(imNames)*cfg._NUM_GEN # Number of data to be gerated
+        # num_data = len(imNames)*cfg._NUM_GEN # Number of data to be gerated
 
         print("... Writing {} set".format(image_set))
 
@@ -97,6 +97,9 @@ def main(args):
                         # ------- Generate random ratation for decalibration data --------
                         # Generate random vectors for decalibration
                         param_rands = gen_ran_decalib(max_theta,max_dist,cfg._NUM_GEN)
+                        list_im = [im]*cfg._NUM_GEN
+                        list_im_depth = [None]*cfg._NUM_GEN
+
                         for i_ran in xrange(cfg._NUM_GEN):
                             param_decalib = gen_decalib(max_theta,max_dist,param_rands,i_ran)
                             # Copy intrinsic parameters and rotation matrix for reference cam
@@ -110,35 +113,39 @@ def main(args):
                                                                                points,
                                                                                im_height,
                                                                                im_width)
-                            im_depth = points_to_img(points2D_ran,
-                                                     pointsDist_ran,
-                                                     im_height,
-                                                     im_width)
+                            im_depth[i_ran] = points_to_img(points2D_ran,
+                                                            pointsDist_ran,
+                                                            im_height,
+                                                            im_width)
 
                             # !!!! For debugging
                             # cv2.imwrite('data_ex/ho_{}_{}.png'.format(image_set,i_ran),im_depth)
                             # print('  - Angle:{}, nonzero:{}'.format(
                             #                         param_decalib['rot'],
-                            #                         sum(sum(im_depth>0)))                                                    )
+                            #                         sum(sum(im_depth>0)))) 
 
-                            im_placeholder = tf.placeholder(dtype=tf.uint8)
-                            im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
-                            encoded_image = tf.image.encode_png(im_placeholder)
-                            encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
+                        im_placeholder = tf.placeholder(dtype=tf.uint8)
+                        im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
+                        encoded_image = tf.image.encode_png(im_placeholder)
+                        encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
-                            if verbose:
-                                sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
-                                                    image_set,cfg._NUM_GEN*iter+i_ran+1,num_data))
-                                sys.stdout.flush()
+                        if verbose:
+                            sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
+                                                image_set,iter+1,len(imNames)))
+                            sys.stdout.flush()
 
-                            png_string = sess.run(encoded_image,
-                                                  feed_dict={im_placeholder:im})
-                            png_string_depth = sess.run(encoded_image_depth,
-                                                  feed_dict={im_depth_placeholder:im_depth.\
-                                                                reshape(im_height,im_width,1)})
+                        png_strings = [sess.run(encoded_image,
+                                                feed_dict={im_placeholder:im}) \
+                                       for im in list_im]
 
-                            example = calib_to_tfexample(png_string,
-                                                         png_string_depth,
+                        png_string_depths = [sess.run(encoded_image_depth,
+                                                feed_dict={im_placeholder:im_depth.\
+                                                        reshape(im_height,im_width,1)}) \
+                                             for im_depth in list_im_depth]
+
+                        for i_string in xrange(cfg._NUM_GEN):
+                            example = calib_to_tfexample(png_string[i_string],
+                                                         png_string_depth[i_string],
                                                          b'png',
                                                          im_height,
                                                          im_width,
