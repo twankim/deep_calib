@@ -193,6 +193,7 @@ def vgg_16(images,
           # # # Normalize Quaternion only in Testing
           # if is_training:
           net = slim.conv2d(net, sum(num_preds['num_preds']), [14, 14],
+                        padding=fc_conv_padding,
                         activation_fn=None,
                         normalizer_fn=None,
                         scope='fc8')
