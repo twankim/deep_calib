@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:38:36
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 11:48:37
+# @Last Modified time: 2017-09-19 21:00:16
 
 # Configureation file for dataset
 from easydict import EasyDict as edict
@@ -25,7 +25,7 @@ __C._DIR_CALIB = 'data_{}_{}'.format(__C._TASK,__C._TYPE_CALIB)
 __C._DIR_IMAGE = 'data_{}_{}'.format(__C._TASK,__C._TYPE_IMAGE)
 __C._DIR_VELO = 'data_{}_{}'.format(__C._TASK,__C._TYPE_VELO)
 
-__C._NUM_GEN = 32 # Number of random generation per image
+__C._NUM_GEN = 16 # Number of random generation per image
 
 __C._SET_CALIB = ['P2','R0_rect','Tr_velo_to_cam']
 
