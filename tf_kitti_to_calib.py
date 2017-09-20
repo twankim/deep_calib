@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 22:14:26
+# @Last Modified time: 2017-09-19 22:29:22
 
 from __future__ import absolute_import
 from __future__ import division
@@ -49,113 +49,118 @@ def main(args):
     path_velo = os.path.join(path_kitti,cfg._TASK,cfg._DIR_VELO)
     path_img = os.path.join(path_kitti,cfg._TASK,cfg._DIR_IMAGE)
 
-    for image_set in ['training','testing']:
-        f_tfrec = os.path.join(path_out,
-                               cfg._TF_FORMAT.format(
-                                        'kitti',
-                                        max_theta,
-                                        max_dist,
-                                        image_set.split('ing')[0]))
+    if args.is_train:
+        image_set = 'training'
+    else:
+        image_set = 'testing'
 
-        imList = glob.glob(os.path.join(path_cal,image_set,cfg._TYPE_CALIB,'*'+cfg._FORMAT_CALIB))
-        imList.sort()
-        imNames = [os.path.split(d)[1].strip('.txt') for d in imList]
+    # for image_set in ['training','testing']:
+    f_tfrec = os.path.join(path_out,
+                           cfg._TF_FORMAT.format(
+                                    'kitti',
+                                    max_theta,
+                                    max_dist,
+                                    image_set.split('ing')[0]))
 
-        # num_data = len(imNames)*cfg._NUM_GEN # Number of data to be gerated
+    imList = glob.glob(os.path.join(path_cal,image_set,cfg._TYPE_CALIB,'*'+cfg._FORMAT_CALIB))
+    imList.sort()
+    imNames = [os.path.split(d)[1].strip('.txt') for d in imList]
 
-        print("... Writing {} set".format(image_set))
+    # num_data = len(imNames)*cfg._NUM_GEN # Number of data to be gerated
 
-        with tf.python_io.TFRecordWriter(f_tfrec) as tfrecord_writer:
-            with tf.Graph().as_default():
-                with tf.Session('') as sess:
-                    for iter, imName in enumerate(imNames):
-                        # Get original calibration info
-                        f_calib = os.path.join(path_cal,image_set,cfg._TYPE_CALIB,imName+cfg._FORMAT_CALIB)
-                        temp_dict = get_calib_mat(f_calib)
+    print("... Writing {} set".format(image_set))
 
-                        # Read velodyne points
-                        f_velo = os.path.join(path_velo,image_set,cfg._TYPE_VELO,imName+cfg._FORMAT_VELO)
-                        points_org = np.fromfile(f_velo,dtype=np.float32).reshape(-1,4)
-                        points = points_org[:,:3] # exclude points reflectance
+    with tf.python_io.TFRecordWriter(f_tfrec) as tfrecord_writer:
+        with tf.Graph().as_default():
+            with tf.Session('') as sess:
+                for iter, imName in enumerate(imNames):
+                    # Get original calibration info
+                    f_calib = os.path.join(path_cal,image_set,cfg._TYPE_CALIB,imName+cfg._FORMAT_CALIB)
+                    temp_dict = get_calib_mat(f_calib)
 
-                        # Read image file
-                        f_img = os.path.join(path_img,image_set,cfg._TYPE_IMAGE,imName+cfg._FORMAT_IMAGE)
-                        im = cv2.imread(f_img)
-                        im = im[:,:,(2,1,0)] # BGR to RGB
-                        im_height,im_width = np.shape(im)[0:2]
-        
-                        # Project velodyne points to image plane
-                        points2D, pointsDist = project_lidar_to_img(temp_dict,
-                                                                   points,
-                                                                   im_height,
-                                                                   im_width)
+                    # Read velodyne points
+                    f_velo = os.path.join(path_velo,image_set,cfg._TYPE_VELO,imName+cfg._FORMAT_VELO)
+                    points_org = np.fromfile(f_velo,dtype=np.float32).reshape(-1,4)
+                    points = points_org[:,:3] # exclude points reflectance
+
+                    # Read image file
+                    f_img = os.path.join(path_img,image_set,cfg._TYPE_IMAGE,imName+cfg._FORMAT_IMAGE)
+                    im = cv2.imread(f_img)
+                    im = im[:,:,(2,1,0)] # BGR to RGB
+                    im_height,im_width = np.shape(im)[0:2]
+    
+                    # Project velodyne points to image plane
+                    points2D, pointsDist = project_lidar_to_img(temp_dict,
+                                                               points,
+                                                               im_height,
+                                                               im_width)
+
+                    # !!!! For debugging
+                    # im_depth_ho = points_to_img(points2D,pointsDist,im_height,im_width)
+                    # cv2.imwrite('data_ex/ho_{}.png'.format(image_set),im_depth_ho)
+
+                    # ------- Generate random ratation for decalibration data --------
+                    # Generate random vectors for decalibration
+                    param_rands = gen_ran_decalib(max_theta,max_dist,cfg._NUM_GEN)
+                    list_im = [im]*cfg._NUM_GEN
+                    list_im_depth = [None]*cfg._NUM_GEN
+
+                    for i_ran in xrange(cfg._NUM_GEN):
+                        param_decalib = gen_decalib(max_theta,max_dist,param_rands,i_ran)
+                        # Copy intrinsic parameters and rotation matrix for reference cam
+                        ran_dict = temp_dict.copy()
+                        # Replace extrinsic parameters to decalibrated ones
+                        ran_dict[cfg._SET_CALIB[2]] = np.dot(
+                                 ran_dict[cfg._SET_CALIB[2]],
+                                 quat_to_transmat(param_decalib['q_r'],param_decalib['t_vec']))
+                
+                        points2D_ran, pointsDist_ran = project_lidar_to_img(ran_dict,
+                                                                           points,
+                                                                           im_height,
+                                                                           im_width)
+                        list_im_depth[i_ran] = points_to_img(points2D_ran,
+                                                 pointsDist_ran,
+                                                 im_height,
+                                                 im_width).reshape(im_height,im_width,1)
 
                         # !!!! For debugging
-                        # im_depth_ho = points_to_img(points2D,pointsDist,im_height,im_width)
-                        # cv2.imwrite('data_ex/ho_{}.png'.format(image_set),im_depth_ho)
+                        # cv2.imwrite('data_ex/ho_{}_{}.png'.format(image_set,i_ran),im_depth)
+                        # print('  - Angle:{}, nonzero:{}'.format(
+                        #                         param_decalib['rot'],
+                        #                         sum(sum(im_depth>0)))) 
 
-                        # ------- Generate random ratation for decalibration data --------
-                        # Generate random vectors for decalibration
-                        param_rands = gen_ran_decalib(max_theta,max_dist,cfg._NUM_GEN)
-                        list_im = [im]*cfg._NUM_GEN
-                        list_im_depth = [None]*cfg._NUM_GEN
+                    im_placeholder = tf.placeholder(dtype=tf.uint8)
+                    im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
+                    encoded_image = tf.image.encode_png(im_placeholder)
+                    encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
-                        for i_ran in xrange(cfg._NUM_GEN):
-                            param_decalib = gen_decalib(max_theta,max_dist,param_rands,i_ran)
-                            # Copy intrinsic parameters and rotation matrix for reference cam
-                            ran_dict = temp_dict.copy()
-                            # Replace extrinsic parameters to decalibrated ones
-                            ran_dict[cfg._SET_CALIB[2]] = np.dot(
-                                     ran_dict[cfg._SET_CALIB[2]],
-                                     quat_to_transmat(param_decalib['q_r'],param_decalib['t_vec']))
-                    
-                            points2D_ran, pointsDist_ran = project_lidar_to_img(ran_dict,
-                                                                               points,
-                                                                               im_height,
-                                                                               im_width)
-                            list_im_depth[i_ran] = points_to_img(points2D_ran,
-                                                     pointsDist_ran,
+                    if verbose:
+                        sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
+                                            image_set,iter+1,len(imNames)))
+                        sys.stdout.flush()
+
+                    png_strings = [sess.run([encoded_image,encoded_image_depth],
+                                            feed_dict={im_placeholder:im,
+                                                       im_depth_placeholder:im_depth.\
+                                                       reshape(im_height,im_width,1)}) \
+                                            for im,im_depth in zip(list_im,list_im_depth)]
+
+                    # png_string_depths = [sess.run(encoded_image_depth,
+                    #                         feed_dict={im_depth_placeholder:im_depth.\
+                    #                                    reshape(im_height,im_width,1)}) \
+                    #                      for im_depth in list_im_depth]
+
+                    for i_string in xrange(cfg._NUM_GEN):
+                        example = calib_to_tfexample(png_strings[i_string][0],
+                                                     png_strings[i_string][1],
+                                                     b'png',
                                                      im_height,
-                                                     im_width).reshape(im_height,im_width,1)
-
-                            # !!!! For debugging
-                            # cv2.imwrite('data_ex/ho_{}_{}.png'.format(image_set,i_ran),im_depth)
-                            # print('  - Angle:{}, nonzero:{}'.format(
-                            #                         param_decalib['rot'],
-                            #                         sum(sum(im_depth>0)))) 
-
-                        im_placeholder = tf.placeholder(dtype=tf.uint8)
-                        im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
-                        encoded_image = tf.image.encode_png(im_placeholder)
-                        encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
-
-                        if verbose:
-                            sys.stdout.write('... ({}) Writing file to TfRecord {}/{}\n'.format(
-                                                image_set,iter+1,len(imNames)))
-                            sys.stdout.flush()
-
-                        png_strings = [sess.run([encoded_image,encoded_image_depth],
-                                                feed_dict={im_placeholder:im,
-                                                           im_depth_placeholder:im_depth.\
-                                                           reshape(im_height,im_width,1)}) \
-                                                for im,im_depth in zip(list_im,list_im_depth)]
-
-                        # png_string_depths = [sess.run(encoded_image_depth,
-                        #                         feed_dict={im_depth_placeholder:im_depth.\
-                        #                                    reshape(im_height,im_width,1)}) \
-                        #                      for im_depth in list_im_depth]
-
-                        for i_string in xrange(cfg._NUM_GEN):
-                            example = calib_to_tfexample(png_strings[i_string][0],
-                                                         png_strings[i_string][1],
-                                                         b'png',
-                                                         im_height,
-                                                         im_width,
-                                                         param_decalib['y'],
-                                                         param_decalib['rot'],
-                                                         param_decalib['a_vec']
-                                                         )
-                            tfrecord_writer.write(example.SerializeToString())
+                                                     im_width,
+                                                     param_decalib['y'],
+                                                     param_decalib['rot'],
+                                                     param_decalib['a_vec']
+                                                     )
+                        tfrecord_writer.write(example.SerializeToString())
 
 def parse_args():
     def str2bool(v):
@@ -184,6 +189,9 @@ def parse_args():
     parser.add_argument('-verbose', dest='verbose',
                         help='True: Print every data, False: print only train/test',
                         default = False, type=bool)
+    parser.add_argument('-is_train', dest='is_train',
+                        help='True: Generate training set',
+                        default = True, type=bool)
     args = parser.parse_args()
     return args
 
