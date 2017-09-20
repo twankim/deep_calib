@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 21:39:27
+# @Last Modified time: 2017-09-19 21:41:05
 
 from __future__ import absolute_import
 from __future__ import division
@@ -113,10 +113,10 @@ def main(args):
                                                                                points,
                                                                                im_height,
                                                                                im_width)
-                            im_depth[i_ran] = points_to_img(points2D_ran,
-                                                            pointsDist_ran,
-                                                            im_height,
-                                                            im_width)
+                            list_im_depth[i_ran] = points_to_img(points2D_ran,
+                                                                 pointsDist_ran,
+                                                                 im_height,
+                                                                 im_width)
 
                             # !!!! For debugging
                             # cv2.imwrite('data_ex/ho_{}_{}.png'.format(image_set,i_ran),im_depth)
