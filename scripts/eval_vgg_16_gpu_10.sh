@@ -3,7 +3,7 @@
 
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=10
-DATA_NAME=kitti_calib_10_10
+DATA_NAME=kitti_calib_10_10_before
 LIST_PARAM=10,1.0
 LIDAR_POOL=5,2
 
