@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 21:49:05
+# @Last Modified time: 2017-09-19 22:14:26
 
 from __future__ import absolute_import
 from __future__ import division
@@ -114,9 +114,9 @@ def main(args):
                                                                                im_height,
                                                                                im_width)
                             list_im_depth[i_ran] = points_to_img(points2D_ran,
-                                                                 pointsDist_ran,
-                                                                 im_height,
-                                                                 im_width)
+                                                     pointsDist_ran,
+                                                     im_height,
+                                                     im_width).reshape(im_height,im_width,1)
 
                             # !!!! For debugging
                             # cv2.imwrite('data_ex/ho_{}_{}.png'.format(image_set,i_ran),im_depth)
@@ -134,18 +134,20 @@ def main(args):
                                                 image_set,iter+1,len(imNames)))
                             sys.stdout.flush()
 
-                        png_strings = [sess.run(encoded_image,
-                                                feed_dict={im_placeholder:im}) \
-                                       for im in list_im]
-
-                        png_string_depths = [sess.run(encoded_image_depth,
-                                                feed_dict={im_depth_placeholder:im_depth.\
+                        png_strings = [sess.run([encoded_image,encoded_image_depth],
+                                                feed_dict={im_placeholder:im,
+                                                           im_depth_placeholder:im_depth.\
                                                            reshape(im_height,im_width,1)}) \
-                                             for im_depth in list_im_depth]
+                                                for im,im_depth in zip(list_im,list_im_depth)]
+
+                        # png_string_depths = [sess.run(encoded_image_depth,
+                        #                         feed_dict={im_depth_placeholder:im_depth.\
+                        #                                    reshape(im_height,im_width,1)}) \
+                        #                      for im_depth in list_im_depth]
 
                         for i_string in xrange(cfg._NUM_GEN):
-                            example = calib_to_tfexample(png_strings[i_string],
-                                                         png_string_depths[i_string],
+                            example = calib_to_tfexample(png_strings[i_string][0],
+                                                         png_strings[i_string][1],
                                                          b'png',
                                                          im_height,
                                                          im_width,
