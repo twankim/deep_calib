@@ -8,7 +8,6 @@ LIST_PARAM=10,1.0
 LIDAR_POOL=5,2
 
 python deep_calib_kitti.py \
-    --dataset_dir=/data/tf/${DATA_NAME} \
     --checkpoint_path=/data/tf/checkpoints/${DATA_NAME}/${MODEL_NAME}/weight_${WEIGHT_LOSS} \
     --list_param=${LIST_PARAM} \
     --lidar_pool=${LIDAR_POOL} \
