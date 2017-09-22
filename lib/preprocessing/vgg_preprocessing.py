@@ -50,7 +50,7 @@ _RESIZE_SIDE_MIN = 256
 _RESIZE_SIDE_MAX = 512
 
 
-def _crop(image, offset_height, offset_width, crop_height, crop_width, channels=3):
+def _crop(image, offset_height, offset_width, crop_height, crop_width):
   """Crops the given image using the provided offsets and sizes.
 
   Note that the method doesn't assume we know the input image size but it does
@@ -93,7 +93,7 @@ def _crop(image, offset_height, offset_width, crop_height, crop_width, channels=
   return tf.reshape(image, cropped_shape)
 
 
-def _random_crop(image_list, crop_height, crop_width, channels=3):
+def _random_crop(image_list, crop_height, crop_width):
   """Crops the given list of images.
 
   The function applies the same crop to each image in the list. This can be
@@ -173,10 +173,10 @@ def _random_crop(image_list, crop_height, crop_width, channels=3):
       [], maxval=max_offset_width, dtype=tf.int32)
 
   return [_crop(image, offset_height, offset_width,
-                crop_height, crop_width, channels) for image in image_list]
+                crop_height, crop_width) for image in image_list]
 
 
-def _central_crop(image_list, crop_height, crop_width, channels=3):
+def _central_crop(image_list, crop_height, crop_width):
   """Performs central crops of the given image list.
 
   Args:
@@ -197,7 +197,7 @@ def _central_crop(image_list, crop_height, crop_width, channels=3):
     offset_width = (image_width - crop_width) / 2
 
     outputs.append(_crop(image, offset_height, offset_width,
-                         crop_height, crop_width, channels))
+                         crop_height, crop_width))
   return outputs
 
 
@@ -309,13 +309,11 @@ def _interpolate_image(image,channels=3,pool_size=None):
   return interpolated_image
 
 
-def preprocess_for_train(image,
+def preprocess_for_train(image, lidar
                          output_height,
                          output_width,
                          resize_side_min=_RESIZE_SIDE_MIN,
                          resize_side_max=_RESIZE_SIDE_MAX,
-                         channels=3,
-                         is_lidar=False,
                          pool_size=None):
   """Preprocesses the given image for training.
 
@@ -337,26 +335,29 @@ def preprocess_for_train(image,
   resize_side = tf.random_uniform(
       [], minval=resize_side_min, maxval=resize_side_max+1, dtype=tf.int32)
 
-  if is_lidar:
-    image = _interpolate_image(image,channels,pool_size)
+  lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
 
-  image = _aspect_preserving_resize(image, resize_side, channels)
-  image = _random_crop([image], output_height, output_width, channels)[0]
-  image.set_shape([output_height, output_width, channels])
+  image = _aspect_preserving_resize(image, resize_side)
+  lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)
+  
+  image,lidar = _random_crop([image,lidar], output_height, output_width)
+  
+  image.set_shape([output_height, output_width, 3])
+  lidar.set_shape([output_height, output_width, 1])
+  
   image = tf.to_float(image)
-  image = tf.image.random_flip_left_right(image)
-  if channels == 3:
-    return _mean_image_subtraction(image, [_R_MEAN, _G_MEAN, _B_MEAN])
-  else:
-    return _mean_image_subtraction(image, [_BW_MEAN]*channels)
+  lidar = tf.to_float(lidar)
+  
+  # image = tf.image.random_flip_left_right(image)
+  
+  return [_mean_image_subtraction(image, [_R_MEAN, _G_MEAN, _B_MEAN]),
+          _mean_image_subtraction(lidar, [_BW_MEAN])]
 
 
-def preprocess_for_eval(image,
+def preprocess_for_eval(image, lidar,
                         output_height,
                         output_width,
                         resize_side,
-                        channels=3,
-                        is_lidar=False,
                         pool_size=None):
   """Preprocesses the given image for evaluation.
 
@@ -369,24 +370,27 @@ def preprocess_for_eval(image,
   Returns:
     A preprocessed image.
   """
-  if is_lidar:
-    image = _interpolate_image(image,channels,pool_size)
+  lidar = _interpolate_image(lidar,channels,pool_size)
 
-  image = _aspect_preserving_resize(image, resize_side, channels)
-  image = _central_crop([image], output_height, output_width, channels)[0]
-  image.set_shape([output_height, output_width, channels])
+  image = _aspect_preserving_resize(image, resize_side)
+  lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)
+
+  image,lidar = _central_crop([image,lidar], output_height, output_width)
+  
+  image.set_shape([output_height, output_width, 3])
+  lidar.set_shape([output_height, output_width, 1])
+
   image = tf.to_float(image)
-  if channels == 3:
-    return _mean_image_subtraction(image, [_R_MEAN, _G_MEAN, _B_MEAN])
-  else:
-    return _mean_image_subtraction(image, [_BW_MEAN]*channels)
+  lidar = tf.to_float(lidar)
+  
+  return [_mean_image_subtraction(image, [_R_MEAN, _G_MEAN, _B_MEAN]),
+          _mean_image_subtraction(lidar, [_BW_MEAN])]
 
 
-def preprocess_image(image, output_height, output_width, is_training=False,
+def preprocess_image(image, lidar, output_height, output_width,
+                     is_training=False,
                      resize_side_min=_RESIZE_SIDE_MIN,
                      resize_side_max=_RESIZE_SIDE_MAX,
-                     channels=3,
-                     is_lidar=False,
                      pool_size=None):
   """Preprocesses the given image.
 
@@ -408,10 +412,8 @@ def preprocess_image(image, output_height, output_width, is_training=False,
     A preprocessed image.
   """
   if is_training:
-    return preprocess_for_train(image, output_height, output_width,
-                                resize_side_min, resize_side_max, channels,
-                                is_lidar,pool_size)
+    return preprocess_for_train(image, lidar, output_height, output_width,
+                                resize_side_min, resize_side_max, pool_size)
   else:
-    return preprocess_for_eval(image, output_height, output_width,
-                               resize_side_min,channels,
-                               is_lidar,pool_size)
+    return preprocess_for_eval(image, lidar, output_height, output_width,
+                               resize_side_min, pool_size)

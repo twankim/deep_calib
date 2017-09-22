@@ -177,10 +177,7 @@ def main(_):
     # Select the preprocessing function #
     #####################################
     preprocessing_name = FLAGS.preprocessing_name or FLAGS.model_name
-    image_preprocessing_fn = preprocessing_factory.get_preprocessing(
-        preprocessing_name,
-        is_training=False)
-    lidar_preprocessing_fn = preprocessing_factory.get_preprocessing(
+    preprocessing_fn = preprocessing_factory.get_preprocessing(
         preprocessing_name,
         is_training=False)
 
@@ -234,14 +231,9 @@ def main(_):
 
         test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
 
-        image = image_preprocessing_fn(im_placeholder,
-                                       test_image_size,
-                                       test_image_size)
-        lidar = image_preprocessing_fn(im_depth_placeholder,
+        image,lidar = preprocessing_fn(im_placeholder,im_depth_placeholder,
                                        test_image_size,
                                        test_image_size,
-                                       channels=1,
-                                       is_lidar=True,
                                        pool_size=lidar_pool)
 
         # with tf.Session('') as sess:
