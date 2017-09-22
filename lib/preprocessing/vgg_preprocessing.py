@@ -309,7 +309,7 @@ def _interpolate_image(image,channels=3,pool_size=None):
   return interpolated_image
 
 
-def preprocess_for_train(image, lidar
+def preprocess_for_train(image, lidar,
                          output_height,
                          output_width,
                          resize_side_min=_RESIZE_SIDE_MIN,
