@@ -110,6 +110,7 @@ def vgg_arg_scope(weight_decay=0.0005):
   """
   with slim.arg_scope([slim.conv2d],
                       activation_fn=tf.nn.relu,
+                      weights_initializer=tf.contrib.layers.xavier_initializer(),
                       weights_regularizer=slim.l2_regularizer(weight_decay),
                       biases_initializer=tf.constant_initializer(0.01)):
                       # biases_initializer=tf.zeros_initializer()):
@@ -183,7 +184,10 @@ def vgg_16(images,
 
         with tf.variable_scope('regression'):
           # Use conv2d instead of fully_connected layers.
-          net = slim.conv2d(net, 256, [7, 7], padding=fc_conv_padding, scope='fc6')
+          net = slim.conv2d(net, 256, [7, 7],
+                        padding=fc_conv_padding,
+                        normalizer_fn=None,
+                        scope='fc6')
           net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
                              scope='dropout6')
           # net = slim.conv2d(net, 256, [1, 1], scope='fc7')
