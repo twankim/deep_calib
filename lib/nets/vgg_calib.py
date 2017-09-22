@@ -179,8 +179,8 @@ def vgg_16(images,
           # Remaining ConvNets for Feature Matching
           net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv4')
           net = slim.max_pool2d(net, [2, 2], scope='pool4')
-          # net = slim.repeat(net, 1, slim.conv2d, 512, [3, 3], scope='conv5')
-          # net = slim.max_pool2d(net, [2, 2], scope='pool5')
+          net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv5')
+          net = slim.max_pool2d(net, [2, 2], scope='pool5')
 
         with tf.variable_scope('regression'):
           # Use conv2d instead of fully_connected layers.
@@ -192,7 +192,7 @@ def vgg_16(images,
           #                    scope='dropout7')
           # # # Normalize Quaternion only in Testing
           # if is_training:
-          net = slim.conv2d(net, sum(num_preds['num_preds']), [14, 14],
+          net = slim.conv2d(net, sum(num_preds['num_preds']), [7, 7],
                         padding=fc_conv_padding,
                         activation_fn=None,
                         normalizer_fn=None,
