@@ -189,7 +189,7 @@ def main(_):
     network_fn = factory_nets.get_network_fn(
         FLAGS.model_name,
         num_preds=_NUM_PREDS,
-        is_training=False)
+        is_training=True)
 
     # Randomly generate dealibration
     param_rands = gen_ran_decalib(max_theta,max_dist,FLAGS.num_gen)
