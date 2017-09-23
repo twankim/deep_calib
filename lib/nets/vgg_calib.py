@@ -129,7 +129,7 @@ def vgg_16(images,
           # Remaining ConvNets for Feature Matching
           net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv4')
           net = slim.max_pool2d(net, [2, 2], scope='pool4')
-          net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv5')
+          net = slim.repeat(net, 2, slim.conv2d, 256, [3, 3], scope='conv5')
           net = slim.max_pool2d(net, [2, 2], scope='pool5')
 
       with tf.variable_scope('regression'):
