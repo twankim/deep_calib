@@ -30,7 +30,7 @@ import _init_paths
 from datasets import factory_data
 from deployment import model_deploy
 from nets import factory_nets
-from preprocessing import preprocessing_factory
+from preprocessing import (preprocessing_factory,crop_lidar_image)
 
 tf.app.flags.DEFINE_string(
     'master', '', 'The address of the TensorFlow master to use.')
@@ -177,7 +177,8 @@ tf.app.flags.DEFINE_string(
 
 tf.app.flags.DEFINE_string(
     'list_param', '20,1.5',
-    'List of parameters for the file name of train/test data. max_rotation,max_translation')
+    'List of parameters for the file name of train/test data.'
+    'max_rotation,max_translation')
 
 tf.app.flags.DEFINE_string(
     'lidar_pool', '5,2',
@@ -185,7 +186,8 @@ tf.app.flags.DEFINE_string(
 
 tf.app.flags.DEFINE_string(
     'weight_loss', None,
-    'The weight to balance predictions. ex) multiplied to the rotation quaternion')
+    'The weight to balance predictions.'
+    'ex) multiplied to the rotation quaternion')
 
 tf.app.flags.DEFINE_string(
     'model_name', 'vgg_16', 'The name of the architecture to train.')
@@ -444,6 +446,8 @@ def main(_):
               common_queue_capacity=20 * FLAGS.batch_size,
               common_queue_min=10 * FLAGS.batch_size)
       [image,lidar,y_true] = provider.get(['image','lidar','y'])
+
+      image,lidar = crop_lidar_image(image,lidar)
 
       train_image_size = FLAGS.train_image_size or network_fn.default_image_size
 

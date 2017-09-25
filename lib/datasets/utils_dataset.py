@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 12:44:06
+# @Last Modified time: 2017-09-25 10:41:26
 
 from __future__ import absolute_import
 from __future__ import division
@@ -129,38 +129,7 @@ def gen_ran_decalib(max_theta, max_dist, num_gen):
     param_rands['t_vec'] = [t_vecs[i] for i in xrange(num_gen)]
 
     return param_rands
-
-# theta (degree) (randomly generate unit vector for axis, and rotate theta)
-# dist (m) for (x,y,z)
-# def gen_decalib(max_theta, max_dist):
-#     assert (max_theta>0) & (max_dist>0),\
-#             "Maximum values of angle (degree) and distance (m) must be positive"
-#     assert max_theta<=30,\
-#             "Support angle from -30 ~ 30"
-#     param_decalib = {}
-
-#     # Rotation angle
-#     param_decalib['rot'] = np.random.uniform(-max_theta,max_theta)
-
-#     # Rotation axis (unit vector)
-#     a_vec = np.random.standard_normal(3)
-#     param_decalib['a_vec'] = a_vec/np.linalg.norm(a_vec)
-
-#     # Translation vector
-#     dist = np.random.uniform(0,max_dist)
-#     unit_vec = np.random.standard_normal(3)
-#     param_decalib['t_vec'] = dist*unit_vec/np.linalg.norm(unit_vec)
-
-#     # Quaternion for rotation
-#     q_r = np.zeros(4)
-#     q_r[0] = np.cos(param_decalib['rot']*np.pi/360.0)
-#     q_r[1:] = np.sin(param_decalib['rot']*np.pi/360.0)*param_decalib['a_vec']
-#     param_decalib['q_r'] = q_r
-
-#     param_decalib['y'] = np.concatenate((qr_to_yr(q_r,max_theta),
-#                                          param_decalib['t_vec']))
-
-#     return param_decalib
+    
 
 def gen_decalib(max_theta, max_dist, param_rands, i_ran):
     assert (max_theta>0) & (max_dist>0),\

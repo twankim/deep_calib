@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-19 22:35:53
+# @Last Modified time: 2017-09-25 11:21:48
 
 from __future__ import absolute_import
 from __future__ import division
@@ -51,8 +51,10 @@ def main(args):
 
     if args.is_train:
         image_set = 'training'
+        num_gen = 1
     else:
         image_set = 'testing'
+        num_gen = cfg._NUM_GEN
 
     # for image_set in ['training','testing']:
     f_tfrec = os.path.join(path_out,
@@ -65,8 +67,6 @@ def main(args):
     imList = glob.glob(os.path.join(path_cal,image_set,cfg._TYPE_CALIB,'*'+cfg._FORMAT_CALIB))
     imList.sort()
     imNames = [os.path.split(d)[1].strip('.txt') for d in imList]
-
-    # num_data = len(imNames)*cfg._NUM_GEN # Number of data to be gerated
 
     print("... Writing {} set".format(image_set))
 

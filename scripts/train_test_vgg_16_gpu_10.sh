@@ -4,8 +4,7 @@
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=10
 BATCH_SIZE=32
-LEARNING_RATE=0.000001
-END_LEARNING_RATE=0.00000001
+LEARNING_RATE=0.00001
 DATA_NAME=kitti_calib_05_05
 LIST_PARAM=5,0.5
 LIDAR_POOL=5,2
@@ -31,7 +30,6 @@ do
         --checkpoint_path=pretrained/${MODEL_NAME}.ckpt \
         --checkpoint_exclude_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
         --learning_rate=${LEARNING_RATE} \
-        --end_learning_rate=${END_LEARNING_RATE} \
         --ignore_missing_vars=True
         # --trainable_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
         # --ignore_missing_vars=

@@ -288,6 +288,7 @@ def _aspect_preserving_resize(image, smallest_side, channels=3):
   resized_image.set_shape([None, None, channels])
   return resized_image
 
+
 def _interpolate_image(image,channels=3,pool_size=None):
   """Interpolate sparse image (lidar)
 
@@ -307,6 +308,11 @@ def _interpolate_image(image,channels=3,pool_size=None):
   interpolated_image = tf.squeeze(interpolated_image, [0])
   interpolated_image.set_shape([None, None, channels])
   return interpolated_image
+
+
+def _crop_nonzero(image,lidar):
+  offset_height, offset_width, crop_height, crop_width
+  return cropped_image, cropped_lidar
 
 
 def preprocess_for_train(image, lidar,
@@ -411,6 +417,7 @@ def preprocess_image(image, lidar, output_height, output_width,
   Returns:
     A preprocessed image.
   """
+
   if is_training:
     return preprocess_for_train(image, lidar, output_height, output_width,
                                 resize_side_min, resize_side_max, pool_size)
