@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 15:35:50
+# @Last Modified time: 2017-09-27 15:38:06
 
 from __future__ import absolute_import
 from __future__ import division
@@ -275,9 +275,10 @@ def dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
         return np.round(d_min*255.0/val_dist).astype('uint8')
 
 def points_to_img(points2D,pointsDist,im_height,im_width):
+    points2D = np.round(points2D).astype('int')
     im_depth = np.zeros((im_height,im_width),dtype=np.uint8)
     for i in xrange(np.shape(points2D)[0]):
-        x,y = np.round(points2D[i,:]).astype('int')
+        x,y = points2D[i,:]
         im_depth[y,x] = dist_to_pixel(pointsDist[i])
         # im_depth[y,x] = dist_to_pixel(pointsDist[i],mode='standard')
 
