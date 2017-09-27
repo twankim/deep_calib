@@ -224,15 +224,9 @@ def main(_):
         # encoded_image = tf.image.encode_png(im_placeholder)
         # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
-        with tf.Session('') as sess:
-          print('before!!!!!!!!',sess.run(tf.shape(im_placeholder)))
-
         # Crop image and lidar to consider only sensed region
         image,lidar = tf_prepare_test(im_placeholder,im_depth_placeholder,
                                       params_crop)
-
-        with tf.Session('') as sess:
-          print('after!!!!!!!!',sess.run(tf.shape(image)))
 
         test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
 
@@ -240,9 +234,6 @@ def main(_):
                                        test_image_size,
                                        test_image_size,
                                        pool_size=lidar_pool)
-
-        with tf.Session('') as sess:
-          print('final!!!!!!!!',sess.run(tf.shape(image)))
 
         with tf.Session('') as sess:
           lidar_temp = sess.run(lidar)
@@ -365,10 +356,10 @@ def main(_):
       decalibs_qr_pred.append(q_r_preds)
 
       # Write after the calibration
-      im_depth_cal, _ = points_to_img(points2D_cal,
-                                      pointsDist_cal,
-                                      im_height,
-                                      im_width)
+      im_depth_cal,_ = points_to_img(points2D_cal,
+                                     pointsDist_cal,
+                                     im_height,
+                                     im_width)
       f_res_im_cal = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
                                   imName,i_ran,FLAGS.format_image))
 
