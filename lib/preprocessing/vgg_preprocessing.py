@@ -280,6 +280,8 @@ def _aspect_preserving_resize(image, smallest_side, channels=3):
   shape = tf.shape(image)
   height = shape[0]
   width = shape[1]
+  with tf.Session('') as sess:
+    print('!!!!!!!!!!!!!!',sess.run(shape))
   new_height, new_width = _smallest_size_at_least(height, width, smallest_side)
   image = tf.expand_dims(image, 0)
   resized_image = tf.image.resize_bilinear(image, [new_height, new_width],
