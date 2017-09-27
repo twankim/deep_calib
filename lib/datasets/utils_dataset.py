@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 16:48:14
+# @Last Modified time: 2017-09-27 16:51:41
 
 from __future__ import absolute_import
 from __future__ import division
@@ -291,7 +291,7 @@ def points_to_img(points2D,pointsDist,im_height,im_width):
     crop_height = yx_max[1]-yx_min[1]
     crop_width = yx_max[0]-yx_min[0]
 
-    return im_depth.reshape(im_height,im_width,1),
+    return im_depth.reshape(im_height,im_width,1),\
            [offset_height,offset_width,crop_height,crop_width]
 
 
@@ -358,7 +358,7 @@ def tf_points_to_img(points2D,pointsDist,im_height,im_width):
     crop_height = yx_max[0]-yx_min[0]
     crop_width = yx_max[1]-yx_min[1]
 
-    return tf.expand_dims(img, 2), 
+    return tf.expand_dims(img, 2),\
            [offset_height,offset_width,crop_height,crop_width]
 
 def _crop(image, offset_height, offset_width, crop_height, crop_width):
