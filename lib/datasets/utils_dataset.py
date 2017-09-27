@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 14:55:16
+# @Last Modified time: 2017-09-27 15:33:37
 
 from __future__ import absolute_import
 from __future__ import division
@@ -177,6 +177,19 @@ def int64_feature(values):
         values = [values]
     return tf.train.Feature(int64_list=tf.train.Int64List(value=values))
 
+def int32_feature(values):
+    """Returns a TF-Feature of int32s.
+    Args:
+        values: A scalar or list of values.
+    Returns:
+        a TF-Feature.
+    """
+    if isinstance(values,np.ndarray):
+        values = list(values)
+    elif not isinstance(values, (tuple, list)):
+        values = [values]
+    return tf.train.Feature(int32_list=tf.train.Int32List(value=values))
+
 def float_feature(values):
     """Returns a TF-Feature of floats.
     Args:
@@ -224,7 +237,7 @@ def calib_to_tfexample_test(im_data, im_data_depth, im_format, height, width,
             'param/y_calib': float_feature(y_true),
             'param/rot_angle': float_feature(rot),
             'param/a_vec': float_feature(a_vec),
-            'param/params_crop': float_feature(params_crop)
+            'param/params_crop': int32_feature(params_crop)
             }))
 
 def coord_transform(points, t_mat):
