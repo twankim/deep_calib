@@ -130,6 +130,8 @@ def main(_):
     # Crop image and lidar to consider only sensed region
     image,lidar = tf_prepare_test(image,lidar,params_crop)
 
+    print('!!!!!!!!!!!!!!!',image.get_shape(),lidar.get_shape())
+
     #####################################
     # Select the preprocessing function #
     #####################################
