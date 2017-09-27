@@ -363,7 +363,7 @@ def main(_):
       f_res_im_cal = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
                                   imName,i_ran,FLAGS.format_image))
 
-      print('!!!!!!!!!!',im_depth_cal.shape())
+      print('!!!!!!!!!!',im_depth_cal.shape)
       imlidarwrite(f_res_im_cal,im,im_depth_cal)
 
       imlidarwrite(f_res_im_ran,im,im_depth_ran)
