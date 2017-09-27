@@ -35,10 +35,7 @@ import tensorflow.contrib.slim as slim
 
 import _init_paths
 from datasets.config import cfg
-from datasets.dataset_kitti import (get_calib_mat,
-                                    project_lidar_to_img,
-                                    points_to_img,
-                                    _NUM_PREDS)
+from datasets.dataset_kitti import (get_calib_mat,_NUM_PREDS)
 from datasets.utils_dataset import *
 from nets import factory_nets
 from preprocessing import preprocessing_factory
