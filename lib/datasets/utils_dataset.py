@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 14:38:00
+# @Last Modified time: 2017-09-27 14:51:09
 
 from __future__ import absolute_import
 from __future__ import division
@@ -418,7 +418,6 @@ def tf_prepare_train(image,points,
                      mat_intrinsic,mat_rect,mat_extrinsic,
                      max_theta,max_dist):
     # Prepare image and lidar image for training
-
     im_shape = tf.shape(image)
     im_height = im_shape[0]
     im_width = im_shape[1]
