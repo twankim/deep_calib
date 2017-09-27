@@ -455,10 +455,10 @@ def main(_):
       [image,points,mat_intrinsic,mat_rect,mat_extrinsic] = provider.get(
                 ['image','points','mat_intrinsic','mat_rect','mat_extrinsic'])
 
-      print('!!!!!!!!!!!!!!!!!!!!',points.get_shape(), mat_intrinsic.get_shape())
-      with tf.Session('') as sess:
-        print(sess.run(points))
-        print(sess.run(mat_intrinsic))
+      points = tf.reshape(points,[-1,4])[:,:3]
+      mat_intrinsic = tf.reshape(mat_intrinsic,[3,4])
+      mat_rect = tf.reshape(mat_rect,[4,4])
+      mat_extrinsic = tf.reshape(mat_extrinsic,[4,4])
       
       im_shape = tf.shape(image)
       im_height = im_shape[0]
@@ -467,6 +467,7 @@ def main(_):
       param_rands = gen_ran_decalib(max_theta,max_dist,1)
 
       param_decalib = gen_decalib(max_theta,max_dist,param_rands,0)
+      y_true = tf.constant(param_decalib['y'],dtype=tf.float32)
       # Intrinsic parameters and rotation matrix (for reference cam)
       ran_dict = {}
       ran_dict[cfg._SET_CALIB[0]] = mat_intrinsic

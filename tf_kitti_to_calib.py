@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 01:47:27
+# @Last Modified time: 2017-09-27 10:47:25
 
 from __future__ import absolute_import
 from __future__ import division
@@ -86,9 +86,9 @@ def main(args):
                                           image_set,
                                           cfg._TYPE_VELO,
                                           imName+cfg._FORMAT_VELO)
-                    points_org = np.fromfile(f_velo,dtype=np.float32).reshape(-1,4)
+                    points_org = np.fromfile(f_velo,dtype=np.float32)
                     # exclude points reflectance
-                    points = points_org[:,:3]
+                    points = points_org.reshape(-1,4)[:,:3]
 
                     # Read image file
                     f_img = os.path.join(path_img,
@@ -111,18 +111,18 @@ def main(args):
                         encoded_image = tf.image.encode_png(im_placeholder)
                         png_string = sess.run(encoded_image,
                                               feed_dict={im_placeholder:im})
-                        mat_intrinsic = calib_dict[cfg._SET_CALIB[0]]
-                        mat_rect = calib_dict[cfg._SET_CALIB[1]]
-                        mat_extrinsic = calib_dict[cfg._SET_CALIB[2]]
+                        mat_intrinsic = calib_dict[cfg._SET_CALIB[0]].flatten()
+                        mat_rect = calib_dict[cfg._SET_CALIB[1]].flatten()
+                        mat_extrinsic = calib_dict[cfg._SET_CALIB[2]].flatten()
                         example = calib_to_tfexample_train(
                                                     png_string,
                                                     b'png',
                                                     im_height,
                                                     im_width,
-                                                    points.tostring(),
-                                                    mat_intrinsic.tostring(),
-                                                    mat_rect.tostring(),
-                                                    mat_extrinsic.tostring()
+                                                    points_org,
+                                                    mat_intrinsic,
+                                                    mat_rect,
+                                                    mat_extrinsic
                                                     )
                         tfrecord_writer.write(example.SerializeToString())
                     elif image_set == 'testing':
@@ -168,10 +168,7 @@ def main(args):
                             list_im_depth[i_ran] = points_to_img(points2D_ran,
                                                                  pointsDist_ran,
                                                                  im_height,
-                                                                 im_width).reshape(
-                                                                        im_height,
-                                                                        im_width,
-                                                                        1)
+                                                                 im_width)
 
                             # !!!! For debugging
                             # imsave('data_ex/ho_{}_{}.png'.format(image_set,i_ran),
@@ -193,8 +190,7 @@ def main(args):
 
                         png_strings = [sess.run([encoded_image,encoded_image_depth],
                                                  feed_dict={im_placeholder:im,
-                                                            im_depth_placeholder:im_depth.\
-                                                            reshape(im_height,im_width,1)}) \
+                                                            im_depth_placeholder:im_depth}) \
                                        for im,im_depth in zip(list_im,list_im_depth)]
 
                         for i_string in xrange(cfg._NUM_GEN):

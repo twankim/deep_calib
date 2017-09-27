@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 01:44:53
+# @Last Modified time: 2017-09-27 09:48:31
 
 from __future__ import absolute_import
 from __future__ import division
@@ -202,10 +202,10 @@ def calib_to_tfexample_train(im_data, im_format, height, width,
             'image/format': bytes_feature(im_format),
             'image/height': int64_feature(height),
             'image/width': int64_feature(width),
-            'lidar/points': bytes_feature(points),
-            'calib/mat_intrinsic': bytes_feature(mat_intrinsic),
-            'calib/mat_rect': bytes_feature(mat_rect),
-            'calib/mat_extrinsic': bytes_feature(mat_extrinsic)
+            'lidar/points': float_feature(points),
+            'calib/mat_intrinsic': float_feature(mat_intrinsic),
+            'calib/mat_rect': float_feature(mat_rect),
+            'calib/mat_extrinsic': float_feature(mat_extrinsic)
             }))
 
 def calib_to_tfexample_test(im_data, im_data_depth, im_format, height, width,

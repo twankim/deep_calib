@@ -224,8 +224,7 @@ def main(_):
         # im_placeholder = tf.placeholder(dtype=tf.uint8)
         # im_depth_placeholder = tf.placeholder(dtype=tf.uint8)
         im_placeholder = tf.constant(im)
-        im_depth_placeholder = tf.constant(im_depth_ran.\
-                                           reshape(im_height,im_width,1))
+        im_depth_placeholder = tf.constant(im_depth_ran)
         # encoded_image = tf.image.encode_png(im_placeholder)
         # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 

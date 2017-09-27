@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 09:02:09
+# @Last Modified time: 2017-09-27 11:11:32
 
 from __future__ import absolute_import
 from __future__ import division
@@ -111,7 +111,7 @@ def points_to_img(points2D,pointsDist,im_height,im_width):
         x,y = np.round(points2D[i,:]).astype('int')
         im_depth[y,x] = dist_to_pixel(pointsDist[i])
         # im_depth[y,x] = dist_to_pixel(pointsDist[i],mode='standard')
-    return im_depth
+    return im_depth.reshape(im_height,im_width,1)
 
 def tf_coord_transform(points, t_mat):
     # Change to homogeneous form
@@ -132,8 +132,8 @@ def tf_project_lidar_to_img(dict_calib,points,im_height,im_width):
     points2D = tf_coord_transform(points,trans_mat)
 
     # Find only feasible points
-    idx1 = (points2D[:,0]>=0) & (points2D[:,0] <=im_width-1)
-    idx2 = (points2D[:,1]>=0) & (points2D[:,1] <=im_height-1)
+    idx1 = (points2D[:,0]>=0) & (points2D[:,0] <=tf.to_float(im_width)-1)
+    idx2 = (points2D[:,1]>=0) & (points2D[:,1] <=tf.to_float(im_height)-1)
     idx3 = (pointsDist>=0)
     idx_in = idx1 & idx2 & idx3
     points2D_fin = tf.boolean_mask(points2D,idx_in)
@@ -151,7 +151,8 @@ def tf_dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
     Returns:
         pixel value in 'uint8' format
     """
-    val_dist = d_max if val_dist>d_max else val_dist if val_dist>d_min else d_min
+    val_dist = tf.maximum(val_dist,d_min)
+    val_dist = tf.minimum(val_dist,d_max)
     if mode == 'standard':
         return tf.cast(tf.round(val_dist*255.0/d_max),tf.uint8)
     elif mode == 'inverse':
@@ -162,8 +163,10 @@ def tf_dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
 
 def tf_points_to_img(points2D,pointsDist,im_height,im_width):
     pointsPixel = tf_dist_to_pixel(pointsDist)
-    return tf.scatter_nd(tf.cast(tf.round(points2D),tf.int32),pointsPixel,
+    points2D_yx = tf.reverse(points2D,axis=[1])
+    img = tf.scatter_nd(tf.cast(tf.round(points2D_yx),tf.int32),pointsPixel,
                          [im_height,im_width])
+    return tf.expand_dims(img, 2)
 
 def get_data(path_data,image_set,list_param=[],reader=None):
     """ Returns a dataset
@@ -192,14 +195,22 @@ def get_data(path_data,image_set,list_param=[],reader=None):
                 (), tf.string, default_value=''),
             'image/format': tf.FixedLenFeature(
                 (), tf.string, default_value='png'),
-            'lidar/points': tf.FixedLenFeature(
-                (), dtype=tf.float32),
+            'lidar/points': tf.VarLenFeature(
+                tf.float32),
             'calib/mat_intrinsic': tf.FixedLenFeature(
-                [3,4], tf.float32, default_value=tf.zeros([4,4], dtype=tf.float32)),
+                [12], tf.float32, default_value=tf.zeros([12], dtype=tf.float32)),
             'calib/mat_rect': tf.FixedLenFeature(
-                [4,4], tf.float32, default_value=tf.zeros([4,4], dtype=tf.float32)),
+                [16], tf.float32, default_value=tf.zeros([16], dtype=tf.float32)),
             'calib/mat_extrinsic': tf.FixedLenFeature(
-                [4,4], tf.float32, default_value=tf.zeros([3,4], dtype=tf.float32))
+                [16], tf.float32, default_value=tf.zeros([16], dtype=tf.float32)),
+            # 'lidar/points': tf.FixedLenFeature(
+            #     (), dtype=tf.float32),
+            # 'calib/mat_intrinsic': tf.FixedLenFeature(
+            #     [3,4], tf.float32, default_value=tf.zeros([4,4], dtype=tf.float32)),
+            # 'calib/mat_rect': tf.FixedLenFeature(
+            #     [4,4], tf.float32, default_value=tf.zeros([4,4], dtype=tf.float32)),
+            # 'calib/mat_extrinsic': tf.FixedLenFeature(
+            #     [4,4], tf.float32, default_value=tf.zeros([3,4], dtype=tf.float32))
         }
 
         items_to_handlers = {
