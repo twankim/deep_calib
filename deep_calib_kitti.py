@@ -365,7 +365,7 @@ def main(_):
       decalibs_qr_pred.append(q_r_preds)
 
       # Write after the calibration
-      im_depth_cal = points_to_img(points2D_cal,
+      im_depth_cal,_ = points_to_img(points2D_cal,
                                    pointsDist_cal,
                                    im_height,
                                    im_width)
