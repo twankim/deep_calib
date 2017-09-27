@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 15:39:25
+# @Last Modified time: 2017-09-27 15:40:12
 
 from __future__ import absolute_import
 from __future__ import division
@@ -135,7 +135,7 @@ def get_data(path_data,image_set,list_param=[],reader=None):
             'param/a_vec': tf.FixedLenFeature(
                 [3], tf.float32, default_value=tf.zeros([3], dtype=tf.float32)),
             'param/params_crop': tf.FixedLenFeature(
-                [4], tf.int32, default_value=tf.zeros([4], dtype=tf.int32))
+                [4], tf.int64, default_value=tf.zeros([4], dtype=tf.int64))
         }
 
         items_to_handlers = {
