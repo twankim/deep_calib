@@ -225,7 +225,7 @@ def main(_):
         # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
         # Crop image and lidar to consider only sensed region
-        image,lidar = tf_prepare_test(image_placeholder,im_depth_placeholder,
+        image,lidar = tf_prepare_test(im_placeholder,im_depth_placeholder,
                                       params_crop)
 
         test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
