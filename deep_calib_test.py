@@ -31,6 +31,7 @@ import _init_paths
 from datasets import factory_data
 from nets import factory_nets
 from preprocessing import preprocessing_factory
+from datasets.utils_dataset import tf_prepare_test
 
 tf.app.flags.DEFINE_integer(
     'batch_size', 100, 'The number of samples in each batch.')
