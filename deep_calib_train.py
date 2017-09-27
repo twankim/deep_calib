@@ -458,9 +458,9 @@ def main(_):
       mat_rect = tf.reshape(mat_rect,[4,4])
       mat_extrinsic = tf.reshape(mat_extrinsic,[4,4])
 
-      image,lidar = tf_prepare_train(image,points,
-                                     mat_intrinsic,mat_rect,mat_extrinsic,
-                                     max_theta,max_dist)
+      image,lidar,y_true = tf_prepare_train(image,points,
+                                            mat_intrinsic,mat_rect,mat_extrinsic,
+                                            max_theta,max_dist)
 
       train_image_size = FLAGS.train_image_size or network_fn.default_image_size
 

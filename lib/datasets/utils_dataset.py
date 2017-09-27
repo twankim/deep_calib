@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 14:51:09
+# @Last Modified time: 2017-09-27 14:55:16
 
 from __future__ import absolute_import
 from __future__ import division
@@ -444,8 +444,9 @@ def tf_prepare_train(image,points,
                                                            im_width)
     lidar,params_crop = tf_points_to_img(
                         points2D_ran,pointsDist_ran,im_height,im_width)
+    image,lidar = tf_crop_lidar_image(image,lidar,params_crop)
 
-    return tf_crop_lidar_image(image,lidar,params_crop)
+    return image,lidar,y_true
 
 def tf_prepare_test(image,lidar,params_crop):
     return tf_crop_lidar_image(image,lidar,params_crop)
