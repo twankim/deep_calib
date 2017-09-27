@@ -28,6 +28,10 @@ import tensorflow.contrib.slim as slim
 
 import _init_paths
 from datasets import factory_data
+from datasets.config import cfg
+from datasets.utils_dataset import *
+from datasets.dataset_kitti import (project_lidar_to_img,points_to_img,
+                                    tf_project_lidar_to_img,tf_points_to_img)
 from deployment import model_deploy
 from nets import factory_nets
 from preprocessing import (preprocessing_factory,crop_lidar_image)
@@ -392,6 +396,9 @@ def main(_):
   if not FLAGS.dataset_dir:
     raise ValueError('You must supply the dataset directory with --dataset_dir')
 
+  # Parameters for random generation
+  max_theta,max_dist = map(float,FLAGS.list_param.split(','))
+
   tf.logging.set_verbosity(tf.logging.INFO)
   with tf.Graph().as_default():
     #######################
@@ -445,9 +452,39 @@ def main(_):
               num_readers=FLAGS.num_readers,
               common_queue_capacity=20 * FLAGS.batch_size,
               common_queue_min=10 * FLAGS.batch_size)
-      [image,lidar,y_true] = provider.get(['image','lidar','y'])
+      [image,points,mat_intrinsic,mat_rect,mat_extrinsic] = provider.get(
+                ['image','points','mat_intrinsic','mat_rect','mat_extrinsic'])
 
-      image,lidar = crop_lidar_image(image,lidar)
+      print('!!!!!!!!!!!!!!!!!!!!',points.get_shape(), mat_intrinsic.get_shape())
+      with tf.Session('') as sess:
+        print(sess.run(points))
+        print(sess.run(mat_intrinsic))
+      
+      im_shape = tf.shape(image)
+      im_height = im_shape[0]
+      im_width = im_shape[1]
+
+      param_rands = gen_ran_decalib(max_theta,max_dist,1)
+
+      param_decalib = gen_decalib(max_theta,max_dist,param_rands,0)
+      # Intrinsic parameters and rotation matrix (for reference cam)
+      ran_dict = {}
+      ran_dict[cfg._SET_CALIB[0]] = mat_intrinsic
+      ran_dict[cfg._SET_CALIB[1]] = mat_rect
+      # Extrinsic parameters to decalibrated ones
+      ran_dict[cfg._SET_CALIB[2]] = tf.matmul(
+               mat_extrinsic,
+               tf.constant(quat_to_transmat(param_decalib['q_r'],
+                                            param_decalib['t_vec']),
+                           dtype=tf.float32))
+
+      points2D_ran, pointsDist_ran = tf_project_lidar_to_img(ran_dict,
+                                                             points,
+                                                             im_height,
+                                                             im_width)
+      lidar = tf_points_to_img(points2D_ran,pointsDist_ran,im_height,im_width)
+
+      # image,lidar = crop_lidar_itmage(image,lidar)
 
       train_image_size = FLAGS.train_image_size or network_fn.default_image_size
 

@@ -2,14 +2,14 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-25 10:41:26
+# @Last Modified time: 2017-09-27 01:44:53
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import cv2
+from skimage.io import imsave
 import matplotlib.pyplot as plt
 
 import tensorflow as tf
@@ -180,7 +180,7 @@ def float_feature(values):
         a TF-Feature.
     """
     if isinstance(values,np.ndarray):
-        values = list(values)
+        values = values.tolist()
     elif not isinstance(values, (tuple, list)):
         values = [values]
     return tf.train.Feature(float_list=tf.train.FloatList(value=values))
@@ -195,8 +195,21 @@ def bytes_feature(values):
     """
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[values]))
 
-def calib_to_tfexample(im_data, im_data_depth, im_format, height, width,
-                       y_true, rot, a_vec):
+def calib_to_tfexample_train(im_data, im_format, height, width,
+                             points, mat_intrinsic, mat_rect, mat_extrinsic):
+    return tf.train.Example(features=tf.train.Features(feature={
+            'image/encoded': bytes_feature(im_data),
+            'image/format': bytes_feature(im_format),
+            'image/height': int64_feature(height),
+            'image/width': int64_feature(width),
+            'lidar/points': bytes_feature(points),
+            'calib/mat_intrinsic': bytes_feature(mat_intrinsic),
+            'calib/mat_rect': bytes_feature(mat_rect),
+            'calib/mat_extrinsic': bytes_feature(mat_extrinsic)
+            }))
+
+def calib_to_tfexample_test(im_data, im_data_depth, im_format, height, width,
+                            y_true, rot, a_vec):
     return tf.train.Example(features=tf.train.Features(feature={
             'image/encoded': bytes_feature(im_data),
             'image/format': bytes_feature(im_format),
@@ -222,5 +235,5 @@ def imlidarwrite(fname,im,im_depth):
         im_out[idx_h[i],idx_w[i],:] = (255*np.array(
                         cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
                         .astype(np.uint8)
-    cv2.imwrite(fname,im_out[:,:,(2,1,0)])
+    imsave(fname,im_out)
     print("!!! Write:{}".format(fname))
