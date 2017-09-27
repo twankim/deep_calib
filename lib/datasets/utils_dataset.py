@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 16:32:49
+# @Last Modified time: 2017-09-27 16:34:18
 
 from __future__ import absolute_import
 from __future__ import division
@@ -284,7 +284,7 @@ def points_to_img(points2D,pointsDist,im_height,im_width):
 
     # Find LIDAR sensed region
     yx_max = np.max(points2D,axis=0)
-    yx_min = np.max(points2D,axis=0)
+    yx_min = np.min(points2D,axis=0)
 
     offset_height = yx_min[1]
     offset_width = yx_min[0]
