@@ -224,9 +224,15 @@ def main(_):
         # encoded_image = tf.image.encode_png(im_placeholder)
         # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
+        with tf.Session('') as sess:
+          print('before!!!!!!!!',sess.run(tf.shape(image)))
+
         # Crop image and lidar to consider only sensed region
         image,lidar = tf_prepare_test(im_placeholder,im_depth_placeholder,
                                       params_crop)
+
+        with tf.Session('') as sess:
+          print('after!!!!!!!!',sess.run(tf.shape(image)))
 
         test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
 
@@ -234,6 +240,9 @@ def main(_):
                                        test_image_size,
                                        test_image_size,
                                        pool_size=lidar_pool)
+
+        with tf.Session('') as sess:
+          print('final!!!!!!!!',sess.run(tf.shape(image)))
 
         with tf.Session('') as sess:
           lidar_temp = sess.run(lidar)
