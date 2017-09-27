@@ -225,7 +225,7 @@ def main(_):
         # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
         with tf.Session('') as sess:
-          print('before!!!!!!!!',sess.run(tf.shape(implaceholder)))
+          print('before!!!!!!!!',sess.run(tf.shape(im_placeholder)))
 
         # Crop image and lidar to consider only sensed region
         image,lidar = tf_prepare_test(im_placeholder,im_depth_placeholder,
