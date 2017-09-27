@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 16:52:57
+# @Last Modified time: 2017-09-27 17:01:41
 
 from __future__ import absolute_import
 from __future__ import division
@@ -467,6 +467,7 @@ def imlidarwrite(fname,im,im_depth):
         im_depth: depth image array (h x w)
     """
     im_out = im.copy()
+    im_depth = np.squeeze(im_depth,axis=2)
     idx_h, idx_w = np.nonzero(im_depth)
     cmap = plt.get_cmap('jet')
     for i in xrange(len(idx_h)):
