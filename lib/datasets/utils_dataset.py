@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 15:38:06
+# @Last Modified time: 2017-09-27 15:41:28
 
 from __future__ import absolute_import
 from __future__ import division
@@ -408,12 +408,13 @@ def tf_crop_lidar_image(image,lidar,params_crop):
     Return:
         cropped image and lidar
     """
+    params_crop = tf.cast(params_crop,tf.int32)
     offset_height = params_crop[0]
     offset_width = params_crop[1]
     crop_height = params_crop[2]
     crop_width = params_crop[3]
-    return [_crop(image,offset_height,offset_width,crop_height, crop_width),
-            _crop(lidar,offset_height,offset_width,crop_height, crop_width)]
+    return [_crop(image,offset_height,offset_width,crop_height,crop_width),
+            _crop(lidar,offset_height,offset_width,crop_height,crop_width)]
 
 def tf_prepare_train(image,points,
                      mat_intrinsic,mat_rect,mat_extrinsic,
