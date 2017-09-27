@@ -169,7 +169,7 @@ def main(_):
                                                 im_width)
 
     # Write as one image (Ground truth)
-    im_depth = points_to_img(points2D,pointsDist,im_height,im_width)
+    im_depth,_ = points_to_img(points2D,pointsDist,im_height,im_width)
     f_res_im = os.path.join(FLAGS.dir_out,'{}_gt.{}'.format(
                                   imName,FLAGS.format_image))
 
@@ -209,10 +209,10 @@ def main(_):
                                                             im_width)
 
         # Write before the calibration
-        im_depth_ran = points_to_img(points2D_ran,
-                                 pointsDist_ran,
-                                 im_height,
-                                 im_width)
+        im_depth_ran, params_crop = points_to_img(points2D_ran,
+                                                  pointsDist_ran,
+                                                  im_height,
+                                                  im_width)
         f_res_im_ran = os.path.join(FLAGS.dir_out,'{}_rand{}.{}'.format(
                                     imName,i_ran,FLAGS.format_image))
         # Save ground truth decalibration
@@ -228,9 +228,13 @@ def main(_):
         # encoded_image = tf.image.encode_png(im_placeholder)
         # encoded_image_depth = tf.image.encode_png(im_depth_placeholder)
 
+        # Crop image and lidar to consider only sensed region
+        image,lidar = tf_prepare_test(image_placeholder,im_depth_placeholder,
+                                      params_crop)
+
         test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
 
-        image,lidar = preprocessing_fn(im_placeholder,im_depth_placeholder,
+        image,lidar = preprocessing_fn(image,lidar,
                                        test_image_size,
                                        test_image_size,
                                        pool_size=lidar_pool)

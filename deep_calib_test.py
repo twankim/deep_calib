@@ -123,7 +123,11 @@ def main(_):
         shuffle=False,
         common_queue_capacity=2 * FLAGS.batch_size,
         common_queue_min=FLAGS.batch_size)
-    [image,lidar,y_true] = provider.get(['image','lidar','y'])
+    [image,lidar,y_true,params_crop] = provider.get(['image','lidar','y',
+                                                     'params_crop'])
+
+    # Crop image and lidar to consider only sensed region
+    image,lidar = tf_prepare_test(image,lidar,params_crop)
 
     #####################################
     # Select the preprocessing function #

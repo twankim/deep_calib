@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-06-26 16:55:00
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 10:47:25
+# @Last Modified time: 2017-09-27 14:30:05
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,9 +20,7 @@ import tensorflow.contrib.slim as slim
 
 import _init_paths
 from datasets.config import cfg
-from datasets.dataset_kitti import (get_calib_mat,
-                                    project_lidar_to_img,
-                                    points_to_img)
+from datasets.dataset_kitti import get_calib_mat
                                     
 from datasets.utils_dataset import *
 
@@ -145,6 +143,8 @@ def main(args):
                                                       cfg._NUM_GEN)
                         list_im = [im]*cfg._NUM_GEN
                         list_im_depth = [None]*cfg._NUM_GEN
+                        list_crop = [None]*cfg._NUM_GEN
+                        list_param_decalib = [None]*cfg._NUM_GEN
 
                         for i_ran in xrange(cfg._NUM_GEN):
                             param_decalib = gen_decalib(max_theta,
@@ -165,10 +165,13 @@ def main(args):
                                                                 points,
                                                                 im_height,
                                                                 im_width)
-                            list_im_depth[i_ran] = points_to_img(points2D_ran,
-                                                                 pointsDist_ran,
-                                                                 im_height,
-                                                                 im_width)
+                            list_im_depth[i_ran],list_crop[i_ran] = points_to_img(
+                                                                points2D_ran,
+                                                                pointsDist_ran,
+                                                                im_height,
+                                                                im_width)
+
+                            list_param_decalib[i_ran] = param_decalib
 
                             # !!!! For debugging
                             # imsave('data_ex/ho_{}_{}.png'.format(image_set,i_ran),
@@ -200,9 +203,10 @@ def main(args):
                                                     b'png',
                                                     im_height,
                                                     im_width,
-                                                    param_decalib['y'],
-                                                    param_decalib['rot'],
-                                                    param_decalib['a_vec']
+                                                    list_param_decalib[i_string]['y'],
+                                                    list_param_decalib[i_string]['rot'],
+                                                    list_param_decalib[i_string]['a_vec'],
+                                                    list_crop[i_string]
                                                     )
                             tfrecord_writer.write(example.SerializeToString())
 

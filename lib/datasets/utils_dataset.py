@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 09:48:31
+# @Last Modified time: 2017-09-27 14:38:00
 
 from __future__ import absolute_import
 from __future__ import division
@@ -14,6 +14,11 @@ import matplotlib.pyplot as plt
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
+
+from datasets.config import cfg
+
+_D_MAX = 50.0
+_D_MIN = 0.5
 
 # Product of quaternions
 def qprod(q_a,q_b):
@@ -209,7 +214,7 @@ def calib_to_tfexample_train(im_data, im_format, height, width,
             }))
 
 def calib_to_tfexample_test(im_data, im_data_depth, im_format, height, width,
-                            y_true, rot, a_vec):
+                            y_true, rot, a_vec, params_crop):
     return tf.train.Example(features=tf.train.Features(feature={
             'image/encoded': bytes_feature(im_data),
             'image/format': bytes_feature(im_format),
@@ -218,8 +223,233 @@ def calib_to_tfexample_test(im_data, im_data_depth, im_format, height, width,
             'lidar/encoded': bytes_feature(im_data_depth),
             'param/y_calib': float_feature(y_true),
             'param/rot_angle': float_feature(rot),
-            'param/a_vec': float_feature(a_vec)
+            'param/a_vec': float_feature(a_vec),
+            'param/params_crop': float_feature(params_crop)
             }))
+
+def coord_transform(points, t_mat):
+    # Change to homogeneous form
+    points = np.hstack([points,np.ones((np.shape(points)[0],1))])
+    t_points = np.dot(points,t_mat.T)
+    # Normalize
+    t_points = t_points[:,:-1]/t_points[:,[-1]]
+    return t_points
+
+def project_lidar_to_img(dict_calib,points,im_height,im_width):
+    # Extract depth data first before projection to 2d image space
+    trans_mat = np.dot(dict_calib[cfg._SET_CALIB[1]],dict_calib[cfg._SET_CALIB[2]])
+    points3D = coord_transform(points,trans_mat)
+    pointsDist = points3D[:,2]
+
+    # Project to image space
+    trans_mat = np.dot(dict_calib[cfg._SET_CALIB[0]],trans_mat)
+    points2D = coord_transform(points,trans_mat)
+
+    # Find only feasible points
+    idx1 = (points2D[:,0]>=0) & (points2D[:,0] <=im_width-1)
+    idx2 = (points2D[:,1]>=0) & (points2D[:,1] <=im_height-1)
+    idx3 = (pointsDist>=0)
+    idx_in = idx1 & idx2 & idx3
+    points2D_fin = points2D[idx_in,:]
+    pointsDist_fin = pointsDist[idx_in]
+
+    return points2D_fin, pointsDist_fin
+
+def dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
+    """ Returns pixel value from distance measurment
+    Args:
+        val_dist: distance value (m)
+        mode: 'inverse' vs 'standard'
+        d_max: maximum distance to consider
+        d_min: minimum distance to consider
+    Returns:
+        pixel value in 'uint8' format
+    """
+    val_dist = d_max if val_dist>d_max else val_dist if val_dist>d_min else d_min
+    if mode == 'standard':
+        return np.round(val_dist*255.0/d_max).astype('uint8')
+    elif mode == 'inverse':
+        return np.round(d_min*255.0/val_dist).astype('uint8')
+    else:
+        # Default is inverse
+        return np.round(d_min*255.0/val_dist).astype('uint8')
+
+def points_to_img(points2D,pointsDist,im_height,im_width):
+    im_depth = np.zeros((im_height,im_width),dtype=np.uint8)
+    for i in xrange(np.shape(points2D)[0]):
+        x,y = np.round(points2D[i,:]).astype('int')
+        im_depth[y,x] = dist_to_pixel(pointsDist[i])
+        # im_depth[y,x] = dist_to_pixel(pointsDist[i],mode='standard')
+
+    # Find LIDAR sensed region
+    yx_max = np.max(points2D,axis=0)
+    yx_min = np.max(points2D,axis=0)
+
+    offset_height = yx_min[1]
+    offset_width = yx_min[0]
+    crop_height = yx_max[1]-yx_min[1]
+    crop_width = yx_max[0]-yx_min[0]
+    return [im_depth.reshape(im_height,im_width,1),
+            [offset_height,offset_width,crop_height,crop_width]]
+
+
+def tf_coord_transform(points, t_mat):
+    # Change to homogeneous form
+    points = tf.concat([points,tf.ones([tf.shape(points)[0],1],tf.float32)], 1)
+    t_points = tf.matmul(points,tf.transpose(t_mat))
+    # Normalize
+    t_points = tf.div(t_points[:,:-1],tf.expand_dims(t_points[:,-1],1))
+    return t_points
+
+def tf_project_lidar_to_img(dict_calib,points,im_height,im_width):
+    # Extract depth data first before projection to 2d image space
+    trans_mat = tf.matmul(dict_calib[cfg._SET_CALIB[1]],
+                          dict_calib[cfg._SET_CALIB[2]])
+    points3D = tf_coord_transform(points,trans_mat)
+    pointsDist = points3D[:,2]
+
+    # Project to image space
+    trans_mat = tf.matmul(dict_calib[cfg._SET_CALIB[0]],trans_mat)
+    points2D = tf_coord_transform(points,trans_mat)
+
+    # Find only feasible points
+    idx1 = (points2D[:,0]>=0) & (points2D[:,0] <=tf.to_float(im_width)-1)
+    idx2 = (points2D[:,1]>=0) & (points2D[:,1] <=tf.to_float(im_height)-1)
+    idx3 = (pointsDist>=0)
+    idx_in = idx1 & idx2 & idx3
+    points2D_fin = tf.boolean_mask(points2D,idx_in)
+    pointsDist_fin = tf.boolean_mask(pointsDist,idx_in)
+
+    return points2D_fin, pointsDist_fin
+
+def tf_dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
+    """ Returns pixel value from distance measurment
+    Args:
+        val_dist: distance value (m)
+        mode: 'inverse' vs 'standard'
+        d_max: maximum distance to consider
+        d_min: minimum distance to consider
+    Returns:
+        pixel value in 'uint8' format
+    """
+    val_dist = tf.maximum(val_dist,d_min)
+    val_dist = tf.minimum(val_dist,d_max)
+    if mode == 'standard':
+        return tf.cast(tf.round(val_dist*255.0/d_max),tf.uint8)
+    elif mode == 'inverse':
+        return tf.cast(tf.round(d_min*255.0/val_dist),tf.uint8)
+    else:
+        # Default is inverse
+        return tf.cast(tf.round(d_min*255.0/val_dist),tf.uint8)
+
+def tf_points_to_img(points2D,pointsDist,im_height,im_width):
+    pointsPixel = tf_dist_to_pixel(pointsDist)
+    points2D_yx = tf.cast(tf.round(tf.reverse(points2D,axis=[1])),tf.int32)
+    img = tf.scatter_nd(points2D_yx,pointsPixel,[im_height,im_width])
+
+    # Find LIDAR sensed region
+    yx_max = tf.reduce_max(points2D_yx,axis=0)
+    yx_min = tf.reduce_min(points2D_yx,axis=0)
+
+    offset_height = yx_min[0]
+    offset_width = yx_min[1]
+    crop_height = yx_max[0]-yx_min[0]
+    crop_width = yx_max[1]-yx_min[1]
+
+    return [tf.expand_dims(img, 2), 
+            [offset_height,offset_width,crop_height,crop_width]]
+
+def _crop(image, offset_height, offset_width, crop_height, crop_width):
+    """Crops the given image using the provided offsets and sizes.
+
+    Note that the method doesn't assume we know the input image size but it does
+    assume we know the input image rank.
+
+    Args:
+    image: an image of shape [height, width, channels].
+    offset_height: a scalar tensor indicating the height offset.
+    offset_width: a scalar tensor indicating the width offset.
+    crop_height: the height of the cropped image.
+    crop_width: the width of the cropped image.
+
+    Returns:
+    the cropped (and resized) image.
+
+    Raises:
+    InvalidArgumentError: if the rank is not 3 or if the image dimensions are
+        less than the crop size.
+    """
+    original_shape = tf.shape(image)
+
+    rank_assertion = tf.Assert(
+        tf.equal(tf.rank(image), 3),
+        ['Rank of image must be equal to 3.'])
+    with tf.control_dependencies([rank_assertion]):
+        cropped_shape = tf.stack([crop_height, crop_width, original_shape[2]])
+
+    size_assertion = tf.Assert(
+        tf.logical_and(
+            tf.greater_equal(original_shape[0], crop_height),
+            tf.greater_equal(original_shape[1], crop_width)),
+        ['Crop size greater than the image size.'])
+
+    offsets = tf.to_int32(tf.stack([offset_height, offset_width, 0]))
+
+    # Use tf.slice instead of crop_to_bounding box as it accepts tensors to
+    # define the crop size.
+    with tf.control_dependencies([size_assertion]):
+        image = tf.slice(image, offsets, cropped_shape)
+    return tf.reshape(image, cropped_shape)
+
+def tf_crop_lidar_image(image,lidar,params_crop):
+    """Crop RGB image and LIDAR image to consider only 
+        LIDAR-sensed region
+    Return:
+        cropped image and lidar
+    """
+    offset_height = params_crop[0]
+    offset_width = params_crop[1]
+    crop_height = params_crop[2]
+    crop_width = params_crop[3]
+    return [_crop(image,offset_height,offset_width,crop_height, crop_width),
+            _crop(lidar,offset_height,offset_width,crop_height, crop_width)]
+
+def tf_prepare_train(image,points,
+                     mat_intrinsic,mat_rect,mat_extrinsic,
+                     max_theta,max_dist):
+    # Prepare image and lidar image for training
+
+    im_shape = tf.shape(image)
+    im_height = im_shape[0]
+    im_width = im_shape[1]
+
+    param_rands = gen_ran_decalib(max_theta,max_dist,1)
+
+    param_decalib = gen_decalib(max_theta,max_dist,param_rands,0)
+    y_true = tf.constant(param_decalib['y'],dtype=tf.float32)
+
+    # Intrinsic parameters and rotation matrix (for reference cam)
+    ran_dict = {}
+    ran_dict[cfg._SET_CALIB[0]] = mat_intrinsic
+    ran_dict[cfg._SET_CALIB[1]] = mat_rect
+    # Extrinsic parameters to decalibrated ones
+    ran_dict[cfg._SET_CALIB[2]] = tf.matmul(
+           mat_extrinsic,
+           tf.constant(quat_to_transmat(param_decalib['q_r'],
+                                        param_decalib['t_vec']),
+                       dtype=tf.float32))
+
+    points2D_ran, pointsDist_ran = tf_project_lidar_to_img(ran_dict,
+                                                           points,
+                                                           im_height,
+                                                           im_width)
+    lidar,params_crop = tf_points_to_img(
+                        points2D_ran,pointsDist_ran,im_height,im_width)
+
+    return tf_crop_lidar_image(image,lidar,params_crop)
+
+def tf_prepare_test(image,lidar,params_crop):
+    return tf_crop_lidar_image(image,lidar,params_crop)
 
 def imlidarwrite(fname,im,im_depth):
     """Write image with RGB and depth

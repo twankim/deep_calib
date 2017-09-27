@@ -30,11 +30,9 @@ import _init_paths
 from datasets import factory_data
 from datasets.config import cfg
 from datasets.utils_dataset import *
-from datasets.dataset_kitti import (project_lidar_to_img,points_to_img,
-                                    tf_project_lidar_to_img,tf_points_to_img)
 from deployment import model_deploy
 from nets import factory_nets
-from preprocessing import (preprocessing_factory,crop_lidar_image)
+from preprocessing import preprocessing_factory
 
 tf.app.flags.DEFINE_string(
     'master', '', 'The address of the TensorFlow master to use.')
@@ -459,6 +457,9 @@ def main(_):
       mat_intrinsic = tf.reshape(mat_intrinsic,[3,4])
       mat_rect = tf.reshape(mat_rect,[4,4])
       mat_extrinsic = tf.reshape(mat_extrinsic,[4,4])
+
+      image,lidar = tf_prepare_train(image,points,
+                                     mat_intrinsic,mat_rect,mat_extrinsic)
       
       im_shape = tf.shape(image)
       im_height = im_shape[0]
@@ -468,6 +469,7 @@ def main(_):
 
       param_decalib = gen_decalib(max_theta,max_dist,param_rands,0)
       y_true = tf.constant(param_decalib['y'],dtype=tf.float32)
+      
       # Intrinsic parameters and rotation matrix (for reference cam)
       ran_dict = {}
       ran_dict[cfg._SET_CALIB[0]] = mat_intrinsic
@@ -483,9 +485,11 @@ def main(_):
                                                              points,
                                                              im_height,
                                                              im_width)
-      lidar = tf_points_to_img(points2D_ran,pointsDist_ran,im_height,im_width)
+      lidar,offset_height,offset_width,crop_height,crop_width = tf_points_to_img(
+                  points2D_ran,pointsDist_ran,im_height,im_width)
 
-      # image,lidar = crop_lidar_itmage(image,lidar)
+      image,lidar = tf_crop_lidar_image(image,lidar,
+                  offset_height,offset_width,crop_height,crop_width)
 
       train_image_size = FLAGS.train_image_size or network_fn.default_image_size
 

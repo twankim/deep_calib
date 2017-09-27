@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-05 13:32:38
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 11:11:32
+# @Last Modified time: 2017-09-27 14:39:01
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,9 +27,6 @@ _NUM_TEST = 7518
 
 _NUM_SAMPLES = {'train': _NUM_TRAIN,
                 'test': _NUM_TEST*cfg._NUM_GEN}
-
-_D_MAX = 50.0
-_D_MIN = 0.5
 
 def convert_calib_mat(vid,cal_val):
     assert vid in cfg._SET_CALIB, '!! Wrong parsing occurred: {}'.format(vid)
@@ -57,116 +54,6 @@ def get_calib_mat(f_calib):
                 if vid in cfg._SET_CALIB:
                     dict_calib[vid] = convert_calib_mat(vid,np.array(val_cal))
     return dict_calib
-
-def coord_transform(points, t_mat):
-    # Change to homogeneous form
-    points = np.hstack([points,np.ones((np.shape(points)[0],1))])
-    t_points = np.dot(points,t_mat.T)
-    # Normalize
-    t_points = t_points[:,:-1]/t_points[:,[-1]]
-    return t_points
-
-def project_lidar_to_img(dict_calib,points,im_height,im_width):
-    # Extract depth data first before projection to 2d image space
-    trans_mat = np.dot(dict_calib[cfg._SET_CALIB[1]],dict_calib[cfg._SET_CALIB[2]])
-    points3D = coord_transform(points,trans_mat)
-    pointsDist = points3D[:,2]
-
-    # Project to image space
-    trans_mat = np.dot(dict_calib[cfg._SET_CALIB[0]],trans_mat)
-    points2D = coord_transform(points,trans_mat)
-
-    # Find only feasible points
-    idx1 = (points2D[:,0]>=0) & (points2D[:,0] <=im_width-1)
-    idx2 = (points2D[:,1]>=0) & (points2D[:,1] <=im_height-1)
-    idx3 = (pointsDist>=0)
-    idx_in = idx1 & idx2 & idx3
-    points2D_fin = points2D[idx_in,:]
-    pointsDist_fin = pointsDist[idx_in]
-
-    return points2D_fin, pointsDist_fin
-
-def dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
-    """ Returns pixel value from distance measurment
-    Args:
-        val_dist: distance value (m)
-        mode: 'inverse' vs 'standard'
-        d_max: maximum distance to consider
-        d_min: minimum distance to consider
-    Returns:
-        pixel value in 'uint8' format
-    """
-    val_dist = d_max if val_dist>d_max else val_dist if val_dist>d_min else d_min
-    if mode == 'standard':
-        return np.round(val_dist*255.0/d_max).astype('uint8')
-    elif mode == 'inverse':
-        return np.round(d_min*255.0/val_dist).astype('uint8')
-    else:
-        # Default is inverse
-        return np.round(d_min*255.0/val_dist).astype('uint8')
-
-def points_to_img(points2D,pointsDist,im_height,im_width):
-    im_depth = np.zeros((im_height,im_width),dtype=np.uint8)
-    for i in xrange(np.shape(points2D)[0]):
-        x,y = np.round(points2D[i,:]).astype('int')
-        im_depth[y,x] = dist_to_pixel(pointsDist[i])
-        # im_depth[y,x] = dist_to_pixel(pointsDist[i],mode='standard')
-    return im_depth.reshape(im_height,im_width,1)
-
-def tf_coord_transform(points, t_mat):
-    # Change to homogeneous form
-    points = tf.concat([points,tf.ones([tf.shape(points)[0],1],tf.float32)], 1)
-    t_points = tf.matmul(points,tf.transpose(t_mat))
-    # Normalize
-    t_points = tf.div(t_points[:,:-1],tf.expand_dims(t_points[:,-1],1))
-    return t_points
-
-def tf_project_lidar_to_img(dict_calib,points,im_height,im_width):
-    # Extract depth data first before projection to 2d image space
-    trans_mat = tf.matmul(dict_calib[cfg._SET_CALIB[1]],dict_calib[cfg._SET_CALIB[2]])
-    points3D = tf_coord_transform(points,trans_mat)
-    pointsDist = points3D[:,2]
-
-    # Project to image space
-    trans_mat = tf.matmul(dict_calib[cfg._SET_CALIB[0]],trans_mat)
-    points2D = tf_coord_transform(points,trans_mat)
-
-    # Find only feasible points
-    idx1 = (points2D[:,0]>=0) & (points2D[:,0] <=tf.to_float(im_width)-1)
-    idx2 = (points2D[:,1]>=0) & (points2D[:,1] <=tf.to_float(im_height)-1)
-    idx3 = (pointsDist>=0)
-    idx_in = idx1 & idx2 & idx3
-    points2D_fin = tf.boolean_mask(points2D,idx_in)
-    pointsDist_fin = tf.boolean_mask(pointsDist,idx_in)
-
-    return points2D_fin, pointsDist_fin
-
-def tf_dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
-    """ Returns pixel value from distance measurment
-    Args:
-        val_dist: distance value (m)
-        mode: 'inverse' vs 'standard'
-        d_max: maximum distance to consider
-        d_min: minimum distance to consider
-    Returns:
-        pixel value in 'uint8' format
-    """
-    val_dist = tf.maximum(val_dist,d_min)
-    val_dist = tf.minimum(val_dist,d_max)
-    if mode == 'standard':
-        return tf.cast(tf.round(val_dist*255.0/d_max),tf.uint8)
-    elif mode == 'inverse':
-        return tf.cast(tf.round(d_min*255.0/val_dist),tf.uint8)
-    else:
-        # Default is inverse
-        return tf.cast(tf.round(d_min*255.0/val_dist),tf.uint8)
-
-def tf_points_to_img(points2D,pointsDist,im_height,im_width):
-    pointsPixel = tf_dist_to_pixel(pointsDist)
-    points2D_yx = tf.reverse(points2D,axis=[1])
-    img = tf.scatter_nd(tf.cast(tf.round(points2D_yx),tf.int32),pointsPixel,
-                         [im_height,im_width])
-    return tf.expand_dims(img, 2)
 
 def get_data(path_data,image_set,list_param=[],reader=None):
     """ Returns a dataset
@@ -203,14 +90,6 @@ def get_data(path_data,image_set,list_param=[],reader=None):
                 [16], tf.float32, default_value=tf.zeros([16], dtype=tf.float32)),
             'calib/mat_extrinsic': tf.FixedLenFeature(
                 [16], tf.float32, default_value=tf.zeros([16], dtype=tf.float32)),
-            # 'lidar/points': tf.FixedLenFeature(
-            #     (), dtype=tf.float32),
-            # 'calib/mat_intrinsic': tf.FixedLenFeature(
-            #     [3,4], tf.float32, default_value=tf.zeros([4,4], dtype=tf.float32)),
-            # 'calib/mat_rect': tf.FixedLenFeature(
-            #     [4,4], tf.float32, default_value=tf.zeros([4,4], dtype=tf.float32)),
-            # 'calib/mat_extrinsic': tf.FixedLenFeature(
-            #     [4,4], tf.float32, default_value=tf.zeros([3,4], dtype=tf.float32))
         }
 
         items_to_handlers = {
@@ -254,7 +133,9 @@ def get_data(path_data,image_set,list_param=[],reader=None):
             'param/rot_angle': tf.FixedLenFeature(
                 [1], tf.float32, default_value=tf.zeros([1], dtype=tf.float32)),
             'param/a_vec': tf.FixedLenFeature(
-                [3], tf.float32, default_value=tf.zeros([3], dtype=tf.float32))
+                [3], tf.float32, default_value=tf.zeros([3], dtype=tf.float32)),
+            'param/params_crop': tf.FixedLenFeature(
+                [4], tf.float32, default_value=tf.zeros([4], dtype=tf.float32))
         }
 
         items_to_handlers = {
@@ -266,7 +147,8 @@ def get_data(path_data,image_set,list_param=[],reader=None):
                                                   channels=1),
             'y': slim.tfexample_decoder.Tensor('param/y_calib'),
             'theta': slim.tfexample_decoder.Tensor('param/rot_angle'),
-            'a_vec': slim.tfexample_decoder.Tensor('param/a_vec')
+            'a_vec': slim.tfexample_decoder.Tensor('param/a_vec'),
+            'params_crop': slim.tfexample_decoder.Tensor('param/params_crop')
         }
 
         decoder = slim.tfexample_decoder.TFExampleDecoder(
