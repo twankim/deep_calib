@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 21:53:10
+# @Last Modified time: 2017-09-27 21:57:44
 
 from __future__ import absolute_import
 from __future__ import division
@@ -285,8 +285,7 @@ def points_to_img(points2D,pointsDist,im_height,im_width):
     im_depth = np.zeros((im_height,im_width),dtype=np.uint8)
     for i in xrange(np.shape(points2D)[0]):
         x,y = points2D[i,:]
-        im_depth[y,x] = dist_to_pixel(pointsDist[i])
-        # im_depth[y,x] = dist_to_pixel(pointsDist[i],mode='standard')
+        im_depth[y,x] = dist_to_pixel(pointsDist[i],mode='standard')
 
     # Find LIDAR sensed region
     yx_max = np.max(points2D,axis=0)
@@ -357,7 +356,7 @@ def tf_dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
                                              0,255)),tf.uint8)
 
 def tf_points_to_img(points2D,pointsDist,im_height,im_width):
-    pointsPixel = tf_dist_to_pixel(pointsDist)
+    pointsPixel = tf_dist_to_pixel(pointsDist,mode='standard')
     points2D_yx = tf.cast(tf.round(tf.reverse(points2D,axis=[1])),tf.int32)
     img = tf.scatter_nd(points2D_yx,pointsPixel,[im_height,im_width])
 
