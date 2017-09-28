@@ -256,10 +256,10 @@ def main(_):
             if not os.path.exists(path_crop):
               os.makedirs(path_crop)
             crop_name = os.path.join(path_crop,'{}_{}'.format(imName,i_ran))
-            imsave(crom_name+'_rgb.png',img_temp.astype(np.uint8))
-            imsave(crom_name+'_rgb_org.png',im)
-            imsave(crom_name+'_lidar.png',lidar_temp.astype(np.uint8))
-            imsave(crom_name+'_lidar_org.png',im_depth_ran)
+            imsave(crop_name+'_rgb.png',img_temp.astype(np.uint8))
+            imsave(crop_name+'_rgb_org.png',im)
+            imsave(crop_name+'_lidar.png',lidar_temp.astype(np.uint8))
+            imsave(crop_name+'_lidar_org.png',im_depth_ran)
 
         # Change format to [batch_size, height, width, channels]
         # batch_size = 1
