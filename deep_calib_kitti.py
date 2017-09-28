@@ -236,8 +236,6 @@ def main(_):
         #                                pool_size=lidar_pool)
 
         with tf.Session('') as sess:
-          # image = tf.to_float(image)
-          # lidar = tf.to_float(lidar)
           lidar_temp = sess.run(lidar)
           img_temp = sess.run(image)
           _R_MEAN = 123.68
@@ -254,6 +252,9 @@ def main(_):
           imsave('data_ex/crops/hoho_rgb_org.png',im)
           imsave('data_ex/crops/hoho_lidar.png',lidar_temp)
           imsave('data_ex/crops/hoho_lidar_org.png',im_depth_ran)
+
+        image = tf.to_float(image)
+        lidar = tf.to_float(lidar)
 
         # Change format to [batch_size, height, width, channels]
         # batch_size = 1
