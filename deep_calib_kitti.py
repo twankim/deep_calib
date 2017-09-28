@@ -262,7 +262,7 @@ def main(_):
             imsave(crop_name+'_rgb_org.png',im)
             imsave(crop_name+'_lidar.png',np.squeeze(lidar_temp.astype(np.uint8),
                                                      axis=2))
-            imsave(crop_name+'_lidar_org.png',np.squeeze(im_depth_ran,axis=2)
+            imsave(crop_name+'_lidar_org.png',np.squeeze(im_depth_ran,axis=2))
 
         # Change format to [batch_size, height, width, channels]
         # batch_size = 1
