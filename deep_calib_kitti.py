@@ -228,12 +228,12 @@ def main(_):
         image,lidar = tf_prepare_test(im_placeholder,im_depth_placeholder,
                                       params_crop)
 
-        # test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
+        test_image_size = FLAGS.eval_image_size or network_fn.default_image_size
 
-        # image,lidar = preprocessing_fn(image,lidar,
-        #                                test_image_size,
-        #                                test_image_size,
-        #                                pool_size=lidar_pool)
+        image,lidar = preprocessing_fn(image,lidar,
+                                       test_image_size,
+                                       test_image_size,
+                                       pool_size=lidar_pool)
 
         with tf.Session('') as sess:
           lidar_temp = sess.run(lidar)
@@ -242,19 +242,16 @@ def main(_):
           _G_MEAN = 116.78
           _B_MEAN = 103.94
           _BW_MEAN = (_R_MEAN+_G_MEAN+_B_MEAN)/3.0
-          # img_temp[:,:,0] += _R_MEAN
-          # img_temp[:,:,1] += _G_MEAN
-          # img_temp[:,:,2] += _B_MEAN
-          # lidar_temp += _BW_MEAN
+          img_temp[:,:,0] += _R_MEAN
+          img_temp[:,:,1] += _G_MEAN
+          img_temp[:,:,2] += _B_MEAN
+          lidar_temp += _BW_MEAN
           if not os.path.exists('data_ex/crops'):
             os.makedirs('data_ex/crops')
-          imsave('data_ex/crops/hoho_rgb.png',img_temp)
+          imsave('data_ex/crops/hoho_rgb.png',img_temp.astype(np.uint8))
           imsave('data_ex/crops/hoho_rgb_org.png',im)
-          imsave('data_ex/crops/hoho_lidar.png',lidar_temp)
+          imsave('data_ex/crops/hoho_lidar.png',lidar_temp.astype(np.uint8))
           imsave('data_ex/crops/hoho_lidar_org.png',im_depth_ran)
-
-        image = tf.to_float(image)
-        lidar = tf.to_float(lidar)
 
         # Change format to [batch_size, height, width, channels]
         # batch_size = 1
