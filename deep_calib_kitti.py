@@ -175,7 +175,7 @@ def main(_):
     preprocessing_name = FLAGS.preprocessing_name or FLAGS.model_name
     preprocessing_fn = preprocessing_factory.get_preprocessing(
         preprocessing_name,
-        is_training=False)
+        is_training=True)
 
     lidar_pool = [int(l_i) for l_i in FLAGS.lidar_pool.split(',')]
 
@@ -363,7 +363,6 @@ def main(_):
       f_res_im_cal = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
                                   imName,i_ran,FLAGS.format_image))
 
-      print('!!!!!!!!!!',im_depth_cal.shape)
       imlidarwrite(f_res_im_cal,im,im_depth_cal)
 
       imlidarwrite(f_res_im_ran,im,im_depth_ran)
