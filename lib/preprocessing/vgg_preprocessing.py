@@ -349,7 +349,8 @@ def preprocess_for_train(image, lidar,
   image = _aspect_preserving_resize(image, resize_side)
   lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)
   
-  image,lidar = _random_crop([image,lidar], output_height, output_width)
+  # image,lidar = _random_crop([image,lidar], output_height, output_width)
+  image,lidar = _central_crop([image,lidar], output_height, output_width)
   
   image.set_shape([output_height, output_width, 3])
   lidar.set_shape([output_height, output_width, 1])
