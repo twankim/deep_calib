@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 21:00:49
+# @Last Modified time: 2017-09-27 21:06:52
 
 from __future__ import absolute_import
 from __future__ import division
@@ -286,6 +286,7 @@ def points_to_img(points2D,pointsDist,im_height,im_width):
     for i in xrange(np.shape(points2D)[0]):
         x,y = points2D[i,:]
         im_depth[y,x] = dist_to_pixel(pointsDist[i])
+        print(im_depth[y,x])
         # im_depth[y,x] = dist_to_pixel(pointsDist[i],mode='standard')
 
     # Find LIDAR sensed region
