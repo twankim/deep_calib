@@ -146,7 +146,7 @@ def vgg_16(images,
         #               scope='fc7')
         # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
         #                    scope='dropout7')
-        net = slim.conv2d(net, sum(num_preds['num_preds']), [14, 14],
+        net = slim.conv2d(net, sum(num_preds['num_preds']), [3, 3],
                       padding=fc_conv_padding,
                       activation_fn=None,
                       normalizer_fn=None,
