@@ -235,6 +235,8 @@ def main(_):
                                        test_image_size,
                                        pool_size=lidar_pool)
 
+        # For debugging
+        # Check actual patches provided to the network
         with tf.Session('') as sess:
           lidar_temp = sess.run(lidar)
           img_temp = sess.run(image)
