@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 23:21:22
+# @Last Modified time: 2017-09-27 23:39:24
 
 from __future__ import absolute_import
 from __future__ import division
@@ -428,8 +428,8 @@ def tf_crop_lidar_image(image,lidar,params_crop):
     image = _crop(image,offset_height,offset_width,crop_height,crop_width)
     lidar = _crop(lidar,offset_height,offset_width,crop_height,crop_width)
 
-    image.set_shape([crop_height, crop_width, 3])
-    lidar.set_shape([crop_height, crop_width, 1])
+    image.set_shape([None, None, 3])
+    lidar.set_shape([None, None, 1])
 
     return image, lidar
 

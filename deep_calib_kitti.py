@@ -236,8 +236,8 @@ def main(_):
         #                                pool_size=lidar_pool)
 
         with tf.Session('') as sess:
-          image = tf.to_float(image)
-          lidar = tf.to_float(lidar)
+          # image = tf.to_float(image)
+          # lidar = tf.to_float(lidar)
           lidar_temp = sess.run(lidar)
           img_temp = sess.run(image)
           _R_MEAN = 123.68
