@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-28 00:28:16
+# @Last Modified time: 2017-09-28 17:10:54
 
 from __future__ import absolute_import
 from __future__ import division
@@ -18,7 +18,7 @@ import tensorflow.contrib.slim as slim
 from datasets.config import cfg
 
 _D_MAX = 50.0
-_D_MIN = 1.0
+_D_MIN = 2.0
 
 # Product of quaternions
 def qprod(q_a,q_b):
