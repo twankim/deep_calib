@@ -248,6 +248,8 @@ def main(_):
           # img_temp[:,:,1] += _G_MEAN
           # img_temp[:,:,2] += _B_MEAN
           # lidar_temp += _BW_MEAN
+          if not os.path.exists('data_ex/crops'):
+            os.makedirs('data_ex/crops')
           imsave('data_ex/crops/hoho_rgb.png',img_temp)
           imsave('data_ex/crops/hoho_rgb_org.png',im)
           imsave('data_ex/crops/hoho_lidar.png',lidar_temp)
