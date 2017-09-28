@@ -313,11 +313,6 @@ def _interpolate_image(image,channels=3,pool_size=None):
   return interpolated_image
 
 
-def _crop_nonzero(image,lidar):
-  offset_height, offset_width, crop_height, crop_width
-  return cropped_image, cropped_lidar
-
-
 def preprocess_for_train(image, lidar,
                          output_height,
                          output_width,
