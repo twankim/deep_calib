@@ -262,8 +262,8 @@ def _smallest_size_at_least(height, width, smallest_side):
   scale = tf.cond(tf.greater(height, width),
                   lambda: smallest_side / width,
                   lambda: smallest_side / height)
-  new_height = tf.to_int32(height * scale)
-  new_width = tf.to_int32(width * scale)
+  new_height = tf.maximum(tf.to_int32(height * scale),smallest_side)
+  new_width = tf.maximum(tf.to_int32(width * scale),smallest_side)
   return new_height, new_width
 
 
@@ -284,9 +284,6 @@ def _aspect_preserving_resize(image, smallest_side, channels=3):
   height = shape[0]
   width = shape[1]
   new_height, new_width = _smallest_size_at_least(height, width, smallest_side)
-  with tf.Session('') as sess:
-    nh,nw = sess.run([new_height,new_width])
-    print('!!!!!!!!!!!!',nh,nw)
   image = tf.expand_dims(image, 0)
   resized_image = tf.image.resize_bilinear(image, [new_height, new_width],
                                            align_corners=False)
