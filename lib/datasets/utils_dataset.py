@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 21:37:18
+# @Last Modified time: 2017-09-27 21:53:10
 
 from __future__ import absolute_import
 from __future__ import division
@@ -18,7 +18,7 @@ import tensorflow.contrib.slim as slim
 from datasets.config import cfg
 
 _D_MAX = 75.0
-_D_MIN = 1.5
+_D_MIN = 2.0
 
 # Product of quaternions
 def qprod(q_a,q_b):
@@ -483,8 +483,8 @@ def imlidarwrite(fname,im,im_depth):
     idx_h, idx_w = np.nonzero(im_depth)
     cmap = plt.get_cmap('jet')
     for i in xrange(len(idx_h)):
-        im_out[idx_h[i],idx_w[i],:] = (np.array(
-                        cmap(im_depth[idx_h[i],idx_w[i]])[:3]))\
+        im_out[idx_h[i],idx_w[i],:] = (255*np.array(
+                        cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
                         .astype(np.uint8)
     imsave(fname,im_out)
     print("!!! Write:{}".format(fname))
