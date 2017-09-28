@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 17:01:41
+# @Last Modified time: 2017-09-27 20:53:13
 
 from __future__ import absolute_import
 from __future__ import division
@@ -267,12 +267,18 @@ def dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
     """
     val_dist = d_max if val_dist>d_max else val_dist if val_dist>d_min else d_min
     if mode == 'standard':
-        return np.round(val_dist*255.0/d_max).astype('uint8')
+        return np.round(minmax_scale(val_dist,
+                                     d_min,d_max,
+                                     0,255)).astype('uint8')
     elif mode == 'inverse':
-        return np.round(d_min*255.0/val_dist).astype('uint8')
+        return np.round(minmax_scale(1.0/val_dist,
+                                     1.0/d_max,1.0/d_min,
+                                     0,255)).astype('uint8')
     else:
         # Default is inverse
-        return np.round(d_min*255.0/val_dist).astype('uint8')
+        return np.round(minmax_scale(1.0/val_dist,
+                                     1.0/d_max,1.0/d_min,
+                                     0,255)).astype('uint8')
 
 def points_to_img(points2D,pointsDist,im_height,im_width):
     points2D = np.round(points2D).astype('int')
@@ -337,12 +343,18 @@ def tf_dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
     val_dist = tf.maximum(val_dist,d_min)
     val_dist = tf.minimum(val_dist,d_max)
     if mode == 'standard':
-        return tf.cast(tf.round(val_dist*255.0/d_max),tf.uint8)
+        return tf.cast(tf.round(minmax_scale(val_dist,
+                                             d_min,d_max,
+                                             0,255)),tf.uint8)
     elif mode == 'inverse':
-        return tf.cast(tf.round(d_min*255.0/val_dist),tf.uint8)
+        return tf.cast(tf.round(minmax_scale(1.0/val_dist,
+                                             1.0/d_max,1.0/d_min,
+                                             0,255)),tf.uint8)
     else:
         # Default is inverse
-        return tf.cast(tf.round(d_min*255.0/val_dist),tf.uint8)
+        return tf.cast(tf.round(minmax_scale(1.0/val_dist,
+                                             1.0/d_max,1.0/d_min,
+                                             0,255)),tf.uint8)
 
 def tf_points_to_img(points2D,pointsDist,im_height,im_width):
     pointsPixel = tf_dist_to_pixel(pointsDist)
