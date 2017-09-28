@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-27 21:06:52
+# @Last Modified time: 2017-09-27 21:09:44
 
 from __future__ import absolute_import
 from __future__ import division
@@ -281,12 +281,12 @@ def dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
                                      0,255)).astype('uint8')
 
 def points_to_img(points2D,pointsDist,im_height,im_width):
+    print('!!!!min {}, max {}'.format(max(pointsDist),min(pointsDist)))
     points2D = np.round(points2D).astype('int')
     im_depth = np.zeros((im_height,im_width),dtype=np.uint8)
     for i in xrange(np.shape(points2D)[0]):
         x,y = points2D[i,:]
         im_depth[y,x] = dist_to_pixel(pointsDist[i])
-        print(im_depth[y,x])
         # im_depth[y,x] = dist_to_pixel(pointsDist[i],mode='standard')
 
     # Find LIDAR sensed region
