@@ -116,6 +116,9 @@ tf.app.flags.DEFINE_float(
 tf.app.flags.DEFINE_integer(
     'eval_image_size', None, 'Eval image size')
 
+tf.app.flags.DEFINE_integer(
+    'is_crop', True, 'Eval image size')
+
 FLAGS = tf.app.flags.FLAGS
 
 
@@ -235,25 +238,28 @@ def main(_):
                                        test_image_size,
                                        pool_size=lidar_pool)
 
-        # # For debugging
-        # # Check actual patches provided to the network
-        # with tf.Session('') as sess:
-        #   lidar_temp = sess.run(lidar)
-        #   img_temp = sess.run(image)
-        #   _R_MEAN = 123.68
-        #   _G_MEAN = 116.78
-        #   _B_MEAN = 103.94
-        #   _BW_MEAN = (_R_MEAN+_G_MEAN+_B_MEAN)/3.0
-        #   img_temp[:,:,0] += _R_MEAN
-        #   img_temp[:,:,1] += _G_MEAN
-        #   img_temp[:,:,2] += _B_MEAN
-        #   lidar_temp += _BW_MEAN
-        #   if not os.path.exists('data_ex/crops'):
-        #     os.makedirs('data_ex/crops')
-        #   imsave('data_ex/crops/hoho_rgb.png',img_temp.astype(np.uint8))
-        #   imsave('data_ex/crops/hoho_rgb_org.png',im)
-        #   imsave('data_ex/crops/hoho_lidar.png',lidar_temp.astype(np.uint8))
-        #   imsave('data_ex/crops/hoho_lidar_org.png',im_depth_ran)
+        # For debugging
+        # Check actual patches provided to the network
+        if FLAGS.is_crop:
+          with tf.Session('') as sess:
+            lidar_temp = sess.run(lidar)
+            img_temp = sess.run(image)
+            _R_MEAN = 123.68
+            _G_MEAN = 116.78
+            _B_MEAN = 103.94
+            _BW_MEAN = (_R_MEAN+_G_MEAN+_B_MEAN)/3.0
+            img_temp[:,:,0] += _R_MEAN
+            img_temp[:,:,1] += _G_MEAN
+            img_temp[:,:,2] += _B_MEAN
+            lidar_temp += _BW_MEAN
+            path_crop = os.path.join(FLAGS.dir_out,'crops')
+            if not os.path.exists(path_crop):
+              os.makedirs(path_crop)
+            crop_name = os.path.join(path_crop,'{}_{}'.format(imName,i_ran))
+            imsave(crom_name+'_rgb.png',img_temp.astype(np.uint8))
+            imsave(crom_name+'_rgb_org.png',im)
+            imsave(crom_name+'_lidar.png',lidar_temp.astype(np.uint8))
+            imsave(crom_name+'_lidar_org.png',im_depth_ran)
 
         # Change format to [batch_size, height, width, channels]
         # batch_size = 1
