@@ -132,7 +132,7 @@ def vgg_16(images,
           net = slim.repeat(net, 2, slim.conv2d, 256, [3, 3], scope='conv5')
           net = slim.max_pool2d(net, [2, 2], scope='pool5')
           net = slim.repeat(net, 2, slim.conv2d, 128, [3, 3], scope='conv6')
-          net = slim.max_pool2d(net, [2, 2], scope='pool6')
+          net = slim.avg_pool2d(net, [2, 2], scope='pool6')
 
       with tf.variable_scope('regression'):
         # Use conv2d instead of fully_connected layers.
