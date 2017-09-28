@@ -2,13 +2,13 @@
 #
 
 MODEL_NAME=vgg_16
-WEIGHT_LOSS=1
-DATA_NAME=kitti_calib_05_05
+WEIGHT_LOSS=100
+LOG_NAME=kitti_calib_05_05
 LIST_PARAM=5,0.5
 LIDAR_POOL=5,2
 
 python deep_calib_kitti.py \
-    --checkpoint_path=/data/tf/checkpoints/${DATA_NAME}/${MODEL_NAME}/weight_${WEIGHT_LOSS} \
+    --checkpoint_path=/data/tf/checkpoints/${LOG_NAME}/${MODEL_NAME}/weight_${WEIGHT_LOSS} \
     --list_param=${LIST_PARAM} \
     --lidar_pool=${LIDAR_POOL} \
     --model_name=${MODEL_NAME} \

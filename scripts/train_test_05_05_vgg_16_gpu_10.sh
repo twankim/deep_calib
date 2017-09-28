@@ -2,10 +2,11 @@
 #
 
 MODEL_NAME=vgg_16
-WEIGHT_LOSS=1
+WEIGHT_LOSS=10
 BATCH_SIZE=32
-LEARNING_RATE=0.00001
+LEARNING_RATE=0.0001
 DATA_NAME=kitti_calib
+LOG_NAME=${DATA_NAME}_05_05
 LIST_PARAM=5,0.5
 LIDAR_POOL=5,2
 SUMMARY_SECS=180
@@ -19,13 +20,12 @@ do
         --save_summaries_secs=${SUMMARY_SECS} \
         --optimizer=${OPTIMIZER} \
         --dataset_dir=/data/tf/${DATA_NAME} \
-        --train_dir=/data/tf/checkpoints/${DATA_NAME} \
+        --train_dir=/data/tf/checkpoints/${LOG_NAME} \
         --max_number_of_steps=${MAX_STEP} \
         --batch_size=${BATCH_SIZE} \
         --list_param=${LIST_PARAM} \
         --weight_loss=${WEIGHT_LOSS} \
         --lidar_pool=${LIDAR_POOL} \
-        --clone_on_cpu=False \
         --model_name=${MODEL_NAME} \
         --checkpoint_path=pretrained/${MODEL_NAME}.ckpt \
         --checkpoint_exclude_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
@@ -36,7 +36,7 @@ do
 
     python deep_calib_test.py \
         --dataset_dir=/data/tf/${DATA_NAME} \
-        --checkpoint_path=/data/tf/checkpoints/${DATA_NAME}/${MODEL_NAME}/weight_${WEIGHT_LOSS} \
+        --checkpoint_path=/data/tf/checkpoints/${LOG_NAME}/${MODEL_NAME}/weight_${WEIGHT_LOSS} \
         --list_param=${LIST_PARAM} \
         --lidar_pool=${LIDAR_POOL} \
         --model_name=${MODEL_NAME} \
