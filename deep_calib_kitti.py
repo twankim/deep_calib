@@ -257,9 +257,12 @@ def main(_):
             path_crop = os.path.join(FLAGS.dir_out,'crops')
             if not os.path.exists(path_crop):
               os.makedirs(path_crop)
+            if i_ran==0:
+              imsave(os.path.join(path_crop,'{}_rgb_org.png'.format(imName)),im)
+
             crop_name = os.path.join(path_crop,'{}_{}'.format(imName,i_ran))
+
             imsave(crop_name+'_rgb.png',img_temp.astype(np.uint8))
-            imsave(crop_name+'_rgb_org.png',im)
             imsave(crop_name+'_lidar.png',np.squeeze(lidar_temp.astype(np.uint8),
                                                      axis=2))
             imsave(crop_name+'_lidar_org.png',np.squeeze(im_depth_ran,axis=2))
