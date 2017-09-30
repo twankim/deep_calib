@@ -3,8 +3,9 @@
 
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=10
-BATCH_SIZE=32
-LEARNING_RATE=0.001
+BATCH_SIZE=16
+LEARNING_RATE=0.0001
+DECAY_TYPE=fxied
 DATA_NAME=kitti_calib
 LOG_NAME=${DATA_NAME}_05_05
 LIST_PARAM=5,0.5
@@ -30,6 +31,7 @@ do
         --checkpoint_path=pretrained/${MODEL_NAME}.ckpt \
         --checkpoint_exclude_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
         --learning_rate=${LEARNING_RATE} \
+        --learning_rate_decay_type=${DECAY_TYPE} \
         --ignore_missing_vars=True
         # --trainable_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
         # --ignore_missing_vars=

@@ -66,7 +66,7 @@ tf.app.flags.DEFINE_string(
     'List of parameters for the train/test data. max_rotation,max_translation')
 
 tf.app.flags.DEFINE_string(
-    'lidar_pool', '5,2',
+    'lidar_pool', None,
     'Kernel size for Max-pooling LIDAR Image: height,width. defualt=5,2')
 
 tf.app.flags.DEFINE_string(

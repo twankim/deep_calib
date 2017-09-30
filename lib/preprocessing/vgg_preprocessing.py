@@ -339,7 +339,8 @@ def preprocess_for_train(image, lidar,
   resize_side = tf.random_uniform(
       [], minval=resize_side_min, maxval=resize_side_max+1, dtype=tf.int32)
 
-  lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
+  if pool_size:
+    lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
 
   image = _aspect_preserving_resize(image, resize_side)
   lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)
@@ -375,7 +376,8 @@ def preprocess_for_eval(image, lidar,
   Returns:
     A preprocessed image.
   """
-  lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
+  if pool_size:
+    lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
 
   image = _aspect_preserving_resize(image, resize_side)
   lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)

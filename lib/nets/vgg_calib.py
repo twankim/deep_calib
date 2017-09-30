@@ -108,8 +108,8 @@ def vgg_16(images,
       net = slim.max_pool2d(net, [2, 2], scope='pool1')
       net = slim.repeat(net, 2, slim.conv2d, 128, [3, 3], scope='conv2')
       net = slim.max_pool2d(net, [2, 2], scope='pool2')
-      net = slim.repeat(net, 2, slim.conv2d, 256, [3, 3], scope='conv3')
-      net = slim.max_pool2d(net, [2, 2], scope='pool3')
+      # net = slim.repeat(net, 2, slim.conv2d, 256, [3, 3], scope='conv3')
+      # net = slim.max_pool2d(net, [2, 2], scope='pool3')
 
       with tf.variable_scope('lidar_feat'):
         # ConvNets for lidar
@@ -117,8 +117,8 @@ def vgg_16(images,
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool1_lidar')
         net2 = slim.repeat(net2, 2, slim.conv2d, 64, [3, 3], scope='conv2_lidar')
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool2_lidar')
-        net2 = slim.repeat(net2, 2, slim.conv2d, 128, [3, 3], scope='conv3_lidar')
-        net2 = slim.max_pool2d(net2, [2, 2], scope='pool3_lidar')
+        # net2 = slim.repeat(net2, 2, slim.conv2d, 128, [3, 3], scope='conv3_lidar')
+        # net2 = slim.max_pool2d(net2, [2, 2], scope='pool3_lidar')
       
       # Concat two channels
       net = tf.concat(values=[net,net2],axis=3)
@@ -136,7 +136,7 @@ def vgg_16(images,
 
       with tf.variable_scope('regression'):
         # Use conv2d instead of fully_connected layers.
-        net = slim.conv2d(net, 1024, [3, 3],
+        net = slim.conv2d(net, 1024, [7, 7],
                       padding=fc_conv_padding,
                       scope='fc6')
         # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
