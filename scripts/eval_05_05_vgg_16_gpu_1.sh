@@ -16,4 +16,4 @@ python deep_calib_kitti.py \
     --dir_image=data_ex/kitti/object/data_object_image_2/testing/image_2 \
     --dir_lidar=data_ex/kitti/object/data_object_velodyne/testing/velodyne \
     --dir_calib=data_ex/kitti/object/data_object_calib/testing/calib \
-    --dir_out=data_ex/results/weight_${WEIGHT_LOSS}
+    --dir_out=data_ex/results/${MODEL_NAME}/weight_${WEIGHT_LOSS}
