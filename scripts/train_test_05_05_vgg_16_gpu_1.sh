@@ -3,13 +3,14 @@
 
 MODEL_NAME=vgg_16
 WEIGHT_LOSS=1
-BATCH_SIZE=32
-LEARNING_RATE=0.001
+BATCH_SIZE=16
+LEARNING_RATE=0.0001
+DECAY_TYPE=fixed
 DATA_NAME=kitti_calib
 LOG_NAME=${DATA_NAME}_05_05
 LIST_PARAM=5,0.5
-LIDAR_POOL=5,2
-SUMMARY_SECS=600
+LIDAR_POOL=4,2
+SUMMARY_SECS=300
 OPTIMIZER=momentum
 
 EVAL_STEP=20000
@@ -29,6 +30,7 @@ do
         --model_name=${MODEL_NAME} \
         --checkpoint_path=pretrained/${MODEL_NAME}.ckpt \
         --checkpoint_exclude_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \
+        --learning_rate_decay_type=${DECAY_TYPE} \
         --learning_rate=${LEARNING_RATE} \
         --ignore_missing_vars=True
         # --trainable_scopes=${MODEL_NAME}/lidar_feat,${MODEL_NAME}/match_feat,${MODEL_NAME}/regression \

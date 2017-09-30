@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 
-MODEL_NAME=vgg_16
+MODEL_NAME=vgg_19
 WEIGHT_LOSS=1
 LOG_NAME=kitti_calib_05_05
 LIST_PARAM=5,0.5
