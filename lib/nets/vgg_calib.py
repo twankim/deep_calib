@@ -193,12 +193,12 @@ def vgg_19(images,
   Returns:
     the last op containing the log predictions and end_points dict.
   """
-  with tf.variable_scope(scope, 'vgg_19', [inputs]) as sc:
+  with tf.variable_scope(scope, 'vgg_19', [images,lidars]) as sc:
     end_points_collection = sc.name + '_end_points'
     # Collect outputs for conv2d, fully_connected and max_pool2d.
     with slim.arg_scope([slim.conv2d, slim.fully_connected, slim.max_pool2d],
                         outputs_collections=end_points_collection):
-      net = slim.repeat(inputs, 2, slim.conv2d, 64, [3, 3], scope='conv1')
+      net = slim.repeat(images, 2, slim.conv2d, 64, [3, 3], scope='conv1')
       net = slim.max_pool2d(net, [2, 2], scope='pool1')
       net = slim.repeat(net, 2, slim.conv2d, 128, [3, 3], scope='conv2')
       net = slim.max_pool2d(net, [2, 2], scope='pool2')
