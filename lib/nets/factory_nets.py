@@ -28,12 +28,14 @@ from nets import vgg_calib as vgg
 from nets import mobilenet_v1_calib as mobilenet_v1
 
 networks_map = {'vgg_16': vgg.vgg_16,
+                'vgg_19': vgg.vgg_19,
                 'mobilenet_v1': mobilenet_v1.mobilenet_v1
                 }
 
 arg_scopes_map = {'vgg_16': vgg.vgg_arg_scope,
-                   'mobilenet_v1': mobilenet_v1.mobilenet_v1_arg_scope
-                   }
+                  'vgg_19': vgg.vgg_arg_scope,
+                  'mobilenet_v1': mobilenet_v1.mobilenet_v1_arg_scope
+                  }
 
 # networks_map = {'alexnet_v2': alexnet.alexnet_v2,
 #                 'cifarnet': cifarnet.cifarnet,
