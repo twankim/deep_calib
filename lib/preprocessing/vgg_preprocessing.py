@@ -291,6 +291,26 @@ def _aspect_preserving_resize(image, smallest_side, channels=3):
   resized_image.set_shape([None, None, channels])
   return resized_image
 
+def _aspect_nonpreserving_resize(image, new_height, new_width, channels=3):
+  """Resize images preserving the original aspect ratio.
+
+  Args:
+    image: A 3-D image `Tensor`.
+    smallest_side: A python integer or scalar `Tensor` indicating the size of
+      the smallest side after resize.
+
+  Returns:
+    resized_image: A 3-D tensor containing the resized image.
+  """
+  new_height = tf.convert_to_tensor(new_height, dtype=tf.int32)
+  new_width = tf.convert_to_tensor(new_width, dtype=tf.int32)
+  image = tf.expand_dims(image, 0)
+  resized_image = tf.image.resize_bilinear(image, [new_height, new_width],
+                                           align_corners=False)
+  resized_image = tf.squeeze(resized_image, [0])
+  resized_image.set_shape([None, None, channels])
+  return resized_image
+
 
 def _interpolate_image(image,channels=3,pool_size=None):
   """Interpolate sparse image (lidar)
@@ -342,8 +362,11 @@ def preprocess_for_train(image, lidar,
   if pool_size:
     lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
 
-  image = _aspect_preserving_resize(image, resize_side)
-  lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)
+  # image = _aspect_preserving_resize(image, resize_side)
+  # lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)
+
+  image = _aspect_nonpreserving_resize(image, resize_side, resize_side)
+  lidar = _aspect_nonpreserving_resize(lidar, resize_side, resize_side, channels=1)
   
   # image,lidar = _random_crop([image,lidar], output_height, output_width)
   image,lidar = _central_crop([image,lidar], output_height, output_width)
@@ -379,8 +402,11 @@ def preprocess_for_eval(image, lidar,
   if pool_size:
     lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
 
-  image = _aspect_preserving_resize(image, resize_side)
-  lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)
+  # image = _aspect_preserving_resize(image, resize_side)
+  # lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)
+
+  image = _aspect_nonpreserving_resize(image, resize_side, resize_side)
+  lidar = _aspect_nonpreserving_resize(lidar, resize_side, resize_side, channels=1)
 
   image,lidar = _central_crop([image,lidar], output_height, output_width)
   
