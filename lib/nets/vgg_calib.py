@@ -200,8 +200,8 @@ def vgg_19(images,
                         outputs_collections=end_points_collection):
       net = slim.repeat(images, 2, slim.conv2d, 64, [3, 3], scope='conv1')
       net = slim.max_pool2d(net, [2, 2], scope='pool1')
-      net = slim.repeat(net, 2, slim.conv2d, 128, [3, 3], scope='conv2')
-      net = slim.max_pool2d(net, [2, 2], scope='pool2')
+      # net = slim.repeat(net, 2, slim.conv2d, 128, [3, 3], scope='conv2')
+      # net = slim.max_pool2d(net, [2, 2], scope='pool2')
       # net = slim.repeat(net, 4, slim.conv2d, 256, [3, 3], scope='conv3')
       # net = slim.max_pool2d(net, [2, 2], scope='pool3')
       
@@ -209,8 +209,8 @@ def vgg_19(images,
         # ConvNets for lidar
         net2 = slim.repeat(lidars, 2, slim.conv2d, 32, [3, 3], scope='conv1_lidar')
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool1_lidar')
-        net2 = slim.repeat(net2, 2, slim.conv2d, 64, [3, 3], scope='conv2_lidar')
-        net2 = slim.max_pool2d(net2, [2, 2], scope='pool2_lidar')
+        # net2 = slim.repeat(net2, 2, slim.conv2d, 64, [3, 3], scope='conv2_lidar')
+        # net2 = slim.max_pool2d(net2, [2, 2], scope='pool2_lidar')
         # net2 = slim.repeat(net2, 4, slim.conv2d, 128, [3, 3], scope='conv3_lidar')
         # net2 = slim.max_pool2d(net2, [2, 2], scope='pool3_lidar')
       
@@ -218,19 +218,17 @@ def vgg_19(images,
       net = tf.concat(values=[net,net2],axis=3)
 
       # Apply Batch_Norm on rest of the network    
-      with slim.arg_scope([slim.conv2d],normalizer_fn=slim.batch_norm):
-        with tf.variable_scope('match_feat'):
-          # Remaining ConvNets for Feature Matching
-          net = slim.repeat(net, 2, slim.conv2d, 256, [3, 3], scope='conv4')
-          net = slim.max_pool2d(net, [2, 2], scope='pool4')
-          net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv5')
-          net = slim.max_pool2d(net, [2, 2], scope='pool5')
-          net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv6')
-          net = slim.max_pool2d(net, [2, 2], scope='pool6')
+      # with slim.arg_scope([slim.conv2d],normalizer_fn=slim.batch_norm):
+      #   with tf.variable_scope('match_feat'):
+      #     # Remaining ConvNets for Feature Matching
+      #     net = slim.repeat(net, 2, slim.conv2d, 256, [3, 3], scope='conv4')
+      #     net = slim.max_pool2d(net, [2, 2], scope='pool4')
+      #     net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv5')
+      #     net = slim.max_pool2d(net, [2, 2], scope='pool5')
 
       with tf.variable_scope('regression'):
         # Use conv2d instead of fully_connected layers.
-        net = slim.conv2d(net, 1024, [7, 7],
+        net = slim.conv2d(net, 1024, [112, 112],
                       padding=fc_conv_padding,
                       scope='fc6')
         # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
