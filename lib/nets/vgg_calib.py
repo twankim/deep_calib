@@ -49,7 +49,7 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
 
-def vgg_arg_scope(weight_decay=0.000005):
+def vgg_arg_scope(weight_decay=0.0005):
   """Defines the VGG arg scope.
 
   Args:
@@ -131,12 +131,12 @@ def vgg_16(images,
           net = slim.max_pool2d(net, [2, 2], scope='pool4')
           net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv5')
           net = slim.max_pool2d(net, [2, 2], scope='pool5')
-          net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv6')
-          net = slim.max_pool2d(net, [2, 2], scope='pool6')
+          # net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv6')
+          # net = slim.max_pool2d(net, [2, 2], scope='pool6')
 
       with tf.variable_scope('regression'):
         # Use conv2d instead of fully_connected layers.
-        net = slim.conv2d(net, 1024, [7, 7],
+        net = slim.conv2d(net, 1024, [14, 14],
                       padding=fc_conv_padding,
                       scope='fc6')
         # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
