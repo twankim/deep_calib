@@ -66,8 +66,8 @@ class Predictor:
     def predict(self,im,im_lidar):
 
         y_preds_val = self.sess.run(self.y_preds,
-                                    feed_dict={self.im_placeholder=im,
-                                               self.im_depth_placeholder=im_lidar
+                                    feed_dict={self.im_placeholder:im,
+                                               self.im_depth_placeholder:im_lidar
                                                })
         y_preds_val = np.squeeze(y_preds_val,axis=0)
         # Normalize quaternion to have unit norm
@@ -79,8 +79,8 @@ class Predictor:
         if self.is_crop:
             img_temp,lidar_temp = self.sess.run(
                             image,lidar,
-                            feed_dict={self.im_placeholder=im,
-                                       self.im_depth_placeholder=im_lidar
+                            feed_dict={self.im_placeholder:im,
+                                       self.im_depth_placeholder:im_lidar
                             })
 
             _R_MEAN = 123.68
