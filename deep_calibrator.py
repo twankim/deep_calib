@@ -39,9 +39,9 @@ class Predictor:
         self.is_crop = is_crop
 
     def load_model(self):
-        self.im_placeholder = tf.im_placeholder(dtype=tf.uint8,
+        self.im_placeholder = tf.placeholder(dtype=tf.uint8,
                                                 shape=[None,None,3])
-        self.im_depth_placeholder = tf.im_placeholder(dtype=tf.uint8,
+        self.im_depth_placeholder = tf.placeholder(dtype=tf.uint8,
                                                       shape=[None,None,1])
 
         with slim.arg_scope(factory_nets.arg_scopes_map[self.model_name]()):
