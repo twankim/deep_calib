@@ -29,18 +29,15 @@ from deep_calibrator import *
 import os
 from skimage.io import (imread,imsave)
 import glob
-import math
 import numpy as np
 
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
 
 import _init_paths
 from datasets.config import cfg
-from datasets.dataset_kitti import (get_calib_mat,_NUM_PREDS)
+from datasets.dataset_kitti import get_calib_mat
 from datasets.utils_dataset import *
 from nets import factory_nets
-from preprocessing import preprocessing_factory
 
 tf.app.flags.DEFINE_string(
     'master', '', 'The address of the TensorFlow master to use.')
@@ -114,6 +111,9 @@ def main(_):
     raise ValueError('You must supply the lidar directory with --dir_lidar')
   if not FLAGS.dir_calib:
     raise ValueError('You must supply the calibration directory with --dir_calib')
+
+  if not os.path.exists(FLAGS.dir_out):
+    os.makedirs(FLAGS.dir_out)
 
   # Parameters for random generation
   max_theta,max_dist = map(float,FLAGS.list_param.split(','))
