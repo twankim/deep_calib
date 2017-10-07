@@ -135,10 +135,10 @@ def vgg_16(images,
           # net = slim.max_pool2d(net, [2, 2], scope='pool6')
 
       with tf.variable_scope('regression'):
-        # Use conv2d instead of fully_connected layers.
-        net = slim.conv2d(net, 1024, [14, 14],
-                      padding=fc_conv_padding,
-                      scope='fc6')
+        # # Use conv2d instead of fully_connected layers.
+        # net = slim.conv2d(net, 1024, [14, 14],
+        #               padding=fc_conv_padding,
+        #               scope='fc6')
         # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
         #                    scope='dropout6')
         # net = slim.conv2d(net, 256, [1, 1],
@@ -146,7 +146,7 @@ def vgg_16(images,
         #               scope='fc7')
         # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
         #                    scope='dropout7')
-        net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
+        net = slim.conv2d(net, sum(num_preds['num_preds']), [14, 14],
                       padding=fc_conv_padding,
                       activation_fn=None,
                       normalizer_fn=None,
