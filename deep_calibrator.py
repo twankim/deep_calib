@@ -32,23 +32,25 @@ class Predictor:
                             num_preds=_NUM_PREDS,
                             is_training=False)
         self.test_image_size = test_image_size or self.network_fn.default_image_size
+        self.lidar_pool = lidar_pool
+        self.is_crop = is_crop
         self.graph = tf.Graph()
         self.load_model()
-        self.lidar_pool = lidar_pool
-        self.params_crop = None
-        self.is_crop = is_crop
+        
 
     def load_model(self):
         self.im_placeholder = tf.placeholder(dtype=tf.uint8,
-                                                shape=[None,None,3])
+                                             shape=[None,None,3])
         self.im_depth_placeholder = tf.placeholder(dtype=tf.uint8,
-                                                      shape=[None,None,1])
+                                                   shape=[None,None,1])
+        self.params_crop_placeholder = tf.placeholder(dtype=tf.float32,
+                                                      shape=[4])
 
         with slim.arg_scope(factory_nets.arg_scopes_map[self.model_name]()):
             # Crop image and lidar to consider only sensed region
             image,lidar = tf_prepare_test(self.im_placeholder,
                                           self.im_depth_placeholder,
-                                          self.params_crop)
+                                          self.params_crop_placeholder)
             image,lidar = self.preprocessing_fn(image,lidar,
                                                 self.test_image_size,
                                                 self.test_image_size,
@@ -65,12 +67,14 @@ class Predictor:
         saver = tf.train.Saver()
         saver.restore(self.sess,self.checkpoint_path)
 
-    def predict(self,im,im_lidar):
+    def predict(self,im,im_lidar,params_crop):
 
         y_preds_val = self.sess.run(self.y_preds,
-                                    feed_dict={self.im_placeholder:im,
-                                               self.im_depth_placeholder:im_lidar
-                                               })
+                                    feed_dict={
+                                        self.im_placeholder:im,
+                                        self.im_depth_placeholder:im_lidar,
+                                        self.params_crop_placeholder:params_crop
+                                        })
         y_preds_val = np.squeeze(y_preds_val,axis=0)
         # Normalize quaternion to have unit norm
         q_r_preds = yr_to_qr(y_preds_val[:4],max_theta)

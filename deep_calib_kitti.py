@@ -169,6 +169,7 @@ def main(_):
     im_depth,_ = points_to_img(points2D,pointsDist,im_height,im_width)
     f_res_im = os.path.join(FLAGS.dir_out,'{}_gt.{}'.format(
                                   imName,FLAGS.format_image))
+    imlidarwrite(f_res_im,im,im_depth)
 
     # Randomly generate dealibration
     param_rands = gen_ran_decalib(max_theta,max_dist,FLAGS.num_gen)
@@ -200,7 +201,8 @@ def main(_):
       # Check actual patches provided to the network
       if FLAGS.is_crop:
         y_preds_val,q_r_preds,img_temp,lidar_temp = predictor.predict(
-                                                              im,im_depth_ran)
+                                                              im,im_depth_ran,
+                                                              params_crop)
 
         path_crop = os.path.join(FLAGS.dir_out,'crops')
         if not os.path.exists(path_crop):
@@ -235,15 +237,11 @@ def main(_):
       f_res_im_cal = os.path.join(FLAGS.dir_out,'{}_cal{}.{}'.format(
                                   imName,i_ran,FLAGS.format_image))
 
-      imlidarwrite(f_res_im_cal,im,im_depth_cal)
-
       imlidarwrite(f_res_im_ran,im,im_depth_ran)
-      if i_ran==0:
-        imlidarwrite(f_res_im,im,im_depth)
+      imlidarwrite(f_res_im_cal,im,im_depth_cal)
          
     # write 7vec, MSE as txt file
     # decalibs_pred, decalibs_gt
-
     with open(os.path.join(FLAGS.dir_out,imName+'_res.txt'),'w') as f_res:
       for i_ran,(vec_gt,vec_pred) in enumerate(zip(decalibs_gt,decalibs_pred)):
         f_res.write('i_ran:{},   gt:{}\n'.format(i_ran,vec_gt))
