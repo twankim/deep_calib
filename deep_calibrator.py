@@ -82,10 +82,11 @@ class Predictor:
 
         if self.is_crop:
             img_temp,lidar_temp = self.sess.run(
-                            self.image,self.lidar,
-                            feed_dict={self.im_placeholder:im,
-                                       self.im_depth_placeholder:im_lidar
-                            })
+                                        [self.image,self.lidar],
+                                        feed_dict={
+                                                self.im_placeholder:im,
+                                                self.im_depth_placeholder:im_lidar
+                                                })
 
             _R_MEAN = 123.68
             _G_MEAN = 116.78
