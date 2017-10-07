@@ -140,6 +140,7 @@ def main(_):
                         FLAGS.is_crop)
 
   for iter,imName in enumerate(imNames):
+    print('\n-input: {}'.format(imName))
     decalibs_gt = []
     decalibs_pred = []
     decalibs_qr_gt = []
@@ -204,7 +205,7 @@ def main(_):
                                                             params_crop)
         # Normalize quaternion to have unit norm
         q_r_preds = yr_to_qr(y_preds_val[:4],max_theta)
-        print('Norm_previous:{}'.format(np.linalg.norm(q_r_preds)))
+        print('   Norm_previous:{}'.format(np.linalg.norm(q_r_preds)))
         q_r_preds = q_r_preds/np.linalg.norm(q_r_preds)
 
         path_crop = os.path.join(FLAGS.dir_out,'crops')

@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-09-28 17:10:54
+# @Last Modified time: 2017-10-06 23:40:59
 
 from __future__ import absolute_import
 from __future__ import division
@@ -486,4 +486,4 @@ def imlidarwrite(fname,im,im_depth):
                         cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
                         .astype(np.uint8)
     imsave(fname,im_out)
-    print("!!! Write:{}".format(fname))
+    print("   ... Write:{}".format(fname))
