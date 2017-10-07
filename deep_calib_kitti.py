@@ -200,9 +200,12 @@ def main(_):
       # For debugging
       # Check actual patches provided to the network
       if FLAGS.is_crop:
-        y_preds_val,q_r_preds,img_temp,lidar_temp = predictor.predict(
-                                                              im,im_depth_ran,
-                                                              params_crop)
+        y_preds_val,img_temp,lidar_temp = predictor.predict(im,im_depth_ran,
+                                                            params_crop)
+        # Normalize quaternion to have unit norm
+        q_r_preds = yr_to_qr(y_preds_val[:4],max_theta)
+        print('Norm_previous:{}'.format(np.linalg.norm(q_r_preds)))
+        q_r_preds = q_r_preds/np.linalg.norm(q_r_preds)
 
         path_crop = os.path.join(FLAGS.dir_out,'crops')
         if not os.path.exists(path_crop):

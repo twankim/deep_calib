@@ -76,11 +76,6 @@ class Predictor:
                                         self.params_crop_placeholder:params_crop
                                         })
         y_preds_val = np.squeeze(y_preds_val,axis=0)
-        # Normalize quaternion to have unit norm
-        q_r_preds = yr_to_qr(y_preds_val[:4],max_theta)
-
-        print('Norm_previous:{}'.format(np.linalg.norm(q_r_preds)))
-        q_r_preds = q_r_preds/np.linalg.norm(q_r_preds)
 
         if self.is_crop:
             img_temp,lidar_temp = self.sess.run(
@@ -101,9 +96,9 @@ class Predictor:
             img_temp = img_temp.astype(np.uint8)
             lidar_temp = np.squeeze(lidar_temp.astype(np.uint8),axis=2)
 
-            return y_preds_val,q_r_preds,img_temp,lidar_temp
+            return y_preds_val,img_temp,lidar_temp
         else:
-            return y_preds_val,q_r_preds
+            return y_preds_val
 
     @staticmethod
     def calibrate(ran_dict,q_r_preds,y_preds_val,points,im_height,im_width):
