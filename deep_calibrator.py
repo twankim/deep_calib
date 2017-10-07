@@ -60,10 +60,10 @@ class Predictor:
                                                 pool_size=self.lidar_pool)
 
             # Change format to [batch_size, height, width, channels]
-            images = tf.expand_dims(image, 0)
-            lidars = tf.expand_dims(lidar, 0)
+            self.images = tf.expand_dims(self.image, 0)
+            self.lidars = tf.expand_dims(self.lidar, 0)
 
-            self.y_preds, _ = self.network_fn(images,lidars)
+            self.y_preds, _ = self.network_fn(self.images,self.lidars)
         
         self.sess = tf.Session()
         # self.saver = tf.train.import_meta_graph(self.checkpoint_path+'.meta')
