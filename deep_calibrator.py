@@ -24,7 +24,7 @@ class Predictor:
         self.model_name = model_name
         self.checkpoint_path = checkpoint_path
         self.preprocessing_name = preprocessing_name
-        self.image_preprocessing_fn = preprocessing_factory.get_preprocessing(
+        self.preprocessing_fn = preprocessing_factory.get_preprocessing(
                                             self.preprocessing_name,
                                             is_training=False)
         self.network_fn = factory_nets.get_network_fn(
