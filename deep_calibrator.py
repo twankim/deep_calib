@@ -60,7 +60,7 @@ class Predictor:
             images = tf.expand_dims(image, 0)
             lidars = tf.expand_dims(lidar, 0)
 
-            self.y_preds, _ = network_fn(images,lidars)
+            self.y_preds, _ = self.network_fn(images,lidars)
         
         self.sess = tf.Session()
         # self.saver = tf.train.import_meta_graph(self.checkpoint_path+'.meta')
