@@ -18,6 +18,11 @@ from datasets.utils_dataset import *
 from nets import factory_nets
 from preprocessing import preprocessing_factory
 
+_R_MEAN = 123.68
+_G_MEAN = 116.78
+_B_MEAN = 103.94
+_BW_MEAN = (_R_MEAN+_G_MEAN+_B_MEAN)/3.0
+
 class Predictor:
     def __init__(self,model_name,preprocessing_name,checkpoint_path,
                  test_image_size,lidar_pool,is_crop):
@@ -72,26 +77,15 @@ class Predictor:
 
     def predict(self,im,im_lidar,params_crop):
 
-        y_preds_val = self.sess.run(self.y_preds,
-                                    feed_dict={
-                                        self.im_placeholder:im,
-                                        self.im_depth_placeholder:im_lidar,
-                                        self.params_crop_placeholder:params_crop
-                                        })
+        y_preds_val,img_temp,lidar_temp = self.sess.run(
+                    [self.y_preds,self.image,self.lidar],
+                    feed_dict={self.im_placeholder:im,
+                               self.im_depth_placeholder:im_lidar,
+                               self.params_crop_placeholder:params_crop
+                               })
         y_preds_val = np.squeeze(y_preds_val,axis=0)
 
         if self.is_crop:
-            img_temp,lidar_temp = self.sess.run(
-                                        [self.image,self.lidar],
-                                        feed_dict={
-                                                self.im_placeholder:im,
-                                                self.im_depth_placeholder:im_lidar
-                                                })
-
-            _R_MEAN = 123.68
-            _G_MEAN = 116.78
-            _B_MEAN = 103.94
-            _BW_MEAN = (_R_MEAN+_G_MEAN+_B_MEAN)/3.0
             img_temp[:,:,0] += _R_MEAN
             img_temp[:,:,1] += _G_MEAN
             img_temp[:,:,2] += _B_MEAN
