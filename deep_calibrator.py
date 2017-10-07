@@ -48,10 +48,13 @@ class Predictor:
 
         with slim.arg_scope(factory_nets.arg_scopes_map[self.model_name]()):
             # Crop image and lidar to consider only sensed region
-            self.image,self.lidar = tf_prepare_test(self.im_placeholder,
-                                          self.im_depth_placeholder,
-                                          self.params_crop_placeholder)
-            self.image,self.lidar = self.preprocessing_fn(image,lidar,
+            self.image,self.lidar = tf_prepare_test(
+                                        self.im_placeholder,
+                                        self.im_depth_placeholder,
+                                        self.params_crop_placeholder)
+            self.image,self.lidar = self.preprocessing_fn(
+                                                self.image,
+                                                self.lidar,
                                                 self.test_image_size,
                                                 self.test_image_size,
                                                 pool_size=self.lidar_pool)
