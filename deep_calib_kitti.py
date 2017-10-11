@@ -228,7 +228,7 @@ def main(_):
 
       points2D_cal, pointsDist_cal = predictor.calibrate(ran_dict,
                                                          q_r_preds,
-                                                         y_preds_val,
+                                                         y_preds_val[4:],
                                                          points,
                                                          im_height,
                                                          im_width)
