@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-10-06 23:40:59
+# @Last Modified time: 2017-10-11 17:06:59
 
 from __future__ import absolute_import
 from __future__ import division
@@ -50,9 +50,9 @@ def quat_to_transmat(q_r,t_vec):
             in parameter learning
     """
     assert np.shape(q_r) == (4,),\
-            "!! Size of q_r should be 4"
+            "!! Size of q_r should be 4: {}".format(np.shape(q_r))
     assert np.shape(t_vec) == (3,),\
-            "!! Size of t_vec should be 3"
+            "!! Size of t_vec should be 3: {}".format(np.shape(t_vec))
     
     # Normalize quaternion (Just in case)
     if np.linalg.norm(q_r) != 1:
