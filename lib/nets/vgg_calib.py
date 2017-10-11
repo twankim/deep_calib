@@ -152,7 +152,7 @@ def vgg_16(images,
         #               scope='fc7')
         # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
         #                    scope='dropout7')
-        net = slim.avg_pool2d(net, [4, 4], scope='pool_avg7')
+        net = slim.avg_pool2d(net, [7, 7], scope='pool_avg7')
         net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
                       padding=fc_conv_padding,
                       activation_fn=None,
