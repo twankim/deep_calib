@@ -105,8 +105,10 @@ def vgg_16(images,
     with slim.arg_scope([slim.conv2d, slim.max_pool2d],
                         outputs_collections=end_points_collection):
       net = slim.repeat(images, 2, slim.conv2d, 64, [3, 3], scope='conv1')
+      net = slim.repeat(net, 2, slim.conv2d, 64, [1, 1], scope='conv1_1x1')
       net = slim.max_pool2d(net, [2, 2], scope='pool1')
       net = slim.repeat(net, 2, slim.conv2d, 128, [3, 3], scope='conv2')
+      net = slim.repeat(net, 2, slim.conv2d, 128, [1, 1], scope='conv2_1x1')
       net = slim.max_pool2d(net, [2, 2], scope='pool2')
       # net = slim.repeat(net, 2, slim.conv2d, 256, [3, 3], scope='conv3')
       # net = slim.max_pool2d(net, [2, 2], scope='pool3')
@@ -114,8 +116,10 @@ def vgg_16(images,
       with tf.variable_scope('lidar_feat'):
         # ConvNets for lidar
         net2 = slim.repeat(lidars, 2, slim.conv2d, 32, [3, 3], scope='conv1_lidar')
+        net2 = slim.repeat(net2, 2, slim.conv2d, 32, [1, 1], scope='conv1_1x1_lidar')
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool1_lidar')
         net2 = slim.repeat(net2, 2, slim.conv2d, 64, [3, 3], scope='conv2_lidar')
+        net2 = slim.repeat(net2, 2, slim.conv2d, 64, [1, 1], scope='conv2_1x1_lidar')
         net2 = slim.max_pool2d(net2, [2, 2], scope='pool2_lidar')
         # net2 = slim.repeat(net2, 2, slim.conv2d, 128, [3, 3], scope='conv3_lidar')
         # net2 = slim.max_pool2d(net2, [2, 2], scope='pool3_lidar')
@@ -128,17 +132,19 @@ def vgg_16(images,
         with tf.variable_scope('match_feat'):
           # Remaining ConvNets for Feature Matching
           net = slim.repeat(net, 2, slim.conv2d, 256, [3, 3], scope='conv4')
+          net = slim.repeat(net, 2, slim.conv2d, 256, [1, 1], scope='conv4_1x1')
           net = slim.max_pool2d(net, [2, 2], scope='pool4')
           net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv5')
+          net = slim.repeat(net, 2, slim.conv2d, 512, [1, 1], scope='conv5_1x1')
           net = slim.max_pool2d(net, [2, 2], scope='pool5')
           # net = slim.repeat(net, 2, slim.conv2d, 512, [3, 3], scope='conv6')
           # net = slim.max_pool2d(net, [2, 2], scope='pool6')
 
       with tf.variable_scope('regression'):
-        # # Use conv2d instead of fully_connected layers.
-        # net = slim.conv2d(net, 1024, [14, 14],
-        #               padding=fc_conv_padding,
-        #               scope='fc6')
+        # Use conv2d instead of fully_connected layers.
+        net = slim.conv2d(net, 1024, [7, 7],
+                      padding=fc_conv_padding,
+                      scope='fc6')
         # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
         #                    scope='dropout6')
         # net = slim.conv2d(net, 256, [1, 1],
@@ -146,7 +152,8 @@ def vgg_16(images,
         #               scope='fc7')
         # net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
         #                    scope='dropout7')
-        net = slim.conv2d(net, sum(num_preds['num_preds']), [14, 14],
+        net = slim.avg_pool2d(net, [4, 4], scope='pool_avg7')
+        net = slim.conv2d(net, sum(num_preds['num_preds']), [1, 1],
                       padding=fc_conv_padding,
                       activation_fn=None,
                       normalizer_fn=None,

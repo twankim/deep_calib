@@ -99,11 +99,11 @@ class Predictor:
             return y_preds_val
 
     @staticmethod
-    def calibrate(ran_dict,q_r_preds,y_preds_val,points,im_height,im_width):
+    def calibrate(ran_dict,q_r_preds,t_vec_preds,points,im_height,im_width):
         # Calibarte based on the prediction
         cal_dict = ran_dict.copy()
 
-        Rt = quat_to_transmat(q_r_preds,y_preds_val[4:])
+        Rt = quat_to_transmat(q_r_preds,t_vec_preds)
         Rt_cal = Rt.copy()
         Rt_cal[:3,:3] = Rt[:3,:3].T
         Rt_cal[:3,3] = -np.dot(Rt[:3,:3].T,Rt[:3,3])
