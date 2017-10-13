@@ -386,7 +386,7 @@ def preprocess_for_eval(image, lidar, height, width, pool_size=None,
     image_height = tf.shape(image)[0]
     image_width = tf.shape(image)[1]
 
-    def f_height():
+    def f_height(image,lidar):
       image = tf.slice(image,
                        [(image_height-image_width)/2.0,0,0],
                        [image_width,image_width,3])
@@ -394,7 +394,7 @@ def preprocess_for_eval(image, lidar, height, width, pool_size=None,
                        [(image_height-image_width)/2.0,0,0],
                        [image_width,image_width,1])
       return image,lidar
-    def f_width():
+    def f_width(image,lidar):
       image = tf.slice(image,
                        [0,(image_width-image_height)/2.0,0],
                        [image_height,image_height,3])
@@ -403,7 +403,9 @@ def preprocess_for_eval(image, lidar, height, width, pool_size=None,
                        [image_height,image_height,1])
       return image,lidar
 
-    image,lidar = tf.cond(tf.greater(image_height,image_width),f_height,f_width)
+    image,lidar = tf.cond(tf.greater(image_height,image_width),
+                          lambda: f_height(image,lidar),
+                          lambda: f_width(image,lidar))
 
     # Crop the central region of the image with an area containing 87.5% of
     # the original image.
