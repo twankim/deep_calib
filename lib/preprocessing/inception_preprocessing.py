@@ -396,10 +396,10 @@ def preprocess_for_eval(image, lidar, height, width, pool_size=None,
       return image,lidar
     def f_width(image,lidar):
       image = tf.slice(image,
-                       [0,(image_width-image_height)/2.0,0],
+                       [0,(image_width-image_height)/2,0],
                        [image_height,image_height,3])
       lidar = tf.slice(lidar,
-                       [0,(image_width-image_height)/2.0,0],
+                       [0,(image_width-image_height)/2,0],
                        [image_height,image_height,1])
       return image,lidar
 
