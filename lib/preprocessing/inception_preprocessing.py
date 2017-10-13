@@ -291,7 +291,7 @@ def preprocess_for_train(image, lidar, height, width, bbox,
 
     if pool_size:
       lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
-      tf.summary.image('input_lidar', tf.expand_dims(lidar,0))
+      tf.summary.image('input_lidar_maxpooled', tf.expand_dims(lidar,0))
 
 
     # distorted_image, distorted_bbox = distorted_bounding_box_crop(image, bbox)
