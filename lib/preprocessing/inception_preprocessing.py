@@ -298,7 +298,7 @@ def preprocess_for_train(image, lidar, height, width, bbox,
     distorted_image, distorted_bbox, bbox_begin, bbox_size = distorted_bounding_box_crop(
                                           image, bbox,
                                           min_object_covered=0.1,
-                                          aspect_ratio_range=(1.0, 1.0),
+                                          aspect_ratio_range=(0.999, 1.0),
                                           area_range=(0.2, 1.0),
                                           max_attempts=100,
                                           scope=None)
