@@ -393,6 +393,8 @@ def preprocess_for_eval(image, lidar, height, width, pool_size=None,
       lidar = tf.slice(lidar,
                        [tf.to_int32((image_height-image_width)/2),0,0],
                        [image_width,image_width,1])
+      image.set_shape([None, None, 3])
+      lidar.set_shape([None, None, 1])
       return image,lidar
     def f_width(image,lidar):
       image = tf.slice(image,
@@ -401,6 +403,8 @@ def preprocess_for_eval(image, lidar, height, width, pool_size=None,
       lidar = tf.slice(lidar,
                        [0,tf.to_int32((image_width-image_height)/2),0],
                        [image_height,image_height,1])
+      image.set_shape([None, None, 3])
+      lidar.set_shape([None, None, 1])
       return image,lidar
 
     image,lidar = tf.cond(tf.greater(image_height,image_width),
