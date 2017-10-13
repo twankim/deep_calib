@@ -5,7 +5,7 @@ MODEL_NAME=inception_v1
 SCOPE_NAME=InceptionV1
 WEIGHT_LOSS=10
 BATCH_SIZE=64
-LEARNING_RATE=0.00001
+LEARNING_RATE=0.001
 DECAY_TYPE=fixed
 DATA_NAME=kitti_calib
 LOG_NAME=${DATA_NAME}_05_05
@@ -30,7 +30,7 @@ do
         --lidar_pool=${LIDAR_POOL} \
         --model_name=${MODEL_NAME} \
         --checkpoint_path=pretrained/${MODEL_NAME}.ckpt \
-        --checkpoint_exclude_scopes=${SCOPE_NAME}/lidar_feat,${SCOPE_NAME}/match_feat,${SCOPE_NAME}/Logits \
+        --checkpoint_exclude_scopes=${SCOPE_NAME}/match_feat,${SCOPE_NAME}/Logits \
         --learning_rate_decay_type=${DECAY_TYPE} \
         --learning_rate=${LEARNING_RATE} \
         --ignore_missing_vars=True
