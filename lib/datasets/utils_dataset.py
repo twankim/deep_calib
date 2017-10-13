@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-10-13 14:37:50
+# @Last Modified time: 2017-10-13 15:27:35
 
 from __future__ import absolute_import
 from __future__ import division
@@ -272,16 +272,16 @@ def dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
     if mode == 'standard':
         return np.round(minmax_scale(val_dist,
                                      d_min,d_max,
-                                     0,255)).astype('uint8')
+                                     1,255)).astype('uint8')
     elif mode == 'inverse':
         return np.round(minmax_scale(1.0/val_dist,
                                      1.0/d_max,1.0/d_min,
-                                     0,255)).astype('uint8')
+                                     1,255)).astype('uint8')
     else:
         # Default is inverse
         return np.round(minmax_scale(1.0/val_dist,
                                      1.0/d_max,1.0/d_min,
-                                     0,255)).astype('uint8')
+                                     1,255)).astype('uint8')
 
 def points_to_img(points2D,pointsDist,im_height,im_width):
     points2D = np.round(points2D).astype('int')
@@ -347,16 +347,16 @@ def tf_dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
     if mode == 'standard':
         return tf.cast(tf.round(minmax_scale(val_dist,
                                              d_min,d_max,
-                                             0,255)),tf.uint8)
+                                             1,255)),tf.uint8)
     elif mode == 'inverse':
         return tf.cast(tf.round(minmax_scale(1.0/val_dist,
                                              1.0/d_max,1.0/d_min,
-                                             0,255)),tf.uint8)
+                                             1,255)),tf.uint8)
     else:
         # Default is inverse
         return tf.cast(tf.round(minmax_scale(1.0/val_dist,
                                              1.0/d_max,1.0/d_min,
-                                             0,255)),tf.uint8)
+                                             1,255)),tf.uint8)
 
 def tf_points_to_img(points2D,pointsDist,im_height,im_width):
     pointsPixel = tf_dist_to_pixel(pointsDist,mode=_MODE_DIST2PIXEL)
@@ -483,7 +483,7 @@ def imlidarwrite(fname,im,im_depth):
     im_out = im.copy()
     im_depth = np.squeeze(im_depth,axis=2)
     idx_h, idx_w = np.nonzero(im_depth)
-    cmap = plt.get_cmap('jet')
+    cmap = plt.get_cmap('brg')
     for i in xrange(len(idx_h)):
         im_out[idx_h[i],idx_w[i],:] = (255*np.array(
                         cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
