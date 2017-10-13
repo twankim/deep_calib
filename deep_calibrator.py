@@ -23,6 +23,13 @@ _G_MEAN = 116.78
 _B_MEAN = 103.94
 _BW_MEAN = (_R_MEAN+_G_MEAN+_B_MEAN)/3.0
 
+preprocessing_name_map = {
+    'inception_v1': 'inception',
+    'vgg': 'vgg',
+    'vgg_16': 'vgg',
+    'vgg_19': 'vgg',
+}
+
 class Predictor:
     def __init__(self,model_name,preprocessing_name,checkpoint_path,
                  test_image_size,lidar_pool,is_crop):
@@ -86,13 +93,19 @@ class Predictor:
         y_preds_val = np.squeeze(y_preds_val,axis=0)
 
         if self.is_crop:
-            img_temp[:,:,0] += _R_MEAN
-            img_temp[:,:,1] += _G_MEAN
-            img_temp[:,:,2] += _B_MEAN
-            lidar_temp += _BW_MEAN
+            if 'vgg' in preprocessing_name_map[self.preprocessing_name]:
+                img_temp[:,:,0] += _R_MEAN
+                img_temp[:,:,1] += _G_MEAN
+                img_temp[:,:,2] += _B_MEAN
+                lidar_temp += _BW_MEAN
 
-            img_temp = img_temp.astype(np.uint8)
-            lidar_temp = np.squeeze(lidar_temp.astype(np.uint8),axis=2)
+                img_temp = img_temp.astype(np.uint8)
+                lidar_temp = np.squeeze(lidar_temp.astype(np.uint8),axis=2)
+            elif 'inception' in preprocessing_name_map[self.preprocessing_name]:
+                img_temp = (img_temp+1)*255.0/2
+                img_temp = img_temp.astype(np.uint8)
+                lidar_temp = (lidar_temp+1)*255.0/2
+                lidar_temp = lidar_temp.astype(np.uint8)
 
             return y_preds_val,img_temp,lidar_temp
         else:
