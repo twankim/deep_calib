@@ -299,7 +299,7 @@ def preprocess_for_train(image, lidar, height, width, bbox,
                                           image, bbox,
                                           min_object_covered=0.1,
                                           aspect_ratio_range=(0.999, 1.0),
-                                          area_range=(0.2, 1.0),
+                                          area_range=(0.15, 1.0),
                                           max_attempts=100,
                                           scope=None)
     # Restore the shape since the dynamic slice based upon the bbox_size loses

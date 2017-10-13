@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-10-13 09:37:17
+# @Last Modified time: 2017-10-13 14:37:50
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,7 +20,8 @@ from datasets.config import cfg
 _D_MAX = 50.0
 _D_MIN = 2.0
 
-_MODE_DIST2PIXEL = 'standard'
+# _MODE_DIST2PIXEL = 'standard'
+_MODE_DIST2PIXEL = 'inverse'
 
 # Product of quaternions
 def qprod(q_a,q_b):
