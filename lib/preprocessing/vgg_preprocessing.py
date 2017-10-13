@@ -362,11 +362,11 @@ def preprocess_for_train(image, lidar,
   if pool_size:
     lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
 
-  # image = _aspect_preserving_resize(image, resize_side)
-  # lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)
+  image = _aspect_preserving_resize(image, resize_side)
+  lidar = _aspect_preserving_resize(lidar, resize_side, channels=1)
 
-  image = _aspect_nonpreserving_resize(image, resize_side, resize_side)
-  lidar = _aspect_nonpreserving_resize(lidar, resize_side, resize_side, channels=1)
+  # image = _aspect_nonpreserving_resize(image, resize_side, resize_side)
+  # lidar = _aspect_nonpreserving_resize(lidar, resize_side, resize_side, channels=1)
   
   # image,lidar = _random_crop([image,lidar], output_height, output_width)
   image,lidar = _central_crop([image,lidar], output_height, output_width)

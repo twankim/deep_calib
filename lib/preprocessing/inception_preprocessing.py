@@ -96,6 +96,95 @@ def distort_color(image, color_ordering=0, fast_mode=True, scope=None):
     return tf.clip_by_value(image, 0.0, 1.0)
 
 
+def _interpolate_image(image,channels=3,pool_size=None):
+  """Interpolate sparse image (lidar)
+
+  Args:
+    image: A 3-D image 'Tensor'
+
+  Returns:
+    interpolated_image: A 3-D tensor contianing the interpolated image
+  """
+  image = tf.expand_dims(image, 0)
+  # Interpolate using max_pooling
+  interpolated_image = tf.layers.max_pooling2d(image,
+                                               pool_size=pool_size,
+                                               strides=1,
+                                               padding='same')
+
+  interpolated_image = tf.squeeze(interpolated_image, [0])
+  interpolated_image.set_shape([None, None, channels])
+  return interpolated_image
+
+
+def _crop(image, offset_height, offset_width, crop_height, crop_width):
+  """Crops the given image using the provided offsets and sizes.
+
+  Note that the method doesn't assume we know the input image size but it does
+  assume we know the input image rank.
+
+  Args:
+    image: an image of shape [height, width, channels].
+    offset_height: a scalar tensor indicating the height offset.
+    offset_width: a scalar tensor indicating the width offset.
+    crop_height: the height of the cropped image.
+    crop_width: the width of the cropped image.
+
+  Returns:
+    the cropped (and resized) image.
+
+  Raises:
+    InvalidArgumentError: if the rank is not 3 or if the image dimensions are
+      less than the crop size.
+  """
+  original_shape = tf.shape(image)
+
+  rank_assertion = tf.Assert(
+      tf.equal(tf.rank(image), 3),
+      ['Rank of image must be equal to 3.'])
+  with tf.control_dependencies([rank_assertion]):
+    cropped_shape = tf.stack([crop_height, crop_width, original_shape[2]])
+
+  size_assertion = tf.Assert(
+      tf.logical_and(
+          tf.greater_equal(original_shape[0], crop_height),
+          tf.greater_equal(original_shape[1], crop_width)),
+      ['Crop size greater than the image size.'])
+
+  offsets = tf.to_int32(tf.stack([offset_height, offset_width, 0]))
+
+  # Use tf.slice instead of crop_to_bounding box as it accepts tensors to
+  # define the crop size.
+  with tf.control_dependencies([size_assertion]):
+    image = tf.slice(image, offsets, cropped_shape)
+  return tf.reshape(image, cropped_shape)
+
+
+def _central_crop(image_list, crop_height, crop_width):
+  """Performs central crops of the given image list.
+
+  Args:
+    image_list: a list of image tensors of the same dimension but possibly
+      varying channel.
+    crop_height: the height of the image following the crop.
+    crop_width: the width of the image following the crop.
+
+  Returns:
+    the list of cropped images.
+  """
+  outputs = []
+  for image in image_list:
+    image_height = tf.shape(image)[0]
+    image_width = tf.shape(image)[1]
+
+    offset_height = (image_height - crop_height) / 2
+    offset_width = (image_width - crop_width) / 2
+
+    outputs.append(_crop(image, offset_height, offset_width,
+                         crop_height, crop_width))
+  return outputs
+
+
 def distorted_bounding_box_crop(image,
                                 bbox,
                                 min_object_covered=0.1,
@@ -150,11 +239,12 @@ def distorted_bounding_box_crop(image,
 
     # Crop the image to the specified bounding box.
     cropped_image = tf.slice(image, bbox_begin, bbox_size)
-    return cropped_image, distort_bbox
+    return cropped_image, distort_bbox, bbox_begin, bbox_size
 
 
-def preprocess_for_train(image, height, width, bbox,
+def preprocess_for_train(image, lidar, height, width, bbox,
                          fast_mode=True,
+                         pool_size=None,
                          scope=None):
   """Distort one image for training a network.
 
@@ -181,27 +271,46 @@ def preprocess_for_train(image, height, width, bbox,
   Returns:
     3-D float Tensor of distorted image used for training with range [-1, 1].
   """
-  with tf.name_scope(scope, 'distort_image', [image, height, width, bbox]):
+  with tf.name_scope(scope, 'distort_image', [image, lidar, height, width, bbox]):
     if bbox is None:
       bbox = tf.constant([0.0, 0.0, 1.0, 1.0],
                          dtype=tf.float32,
                          shape=[1, 1, 4])
     if image.dtype != tf.float32:
       image = tf.image.convert_image_dtype(image, dtype=tf.float32)
+    if lidar.dtype != tf.float32:
+      lidar = tf.image.convert_image_dtype(lidar, dtype=tf.float32)
     # Each bounding box has shape [1, num_boxes, box coords] and
     # the coordinates are ordered [ymin, xmin, ymax, xmax].
-    image_with_box = tf.image.draw_bounding_boxes(tf.expand_dims(image, 0),
-                                                  bbox)
-    tf.summary.image('image_with_bounding_boxes', image_with_box)
+    # image_with_box = tf.image.draw_bounding_boxes(tf.expand_dims(image, 0),
+    #                                               bbox)
+    # lidar_with_box = tf.image.draw_bounding_boxes(tf.expand_dims(lidar, 0),
+    #                                               bbox)
+    tf.summary.image('input_image', tf.expand_dims(image,0))
+    tf.summary.image('input_lidar', tf.expand_dims(lidar,0))
 
-    distorted_image, distorted_bbox = distorted_bounding_box_crop(image, bbox)
+    if pool_size:
+      lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
+      tf.summary.image('input_lidar', tf.expand_dims(lidar,0))
+
+
+    # distorted_image, distorted_bbox = distorted_bounding_box_crop(image, bbox)
+    distorted_image, distorted_bbox, bbox_begin, bbox_size = distorted_bounding_box_crop(
+                                          image, bbox,
+                                          min_object_covered=0.1,
+                                          aspect_ratio_range=(1.0, 1.0),
+                                          area_range=(0.2, 1.0),
+                                          max_attempts=100,
+                                          scope=None)
     # Restore the shape since the dynamic slice based upon the bbox_size loses
     # the third dimension.
     distorted_image.set_shape([None, None, 3])
-    image_with_distorted_box = tf.image.draw_bounding_boxes(
-        tf.expand_dims(image, 0), distorted_bbox)
-    tf.summary.image('images_with_distorted_bounding_box',
-                     image_with_distorted_box)
+    distorted_lidar = tf.slice(lidar, bbox_begin, bbox_size)
+    distorted_lidar.set_shape([None, None, 1])
+    # image_with_distorted_box = tf.image.draw_bounding_boxes(
+    #     tf.expand_dims(image, 0), distorted_bbox)
+    # tf.summary.image('images_with_distorted_bounding_box',
+    #                  image_with_distorted_box)
 
     # This resizing operation may distort the images because the aspect
     # ratio is not respected. We select a resize method in a round robin
@@ -209,17 +318,23 @@ def preprocess_for_train(image, height, width, bbox,
     # Note that ResizeMethod contains 4 enumerated resizing methods.
 
     # We select only 1 case for fast_mode bilinear.
-    num_resize_cases = 1 if fast_mode else 4
-    distorted_image = apply_with_random_selector(
-        distorted_image,
-        lambda x, method: tf.image.resize_images(x, [height, width], method=method),
-        num_cases=num_resize_cases)
+    # num_resize_cases = 1 if fast_mode else 4
+    # distorted_image = apply_with_random_selector(
+    #     distorted_image,
+    #     lambda x, method: tf.image.resize_images(x, [height, width], method=method),
+    #     num_cases=num_resize_cases)
+    distorted_image = tf.image.resize_images(distorted_image,
+                                             [height, width])
+    distorted_lidar = tf.image.resize_images(distorted_lidar,
+                                             [height, width])
 
     tf.summary.image('cropped_resized_image',
                      tf.expand_dims(distorted_image, 0))
+    tf.summary.image('cropped_resized_lidar',
+                     tf.expand_dims(distorted_lidar, 0))
 
-    # Randomly flip the image horizontally.
-    distorted_image = tf.image.random_flip_left_right(distorted_image)
+    # # Randomly flip the image horizontally.
+    # distorted_image = tf.image.random_flip_left_right(distorted_image)
 
     # Randomly distort the colors. There are 4 ways to do it.
     distorted_image = apply_with_random_selector(
@@ -231,10 +346,13 @@ def preprocess_for_train(image, height, width, bbox,
                      tf.expand_dims(distorted_image, 0))
     distorted_image = tf.subtract(distorted_image, 0.5)
     distorted_image = tf.multiply(distorted_image, 2.0)
-    return distorted_image
+
+    distorted_lidar = tf.subtract(distorted_lidar, 0.5)
+    distorted_lidar = tf.multiply(distorted_lidar, 2.0)
+    return distorted_image, distorted_lidar
 
 
-def preprocess_for_eval(image, height, width,
+def preprocess_for_eval(image, lidar, height, width, pool_size=None,
                         central_fraction=0.875, scope=None):
   """Prepare one image for evaluation.
 
@@ -259,10 +377,35 @@ def preprocess_for_eval(image, height, width,
   with tf.name_scope(scope, 'eval_image', [image, height, width]):
     if image.dtype != tf.float32:
       image = tf.image.convert_image_dtype(image, dtype=tf.float32)
+    if lidar.dtype != tf.float32:
+      lidar = tf.image.convert_image_dtype(lidar, dtype=tf.float32)
+
+    if pool_size:
+      lidar = _interpolate_image(lidar,channels=1,pool_size=pool_size)
+
+    image_height = tf.shape(image)[0]
+    image_width = tf.shape(image)[1]
+    if image_height > image_width:
+      image = tf.slice(image,
+                       [(image_height-image_width)/2.0,0,0],
+                       [image_width,image_width,3])
+      lidar = tf.slice(lidar,
+                       [(image_height-image_width)/2.0,0,0],
+                       [image_width,image_width,1])
+    else:
+      image = tf.slice(image,
+                       [0,(image_width-image_height)/2.0,0],
+                       [image_height,image_height,3])
+      lidar = tf.slice(lidar,
+                       [0,(image_width-image_height)/2.0,0],
+                       [image_height,image_height,1])
+
+
     # Crop the central region of the image with an area containing 87.5% of
     # the original image.
     if central_fraction:
       image = tf.image.central_crop(image, central_fraction=central_fraction)
+      lidar = tf.image.central_crop(lidar, central_fraction=central_fraction)
 
     if height and width:
       # Resize the image to the specified height and width.
@@ -270,15 +413,23 @@ def preprocess_for_eval(image, height, width,
       image = tf.image.resize_bilinear(image, [height, width],
                                        align_corners=False)
       image = tf.squeeze(image, [0])
+      
+      lidar = tf.expand_dims(lidar, 0)
+      lidar = tf.image.resize_bilinear(lidar, [height, width],
+                                       align_corners=False)
+      lidar = tf.squeeze(lidar, [0])
     image = tf.subtract(image, 0.5)
     image = tf.multiply(image, 2.0)
-    return image
+    lidar = tf.subtract(lidar, 0.5)
+    lidar = tf.multiply(lidar, 2.0)
+    return image,lidar
 
 
-def preprocess_image(image, height, width,
+def preprocess_image(image, lidar, height, width,
                      is_training=False,
                      bbox=None,
-                     fast_mode=True):
+                     fast_mode=True,
+                     pool_size=None):
   """Pre-process one image for training or evaluation.
 
   Args:
@@ -299,6 +450,8 @@ def preprocess_image(image, height, width,
     ValueError: if user does not provide bounding box
   """
   if is_training:
-    return preprocess_for_train(image, height, width, bbox, fast_mode)
+    return preprocess_for_train(image, lidar, height, width, bbox, fast_mode,
+                                pool_size=pool_size)
   else:
-    return preprocess_for_eval(image, height, width)
+    return preprocess_for_eval(image, lidar, height, width,
+                                pool_size=pool_size)
