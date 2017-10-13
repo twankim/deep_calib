@@ -26,7 +26,7 @@ import tensorflow.contrib.slim as slim
 
 from nets import vgg_calib as vgg
 from nets import mobilenet_v1_calib as mobilenet_v1
-from nets import inception_v_1_calib as inception_v1
+from nets import inception_v1_calib as inception_v1
 
 networks_map = {'vgg_16': vgg.vgg_16,
                 'vgg_19': vgg.vgg_19,
