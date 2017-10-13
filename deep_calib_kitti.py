@@ -248,20 +248,20 @@ def main(_):
     # decalibs_pred, decalibs_gt
     with open(os.path.join(FLAGS.dir_out,imName+'_res.txt'),'w') as f_res:
       for i_ran,(vec_gt,vec_pred) in enumerate(zip(decalibs_gt,decalibs_pred)):
-        f_res.write('-{},   gt:{}\n'.format(i_ran,vec_gt))
-        f_res.write('-{}, pred:{}\n'.format(i_ran,vec_pred))
+        f_res.write('*{},   gt:{}\n'.format(i_ran,vec_gt))
+        f_res.write('*{}, pred:{}\n'.format(i_ran,vec_pred))
         mse_val = ((vec_gt - vec_pred)**2).mean()
         mse_rot = ((vec_gt[:4]-vec_pred[:4])**2).mean()
         mse_tran = ((vec_gt[4:]-vec_pred[4:])**2).mean()
-        f_res.write('-{}, MSE:{}, MSE_rot:{}, MSE_trans:{}\n\n'.format(
+        f_res.write('*{}, MSE:{}, MSE_rot:{}, MSE_trans:{}\n\n'.format(
                     i_ran,mse_val,mse_rot,mse_tran))
 
     with open(os.path.join(FLAGS.dir_out,imName+'_res_qr.txt'),'w') as f_res:
       for i_ran,(qr_gt,qr_pred) in enumerate(zip(decalibs_qr_gt,decalibs_qr_pred)):
-        f_res.write('-{},   gt:{}\n'.format(i_ran,qr_gt))
-        f_res.write('-{}, pred:{}\n'.format(i_ran,qr_pred))
+        f_res.write('*{},   gt:{}\n'.format(i_ran,qr_gt))
+        f_res.write('*{}, pred:{}\n'.format(i_ran,qr_pred))
         mse_qr = ((qr_gt-qr_pred)**2).mean()
-        f_res.write('-{}, MSE_qr:{}\n\n'.format(i_ran,mse_qr))
+        f_res.write('*{}, MSE_qr:{}\n\n'.format(i_ran,mse_qr))
 
 if __name__ == '__main__':
   tf.app.run()
