@@ -385,7 +385,10 @@ def preprocess_for_eval(image, lidar, height, width, pool_size=None,
 
     image_height = tf.shape(image)[0]
     image_width = tf.shape(image)[1]
-    if image_height > image_width:
+
+    is_height = tf.greater(image_height,image_width)
+
+    if is_height:
       image = tf.slice(image,
                        [(image_height-image_width)/2.0,0,0],
                        [image_width,image_width,3])
