@@ -83,7 +83,7 @@ def inception_v1_base(images, lidars,
         end_point = 'lidar_feat'
         with tf.variable_scope(end_point):
           end_point = 'Conv2d_1a_7x7'
-          net2 = slim.conv2d(lidars, 64, [7, 7], stride=2, scope=end_point)
+          net2 = slim.conv2d(lidars, 32, [7, 7], stride=2, scope=end_point)
           end_points['lidar_feat/'+end_point] = net2
           if final_endpoint == end_point: return net2, end_points
           end_point = 'MaxPool_2a_3x3'
@@ -91,11 +91,11 @@ def inception_v1_base(images, lidars,
           end_points['lidar_feat/'+end_point] = net2
           if final_endpoint == end_point: return net2, end_points
           end_point = 'Conv2d_2b_1x1'
-          net2 = slim.conv2d(net2, 64, [1, 1], scope=end_point)
+          net2 = slim.conv2d(net2, 32, [1, 1], scope=end_point)
           end_points['lidar_feat/'+end_point] = net2
           if final_endpoint == end_point: return net2, end_points
           end_point = 'Conv2d_2c_3x3'
-          net2 = slim.conv2d(net2, 192, [3, 3], scope=end_point)
+          net2 = slim.conv2d(net2, 96, [3, 3], scope=end_point)
           end_points['lidar_feat/'+end_point] = net2
           if final_endpoint == end_point: return net2, end_points
           end_point = 'MaxPool_3a_3x3'
