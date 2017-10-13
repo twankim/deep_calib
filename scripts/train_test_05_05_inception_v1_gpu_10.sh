@@ -30,7 +30,7 @@ do
         --lidar_pool=${LIDAR_POOL} \
         --model_name=${MODEL_NAME} \
         --checkpoint_path=pretrained/${MODEL_NAME}.ckpt \
-        --checkpoint_exclude_scopes=${SCOPE_NAME}/match_feat,${SCOPE_NAME}/Logits \
+        --checkpoint_exclude_scopes=${SCOPE_NAME}/lidar_feat,${SCOPE_NAME}/match_feat,${SCOPE_NAME}/Logits \
         --learning_rate_decay_type=${DECAY_TYPE} \
         --learning_rate=${LEARNING_RATE} \
         --ignore_missing_vars=True
