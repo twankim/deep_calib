@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-10-13 23:34:31
+# @Last Modified time: 2017-10-13 23:41:38
 
 from __future__ import absolute_import
 from __future__ import division
@@ -19,9 +19,6 @@ from datasets.config import cfg
 
 _D_MAX = 150.0
 _D_MIN = 2.0
-
-# _MODE_DIST2PIXEL = 'standard'
-_MODE_DIST2PIXEL = 'inverse'
 
 # Product of quaternions
 def qprod(q_a,q_b):
@@ -283,12 +280,12 @@ def dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
                                      1.0/d_max,1.0/d_min,
                                      1,255)).astype('uint8')
 
-def points_to_img(points2D,pointsDist,im_height,im_width):
+def points_to_img(points2D,pointsDist,im_height,im_width,mode='inverse'):
     points2D = np.round(points2D).astype('int')
     im_depth = np.zeros((im_height,im_width),dtype=np.uint8)
     for i in xrange(np.shape(points2D)[0]):
         x,y = points2D[i,:]
-        im_depth[y,x] = dist_to_pixel(pointsDist[i],mode=_MODE_DIST2PIXEL)
+        im_depth[y,x] = dist_to_pixel(pointsDist[i],mode=mode)
 
     # Find LIDAR sensed region
     yx_max = np.max(points2D,axis=0)
@@ -358,8 +355,8 @@ def tf_dist_to_pixel(val_dist, mode='inverse', d_max=_D_MAX, d_min=_D_MIN):
                                              1.0/d_max,1.0/d_min,
                                              1,255)),tf.uint8)
 
-def tf_points_to_img(points2D,pointsDist,im_height,im_width):
-    pointsPixel = tf_dist_to_pixel(pointsDist,mode=_MODE_DIST2PIXEL)
+def tf_points_to_img(points2D,pointsDist,im_height,im_width,mode=mode):
+    pointsPixel = tf_dist_to_pixel(pointsDist,mode=mode)
     points2D_yx = tf.cast(tf.round(tf.reverse(points2D,axis=[1])),tf.int32)
     img = tf.scatter_nd(points2D_yx,pointsPixel,[im_height,im_width])
 
@@ -484,20 +481,9 @@ def imlidarwrite(fname,im,im_depth):
     im_depth = np.squeeze(im_depth,axis=2)
     idx_h, idx_w = np.nonzero(im_depth)
     cmap = plt.get_cmap('jet')
-    if _MODE_DIST2PIXEL == 'standard':
-        for i in xrange(len(idx_h)):
-            im_out[idx_h[i],idx_w[i],:] = (255*np.array(
-                            cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
-                            .astype(np.uint8)
-    elif _MODE_DIST2PIXEL == 'inverse':
-        for i in xrange(len(idx_h)):
-            im_out[idx_h[i],idx_w[i],:] = (255*np.array(
-                            cmap(1.0/im_depth[idx_h[i],idx_w[i]])[:3]))\
-                            .astype(np.uint8)
-    else:
-        for i in xrange(len(idx_h)):
-            im_out[idx_h[i],idx_w[i],:] = (255*np.array(
-                            cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
-                            .astype(np.uint8)
+    for i in xrange(len(idx_h)):
+        im_out[idx_h[i],idx_w[i],:] = (255*np.array(
+                        cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
+                        .astype(np.uint8)
     imsave(fname,im_out)
     print("   ... Write:{}".format(fname))
