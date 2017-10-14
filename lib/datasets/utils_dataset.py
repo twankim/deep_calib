@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-10-13 15:27:35
+# @Last Modified time: 2017-10-13 22:43:42
 
 from __future__ import absolute_import
 from __future__ import division
@@ -483,10 +483,21 @@ def imlidarwrite(fname,im,im_depth):
     im_out = im.copy()
     im_depth = np.squeeze(im_depth,axis=2)
     idx_h, idx_w = np.nonzero(im_depth)
-    cmap = plt.get_cmap('brg')
-    for i in xrange(len(idx_h)):
-        im_out[idx_h[i],idx_w[i],:] = (255*np.array(
-                        cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
-                        .astype(np.uint8)
+    cmap = plt.get_cmap('jet')
+    if _MODE_DIST2PIXEL == 'standard':
+        for i in xrange(len(idx_h)):
+            im_out[idx_h[i],idx_w[i],:] = (255*np.array(
+                            cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
+                            .astype(np.uint8)
+    elif _MODE_DIST2PIXEL == 'inverse':
+        for i in xrange(len(idx_h)):
+            im_out[idx_h[i],idx_w[i],:] = (255*np.array(
+                            cmap(1.0/im_depth[idx_h[i],idx_w[i]])[:3]))\
+                            .astype(np.uint8)
+    else:
+        for i in xrange(len(idx_h)):
+            im_out[idx_h[i],idx_w[i],:] = (255*np.array(
+                            cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
+                            .astype(np.uint8)
     imsave(fname,im_out)
     print("   ... Write:{}".format(fname))
