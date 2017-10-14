@@ -2,7 +2,7 @@
 # @Author: twankim
 # @Date:   2017-07-07 21:15:23
 # @Last Modified by:   twankim
-# @Last Modified time: 2017-10-13 23:25:43
+# @Last Modified time: 2017-10-13 23:31:16
 
 from __future__ import absolute_import
 from __future__ import division
@@ -489,11 +489,11 @@ def imlidarwrite(fname,im,im_depth):
             im_out[idx_h[i],idx_w[i],:] = (255*np.array(
                             cmap(im_depth[idx_h[i],idx_w[i]]/255.0)[:3]))\
                             .astype(np.uint8)
-    # elif _MODE_DIST2PIXEL == 'inverse':
-    #     for i in xrange(len(idx_h)):
-    #         im_out[idx_h[i],idx_w[i],:] = (255*np.array(
-    #                         cmap(1.0/im_depth[idx_h[i],idx_w[i]])[:3]))\
-    #                         .astype(np.uint8)
+    elif _MODE_DIST2PIXEL == 'inverse':
+        for i in xrange(len(idx_h)):
+            im_out[idx_h[i],idx_w[i],:] = (255*np.array(
+                            cmap(1.0/im_depth[idx_h[i],idx_w[i]])[:3]))\
+                            .astype(np.uint8)
     else:
         for i in xrange(len(idx_h)):
             im_out[idx_h[i],idx_w[i],:] = (255*np.array(
